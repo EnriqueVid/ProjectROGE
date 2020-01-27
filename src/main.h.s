@@ -1,0 +1,3 @@
+;BuildGBC SET 1     ;;COMPILAR PAR 'GAME-BOY' O 'GAME_BOY COLOR'
+
+GLOBAL _main

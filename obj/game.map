@@ -1,0 +1,224 @@
+ROM Bank #0 (HOME):
+  SECTION: $0B0D-$0B90 ($0084 bytes) ["ENEMY_FUNC"]
+           $0B2F = _update_enemy_view_position
+           $0B2E = _update_enemy_sprite
+           $0B0D = _set_enemy
+           $0B5F = _colision_enemy
+           $0B48 = _move_view_enemy
+  SECTION: $0974-$0B0C ($0199 bytes) ["MAIN"]
+           $0A9D = Sprite_01
+           $0B0D = Sprite_01_end
+           $09E5 = _window_loop
+           $0A46 = no_buttons
+           $0A1B = check_move_left
+           $0A20 = check_move_up
+           $0A25 = check_move_down
+           $0A2A = end_check_move
+           $0A46 = no_move
+           $0A03 = _main_loop
+           $0A63 = _collisions.continue
+           $0A93 = _collisions.end_collisions
+           $0A7A = _collisions.continue2
+           $0A97 = _collisions.collision_win
+           $0974 = _main
+  SECTION: $0000-$003F ($0040 bytes) ["RSTS"]
+  SECTION: $0040-$0047 ($0008 bytes) ["I_VBLANK"]
+  SECTION: $0048-$004F ($0008 bytes) ["I_LCDSTAT"]
+  SECTION: $0050-$0057 ($0008 bytes) ["I_TIMER"]
+  SECTION: $0058-$005F ($0008 bytes) ["I_SERIAL"]
+  SECTION: $0060-$0067 ($0008 bytes) ["I_JOYPAD"]
+  SECTION: $0068-$00FF ($0098 bytes) ["UNUSED"]
+  SECTION: $0100-$0103 ($0004 bytes) ["ENTRY_POINT"]
+  SECTION: $0104-$0133 ($0030 bytes) ["N_LOGO"]
+  SECTION: $0134-$0142 ($000F bytes) ["GAME_NAME"]
+  SECTION: $0143-$014F ($000D bytes) ["METADATA"]
+  SECTION: $0150-$0973 ($0824 bytes) ["Maps"]
+           $0150 = _mapa_Prueba_01
+           $05E3 = _get_map_tile.loop
+           $05E8 = _draw_tile
+           $082A = _correct_hor
+           $0604 = _draw_row.loop
+           $0851 = _correct_vert
+           $061F = _draw_column.loop
+           $063F = _get_tilemap_dir.loop
+           $0665 = _get_screenmap_dir.loop
+           $0644 = _get_screenmap_dir
+           $0698 = _set_scroll_map.loop_bl
+           $0250 = _mapa_Prueba_02
+           $0638 = _get_tilemap_dir
+           $06FD = _set_scroll_map.change_y
+           $06F0 = _set_scroll_map.continue
+           $06EC = _set_scroll_map.inc_y
+           $06CB = _set_scroll_map.loop
+           $0715 = _set_scroll_map.end
+           $07A1 = _update_scroll_map.check_row
+           $0764 = _update_scroll_map.move_left
+           $08A3 = load_GBS_map_tr
+           $087F = save_GBS_map_tr
+           $08BE = load_GBS_tilemap
+           $089A = save_GBS_tilemap
+           $061D = _draw_column
+           $08AC = load_GBS_map_tl
+           $0888 = save_GBS_map_tl
+           $08B5 = load_GBS_map_bl
+           $0891 = save_GBS_map_bl
+           $07E5 = _update_scroll_map.move_down
+           $0602 = _draw_row
+           $0805 = _update_scroll_map.md_loop
+           $0840 = _correct_hor.check_left
+           $084F = _correct_hor.no_correction
+           $086C = _correct_vert.check_down
+           $087D = _correct_vert.no_correction
+           $0901 = _draw_map.change_y
+           $08F5 = _draw_map.continue
+           $08F1 = _draw_map.inc_y
+           $08D2 = _draw_map.loop
+           $096E = _update_scroll.end_update_scroll
+           $0968 = _update_scroll.continue
+           $066A = _set_scroll_map
+           $0926 = _set_scroll_screen
+           $05D4 = _get_map_tile
+           $0934 = _update_scroll
+           $0717 = _update_scroll_map
+           $0916 = _set_screen_data
+           $08C7 = _draw_map
+  SECTION: $0BE3-$0C10 ($002E bytes) ["Functions"]
+           $0BE4 = _wait_Vblank.loop
+           $0BEE = _VRAM_wait.loop
+           $0BF6 = _clear_data
+           $0BFE = _ldir
+           $0C0F = _jri
+           $0C07 = _define_palette
+           $0BE3 = _wait_Vblank
+           $0BEC = _VRAM_wait
+  SECTION: $0B91-$0BE2 ($0052 bytes) ["RENDER_FUNCS"]
+           $0B98 = DMACopyWait
+           $0B9D = DMACopyEnd
+           $0BC0 = _draw_enemy
+           $0B91 = DMACopy
+           $0B9D = _draw_player
+  SECTION: $0C11-$0C2B ($001B bytes) ["PLAYER_FUNC"]
+           $0C11 = _set_player
+    SLACK: $33D4 bytes
+
+WRAM Bank #0:
+  SECTION: $C110-$C116 ($0007 bytes) ["ENEMY_VARS"]
+           $C116 = _enemy_dead
+           $C110 = _enemy_X
+           $C111 = _enemy_Y
+           $C114 = _enemy_spr_L
+           $C115 = _enemy_spr_R
+           $C112 = _enemy_view_X
+           $C113 = _enemy_view_Y
+  SECTION: $C0A0-$C0B0 ($0011 bytes) ["Maps_Variables"]
+           $C0A7 = GBS_tilemap_x
+           $C0A8 = GBS_tilemap_y
+           $C0AC = GBS_map_tl_ph
+           $C0AB = GBS_map_tl_pl
+           $C0AE = GBS_map_tr_ph
+           $C0AD = GBS_map_tr_pl
+           $C0B0 = GBS_map_bl_ph
+           $C0AF = GBS_map_bl_pl
+           $C0AA = GBS_tilemap_ph
+           $C0A9 = GBS_tilemap_pl
+           $C0A1 = _mActual_X
+           $C0A2 = _mActual_Y
+           $C0A3 = scroll
+           $C0A5 = scrollDirectionX
+           $C0A6 = scrollDirectionY
+           $C0A4 = scrollCounter
+           $C0A0 = _win
+  SECTION: $C000-$C09F ($00A0 bytes) ["RENDER_VARS"]
+           $C000 = _sprite_buffer
+  SECTION: $C100-$C105 ($0006 bytes) ["PLAYER_VARS"]
+           $C100 = _player_X
+           $C101 = _player_Y
+           $C104 = _player_spr_L
+           $C105 = _player_spr_R
+           $C102 = _player_view_X
+           $C103 = _player_view_Y
+    SLACK: $0F42 bytes
+
+WRAM Bank #1:
+  EMPTY
+
+WRAM Bank #2:
+  EMPTY
+
+WRAM Bank #3:
+  EMPTY
+
+WRAM Bank #4:
+  EMPTY
+
+WRAM Bank #5:
+  EMPTY
+
+WRAM Bank #6:
+  EMPTY
+
+WRAM Bank #7:
+  EMPTY
+
+VRAM Bank #0:
+  EMPTY
+
+VRAM Bank #1:
+  EMPTY
+
+OAM:
+  EMPTY
+
+HRAM:
+  SECTION: $FF80 ($0 bytes) ["VB_INTERRUPT_HANDLER"]
+           $FF80 = VblankInterruptHandler
+  EMPTY
+
+SRAM Bank #0:
+  EMPTY
+
+SRAM Bank #1:
+  EMPTY
+
+SRAM Bank #2:
+  EMPTY
+
+SRAM Bank #3:
+  EMPTY
+
+SRAM Bank #4:
+  EMPTY
+
+SRAM Bank #5:
+  EMPTY
+
+SRAM Bank #6:
+  EMPTY
+
+SRAM Bank #7:
+  EMPTY
+
+SRAM Bank #8:
+  EMPTY
+
+SRAM Bank #9:
+  EMPTY
+
+SRAM Bank #10:
+  EMPTY
+
+SRAM Bank #11:
+  EMPTY
+
+SRAM Bank #12:
+  EMPTY
+
+SRAM Bank #13:
+  EMPTY
+
+SRAM Bank #14:
+  EMPTY
+
+SRAM Bank #15:
+  EMPTY
+
