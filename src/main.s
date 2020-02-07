@@ -83,6 +83,9 @@ _main:
     ;call _draw_column
     ;call _draw_row
 
+    call _mp_init
+
+
     ld a, 10
     ld hl, $9C00
     

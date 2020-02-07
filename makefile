@@ -14,7 +14,7 @@ MKDIR  := mkdir -p
 SRC    := src
 OBJ    := obj
 
-#RUTA DEL EMULADOR DE GAME BOY
+#RUTA DEL EMULADOR DE GAME BOY (Poner la correcta en cada equipo)
 EMUROUTE := ../../Universidad/GB\ Emulator/BGB/bgb64.exe
 
 

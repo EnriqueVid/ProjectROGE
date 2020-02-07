@@ -1,0 +1,1 @@
+GLOBAL _mp_init
