@@ -20,12 +20,12 @@ _main:
 
 
 ;;---------------  POSICION DEL LA VISTA  ---------------
-    xor a					;; Sets a to 0 [xor a - 4 ticks  |  ld a, $0 - 7 ticks]
-	ld hl,$FF42				;; FF42 - FF43  -->  Tile scroll X, Y
-	ld a, $E0+16
-	ldi	[hl], a				;; FF42: SCY --> Tile Scroll Y  |
-    ld a, $E8+16
-	ld	[hl], a				;; FF43: SCX --> Tile Scroll X  +- Setea el scroll de la pantalla a (0, 0)
+    ;;xor a					;; Sets a to 0 [xor a - 4 ticks  |  ld a, $0 - 7 ticks]
+	;;ld hl,$FF42				;; FF42 - FF43  -->  Tile scroll X, Y
+	;;ld a, $E0+16
+	;;ldi	[hl], a				;; FF42: SCY --> Tile Scroll Y  |
+    ;;ld a, $E8+16
+	;;ld	[hl], a				;; FF43: SCX --> Tile Scroll X  +- Setea el scroll de la pantalla a (0, 0)
 
 
 ;;---------------  CONFIGURACION DE LA PANTALLA  ---------------
@@ -37,6 +37,7 @@ _main:
     set     1,[hl]				;; Activa el uso de Sprites
     set     2,[hl]				;; Activa el uso de Sprites Grandes
 
+
 ;;---------------  CARGAR LOS TILES EN VRAM  ---------------
     ld  hl, $8010                        ;; Destiny
     ld	de, Sprite_01                    ;; Source 
@@ -47,7 +48,6 @@ _main:
     ;ld  a, $00
     ld  bc, $9BFF-9801
     call _clear_data
-
 
 
 ;;---------------  DEFINIR PALETA  ---------------
@@ -64,6 +64,7 @@ _main:
 ;;---------------  ENCENDER LA PANTALLA  ---------------
     ld      hl, $FF40		;LCDC - LCD Control (R/W)	EWwBbOoC 
     set      7, [hl]          ;Turn on the screen
+
 
 ;;---------------  DIBUJAMOS EL MAPA  ---------------
     ;ld a, 4
