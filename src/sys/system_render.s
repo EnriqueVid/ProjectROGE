@@ -29,43 +29,77 @@ _sr_draw_sprite:
     ldi a,[hl]
     ld e, a                     ;; E = entity_playable_window_x
     ld a, [hl]
-    ;ld d, a                    ;; A = entity_playable_window_y
+    ld d, a                     ;; D = entity_playable_window_y
 
     ld h, b
     ld l, c                     ;; HL = Destino del sprite (C000, C004, C008, ... , C09C)
     
+    ldi [hl], a ;; C000
+    ld a, e
+    ldi [hl], a  ;; C001
+    
+    push bc
+    ld bc, $02
+    add hl, bc              ;; HL -> C004
+
+    ld a, d
     ldi [hl], a
     ld a, e
-    ldi [hl], a
+    add 8
+    ld [hl], a
 
-    ld b, h
-    ld c, l
-
+    pop bc
     pop hl
-    push hl
-    ld de, ep_sprL
+
+    ld de, ep_spr
+    add hl, de
     ld a, [hl]
 
+    sla a
+    
+    ld hl, sprites_index
+    ld d, $00
+    ld e,a
+    add hl, de
 
-    ld a, [_player_spr_L]
-    ldi [hl], a
-    xor a
-    ldi [hl], a
+    ldi a, [hl]
+    ld e, a
+    ld a, [hl]
+    ld h, a
+    ld l, e
 
+    ldi a, [hl]
+    ld e, a
+    ldi a, [hl]
+    ld d, a
+    push hl
 
+    ld h, b
+    ld l, c
+    
+    inc hl
+    inc hl
 
+    ld a, e
+    ldi [hl],a
+    ld a, d
+    ld [hl], a
 
+    pop hl
+    ldi a, [hl]
+    ld e, a
+    ld a, [hl]
+    ld d, a
 
+    ld h, b
+    ld l, c
+    ld bc, $0006
+    add hl, bc
 
-    ld a, [_player_view_Y]
-    ldi [hl], a
-    ld a, [_player_view_X]
-    add a, 8
-    ldi [hl], a
-    ld a, [_player_spr_L]
-    ldi [hl], a
-    ld a, %00100000
-    ldi [hl], a
+    ld a, e
+    ldi [hl],a
+    ld a, d
+    ld [hl], a
 
     ei
     ret

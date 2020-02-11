@@ -8,6 +8,6 @@ m_define_entity_enemy: MACRO
 
 ENDM
 
-ent_enemy_id    = 18
+ent_enemy_id    = 17
 
-entity_enemy_size = 19
+entity_enemy_size = 18

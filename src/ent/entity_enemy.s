@@ -14,8 +14,7 @@ ent_enemy_bat_01::
     db $00  ;;Velocity Y
     db $00  ;;Direction
 
-    db $06  ;;Sprite ID Left
-    db $06  ;;Sprite ID Right
+    db $06  ;;Sprite ID
 
     db $05  ;;Max HP
     db $00  ;;Max MP

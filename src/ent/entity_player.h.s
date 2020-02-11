@@ -17,13 +17,13 @@ m_define_entity_player: MACRO
 
 ENDM
 
-ent_player_eq_W    = 18
-ent_player_eq_A    = 19
-ent_player_aq_I    = 20
+ent_player_eq_W    = 17
+ent_player_eq_A    = 18
+ent_player_aq_I    = 19
 
-ent_player_def_HP  = 21
-ent_player_def_MP  = 22
-ent_player_def_ATK = 23
-ent_player_def_DEF = 24
+ent_player_def_HP  = 20
+ent_player_def_MP  = 21
+ent_player_def_ATK = 22
+ent_player_def_DEF = 23
 
-entity_player_size = 25
+entity_player_size = 24

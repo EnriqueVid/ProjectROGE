@@ -88,8 +88,8 @@ _main:
     ;ld [_mActual_X], a
     ;ld [_mActual_Y], a
     ;call _draw_map_scroll
-    call _set_player
-    call _draw_player
+    ;;call _set_player
+    ;;call _draw_player
 
     call _set_enemy
     call _draw_enemy
@@ -104,6 +104,9 @@ _main:
 
     call _mg_init
 
+    ld hl, mp_player
+    ld bc, $C000
+    call _sr_draw_sprite
 
     ld a, 10
     ld hl, $9C00
@@ -278,23 +281,3 @@ _collisions:
     ret
 
 
-;;--------------------------------------------
-;;TILESETS PARA CARGAR
-;;--------------------------------------------
-
-tileset_index:
-    dw tileset_01       ;;  Tileset 01
-    dw tileset_02       ;;  Sprites 01
-
-tileset_size:
-    dw tileset_01_end - tileset_01      ;;  Tileset 01
-    dw tileset_02_end - tileset_02      ;;  Sprites 01
-
-
-tileset_01: 
-INCBIN "assets/tileset-01.bin"      ;;  Tileset 01
-tileset_01_end:
-
-tileset_02:
-INCBIN "assets/spriteset-01.bin"    ;;  Sprites 01
-tileset_02_end:

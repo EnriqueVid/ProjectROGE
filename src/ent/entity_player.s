@@ -11,8 +11,7 @@ ent_player_default_vx: db $00
 ent_player_default_vy: db $00
 ent_player_default_dir: db $00
 
-ent_player_default_sprite_id_L: db $04
-ent_player_default_sprite_id_R: db $04
+ent_player_default_sprite_id: db $00
 
 ent_player_default_max_HP: db $0F
 ent_player_default_max_MP: db $0A
