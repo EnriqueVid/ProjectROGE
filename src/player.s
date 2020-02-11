@@ -15,7 +15,7 @@ _set_player:
     ld a, $04
     ld [_player_X], a
     ld [_player_Y], a
-    ld a, $04
+    ld a, $00
     ld [_player_spr_L], a
     ld [_player_spr_R], a
     ld a, $48+8

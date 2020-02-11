@@ -14,6 +14,8 @@ SECTION "RENDER_FUNCS", ROM0
 ;; DMA CODE
 DMACopy:
     push af
+    ld a, %11100111             ;;Reiniciamos el mostreo de Sprites
+    ld [$FF40], a
     ld a, _sprite_buffer/256
     ld [$FF46], a
     ld a, $28

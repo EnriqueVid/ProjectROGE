@@ -19,7 +19,7 @@ _set_enemy:
     ld [_enemy_X], a
     ld a, $08
     ld [_enemy_Y], a
-    ld a, $06
+    ld a, $04
     ld [_enemy_spr_L], a
     ld [_enemy_spr_R], a
     ;ld a, $48+8

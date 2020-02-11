@@ -5,12 +5,15 @@ SECTION "RSTS", ROM0[$0000]
     ds $40
 
 SECTION "I_VBLANK", ROM0[$0040]
-    jp VblankInterruptHandler
+    jp VblankInterruptHandler ;;[2 Bytes]
     ds $05
 
 SECTION "I_LCDSTAT", ROM0[$0048]
-    reti
-    ds $07
+    push af                   ;;[1 Byte]
+    ld a, %11100101           ;;[2 Bytes]
+    ld [$FF40], a             ;;[3 Bytes]
+    pop af                    ;;[1 Byte]
+    reti                      ;;[1 Byte]
 
 SECTION "I_TIMER", ROM0[$0050]
     reti

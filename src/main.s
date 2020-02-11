@@ -7,25 +7,24 @@ _main:
     nop
     ld sp, $FFFF                ;; Stack Pointer a FFFF
 
+    ;; Cambiamos la funcion DMA de ROM a HRAM para su futuro uso
     ld bc, DMACopyEnd-DMACopy       ;; Cantidad
     ld de, DMACopy                  ;; Inicio
     ld hl, VblankInterruptHandler   ;; Destino
     call _ldir
 
-    ld  hl, $C000
-    ld  bc, 40*4
-    call _clear_data
-
+    ;;Seteamos el Sprite Buffer
+    ld  hl, $C000                   ;; Declaramos el sprite buffer
+    ld  bc, 40*4                    ;; Tamano 40*4 = 160 = $A0
+    call _clear_data                ;; Limpiamos la basura que pueda haber en la RAM
 
 
 
 ;;---------------  POSICION DEL LA VISTA  ---------------
-    ;;xor a					;; Sets a to 0 [xor a - 4 ticks  |  ld a, $0 - 7 ticks]
-	;;ld hl,$FF42				;; FF42 - FF43  -->  Tile scroll X, Y
-	;;ld a, $E0+16
-	;;ldi	[hl], a				;; FF42: SCY --> Tile Scroll Y  |
-    ;;ld a, $E8+16
-	;;ld	[hl], a				;; FF43: SCX --> Tile Scroll X  +- Setea el scroll de la pantalla a (0, 0)
+    xor a					;; Sets a to 0 [xor a - 4 ticks  |  ld a, $0 - 7 ticks]
+	ld hl,$FF42				;; FF42 - FF43  -->  Tile scroll X, Y
+	ldi	[hl], a				;; FF42: SCY --> Tile Scroll Y  |
+	ld	[hl], a				;; FF43: SCX --> Tile Scroll X  +- Setea el scroll de la pantalla a (0, 0)
 
 
 ;;---------------  CONFIGURACION DE LA PANTALLA  ---------------
@@ -34,18 +33,34 @@ _main:
 	res     7,[hl]      	    ;; Apaga la pantalla (Resetea el bit 7 del control LCD, que indica si la pantalla esta encendida o apagada)
     set     6,[hl]              ;; Indica que la Window se lee de las direcciones 9C00 - 9FFF
     set     5,[hl]              ;; Activa el uso de Window
+    res     4,[hl]              ;; BG tiles de $8800 - $97F0
     set     1,[hl]				;; Activa el uso de Sprites
     set     2,[hl]				;; Activa el uso de Sprites Grandes
 
 
+    
+    ld      a, $80              ;; Seteamos el LYC para que cuando el hsync coincida con el LYC se active el bit de coincidencia del LCDSTAT
+    ld      [$FF45], a
+
+    ld hl, $FF41                ;; Activamos la comprobacion en el bit de coincidencia de LCDSTAT
+    set 6, [hl]
+
+
 ;;---------------  CARGAR LOS TILES EN VRAM  ---------------
-    ld  hl, $8010                        ;; Destiny
-    ld	de, Sprite_01                    ;; Source 
-	ld	bc, Sprite_01_end-Sprite_01      ;; Cuantity
-    call _ldir
+    ; ld  hl, $8010                        ;; Destiny
+    ; ld	de, tileset_01                    ;; Source 
+	; ld	bc, tileset_01_end-tileset_01      ;; Cuantity
+    ; call _ldir
+
+    ld hl, $9000
+    ld a, 0
+    call _sr_load_tiles
+
+    ld hl, $8000
+    ld a, 1
+    call _sr_load_tiles
 
     ld  hl, $9800
-    ;ld  a, $00
     ld  bc, $9BFF-9801
     call _clear_data
 
@@ -56,7 +71,7 @@ _main:
 
 
 ;;---------------  ACTIVAR INTERRUPCIONES --------------
-    ld  a, %00000001
+    ld  a, %00000011            ;;Activamos las interrupciones en VBLANK y LCDSTAT
     ld [$FFFF], a
     ei 
 
@@ -67,6 +82,8 @@ _main:
 
 
 ;;---------------  DIBUJAMOS EL MAPA  ---------------
+
+
     ;ld a, 4
     ;ld [_mActual_X], a
     ;ld [_mActual_Y], a
@@ -84,7 +101,8 @@ _main:
     ;call _draw_column
     ;call _draw_row
 
-    call _mp_init
+
+    call _mg_init
 
 
     ld a, 10
@@ -260,8 +278,23 @@ _collisions:
     ret
 
 
+;;--------------------------------------------
+;;TILESETS PARA CARGAR
+;;--------------------------------------------
+
+tileset_index:
+    dw tileset_01       ;;  Tileset 01
+    dw tileset_02       ;;  Sprites 01
+
+tileset_size:
+    dw tileset_01_end - tileset_01      ;;  Tileset 01
+    dw tileset_02_end - tileset_02      ;;  Sprites 01
 
 
-Sprite_01: 
-INCBIN "assets/Sprites01.bin"
-Sprite_01_end:
+tileset_01: 
+INCBIN "assets/tileset-01.bin"      ;;  Tileset 01
+tileset_01_end:
+
+tileset_02:
+INCBIN "assets/spriteset-01.bin"    ;;  Sprites 01
+tileset_02_end:
