@@ -4,9 +4,75 @@ INCLUDE "src/sys/system_render.h.s"
 SECTION "SYS_RENDER_FUNCS", ROM0
 
 ;;==============================================================================================
+;;                                          DRAW TILE
+;;----------------------------------------------------------------------------------------------
+;; Dibuja 4 tiles de 8x8 px en al direccion de memoria indicada para formar un tile de 16x16 px
+;;
+;; INPUT:
+;;  HL -> Direccion de memoria en la que dibujar el tile
+;;  A  -> Numero del tile (ID)
+;;
+;; OUTPUT:
+;;
+;; DESTROYS:
+;;  AF, DE
+;;
+;;==============================================================================================
+_sr_draw_tile:
+    
+    push bc
+    push hl
+    
+    ld hl, tile_index
+    sla a
+    ld d, $00
+    ld e, a
+    add hl, de
+
+    ldi a, [hl]
+    ld e, a
+    ld a, [hl]
+    ld b, a
+    ld c, e
+
+    pop hl
+    push hl
+
+    ld a, [bc]
+    inc bc
+    call _VRAM_wait
+    ldi [hl], a
+
+    ld a, [bc]
+    inc bc
+    call _VRAM_wait
+    ld  [hl], a
+    pop  hl
+
+    push hl
+    ld   de , $0020
+    add  hl , de 
+
+    ld a, [bc]
+    inc bc
+    call _VRAM_wait
+    ldi [hl], a
+
+    ld a, [bc]
+    call _VRAM_wait
+    ld  [hl], a
+    pop hl
+
+    pop bc
+
+    ret
+
+
+
+;;==============================================================================================
 ;;                                SYSTEM RENDER DRAW SPRITE
 ;;----------------------------------------------------------------------------------------------
-;; Carga un tileset especificado en la posicion de memoria especificada
+;; Dibuja el sprite de la entidad especificada en una posicion de memoria dada
 ;;
 ;; INPUT:
 ;;  BC -> Destino del sprite en intervalos de 4 Bytes (C000 - C09C)

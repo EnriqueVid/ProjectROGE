@@ -1,5 +1,6 @@
 GLOBAL _sr_load_tiles
 GLOBAL _sr_draw_sprite
+GLOBAL _sr_draw_tile
 
 
 

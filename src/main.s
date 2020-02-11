@@ -113,7 +113,7 @@ _main:
     
 _window_loop:
     push af
-    ld a, $0
+    ld a, $2
     call _draw_tile
     ld bc, 02
     add hl, bc
