@@ -83,20 +83,90 @@ sprite_bat_01:
 ;;--------------------------------------------
 
 tile_index::
-    dw tile_floor_01    ;; 00
-    dw tile_wall_01     ;; 01
+    dw tile_floor_01            ;; 00
+    dw tile_wall_background     ;; 01
+    dw tile_wall_top            ;; 02
+    dw tile_wall_bottom         ;; 03
+    dw tile_wall_left           ;; 04
+    dw tile_wall_right          ;; 05
+    dw tile_wall_topleft        ;; 06
+    dw tile_wall_topright       ;; 07
+    dw tile_wall_bottomleft     ;; 08
+    dw tile_wall_bottomright    ;; 09
+    dw tile_staris              ;; 0A
+    dw tile_hud_01              ;; 0B
 
-tile_wall_01:
-    db $04          ;; Tile TL
-    db $06          ;; Tile BL
-    db $05          ;; Tile TR
-    db $07          ;; Tile BR
+tile_wall_background:
+    db $03          ;; Tile TL
+    db $03          ;; Tile TR
+    db $03          ;; Tile BL
+    db $03          ;; Tile BR
+
+tile_wall_top:
+    db $14          ;; Tile TL
+    db $14          ;; Tile TR
+    db $15          ;; Tile BL
+    db $15          ;; Tile BR
+
+tile_wall_bottom:
+    db $17          ;; Tile TL
+    db $17          ;; Tile TR
+    db $16          ;; Tile BL
+    db $16          ;; Tile BR
+
+tile_wall_left:
+    db $19          ;; Tile TL
+    db $1B          ;; Tile TR
+    db $19          ;; Tile BL
+    db $1B          ;; Tile BR
+
+tile_wall_right:
+    db $1A          ;; Tile TL
+    db $18          ;; Tile TR
+    db $1A          ;; Tile BL
+    db $18          ;; Tile BR
+
+tile_wall_topleft:
+    db $1C          ;; Tile TL
+    db $1E          ;; Tile TR
+    db $1D          ;; Tile BL
+    db $1F          ;; Tile BR
+
+tile_wall_topright:
+    db $20          ;; Tile TL
+    db $22          ;; Tile TR
+    db $21          ;; Tile BL
+    db $23          ;; Tile BR
+
+tile_wall_bottomleft:
+    db $28          ;; Tile TL
+    db $2A          ;; Tile TR
+    db $29          ;; Tile BL
+    db $2B          ;; Tile BR
+
+tile_wall_bottomright:
+    db $24          ;; Tile TL
+    db $26          ;; Tile TR
+    db $25          ;; Tile BL
+    db $27          ;; Tile BR
 
 tile_floor_01:
     db $0C          ;; Tile TL
-    db $0E          ;; Tile BL
     db $0D          ;; Tile TR
+    db $0E          ;; Tile BL
     db $0F          ;; Tile BR
+
+tile_staris:
+    db $08          ;; Tile TL
+    db $0A          ;; Tile TR
+    db $09          ;; Tile BL
+    db $0B          ;; Tile BR
+
+tile_hud_01:
+    db $2C          ;; Tile TL
+    db $2C          ;; Tile TR
+    db $00          ;; Tile BL
+    db $00          ;; Tile BR
 
 
 

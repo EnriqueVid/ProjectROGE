@@ -1,15 +1,19 @@
 m_define_entity_camera: MACRO
 
-    ds $01          ;; Tilemap X
-    ds $01          ;; Tilemap Y
-    ds $02          ;; Tilemap ptr
-    ds $02          ;; BG map ptr (TL)
-    ds $02          ;; BG map ptr (TR)
-    ds $02          ;; BG map ptr (BL)
-    ds $01          ;; Scroll Active
-    ds $01          ;; Scroll Counter
-    ds $01          ;; Scroll Direction X
-    ds $01          ;; Scroll Direction Y
+                    ds $01          ;; Tilemap X
+                    ds $01          ;; Tilemap Y
+ec_tilemap_ptr_L:   ds $01          ;; Tilemap ptr L
+ec_tilemap_ptr_H:   ds $01          ;; Tilemap ptr H
+ec_bgmap_prt_TL_L:  ds $01          ;; BG map ptr (TL) L
+ec_bgmap_prt_TL_H:  ds $01          ;; BG map ptr (TL) H
+ec_bgmap_prt_TR_L:  ds $01          ;; BG map ptr (TR) L
+ec_bgmap_prt_TR_H:  ds $01          ;; BG map ptr (TR) H
+ec_bgmap_prt_BL_L:  ds $01          ;; BG map ptr (BL) L
+ec_bgmap_prt_BL_H:  ds $01          ;; BG map ptr (BL) H
+                    ds $01          ;; Scroll Active
+                    ds $01          ;; Scroll Counter
+                    ds $01          ;; Scroll Direction X
+                    ds $01          ;; Scroll Direction Y
 
 ENDM
 

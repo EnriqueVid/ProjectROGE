@@ -91,13 +91,13 @@ _main:
     ;;call _set_player
     ;;call _draw_player
 
-    call _set_enemy
-    call _draw_enemy
+    ;;call _set_enemy
+    ;;call _draw_enemy
 
     ;call _draw_map
-    ld bc, $0003
-    ld de, $0005
-    call _set_scroll_map
+    ;ld bc, $0003
+    ;ld de, $0005
+    ;call _set_scroll_map
     ;call _draw_column
     ;call _draw_row
 
@@ -108,25 +108,9 @@ _main:
     ld bc, $C000
     call _sr_draw_sprite
 
-    ld a, 10
-    ld hl, $9C00
-    
-_window_loop:
-    push af
-    ld a, $2
-    call _draw_tile
-    ld bc, 02
-    add hl, bc
-    pop af
-    dec a
-    jr nz, _window_loop
+    call _sl_init_level
 
-
-    ld hl, $FF4A      ;; Seteamos la window 
-    ld a, $80         ;; Window Y
-    ldi [hl], a
-    ld a, $07
-    ld [hl], a
+    call _sr_draw_hud
 
 
     xor a
@@ -188,10 +172,10 @@ end_check_move:
         ;jr z, no_move
 
         push bc
-        call _update_scroll_map 
+        call _sr_update_scroll_map
         pop bc
 
-		call _set_scroll_screen
+		call _sl_set_scroll_screen
 		ld a, [_player_X]
         add a, b
         ld [_player_X], a
@@ -206,7 +190,7 @@ no_move:
 
 no_buttons:
 
-	call _update_scroll
+	call _sl_update_scroll
 
     ;ld a, [$FF42]
     ;ld [scrollPositionX], a
@@ -225,7 +209,7 @@ _collisions:
     ld b, a
     ld a, [_player_Y]
     ld c, a
-    call _get_map_tile
+    call _sl_get_map_tile
 
     pop bc
     ld a, [hl]
@@ -242,7 +226,7 @@ _collisions:
     ld a, [_player_Y]
     add c
     ld c, a
-    call _get_map_tile
+    call _sl_get_map_tile
 
     pop bc
     ld a, [hl]
@@ -260,7 +244,7 @@ _collisions:
     ld a, [_player_Y]
     add c
     ld c, a
-    call _get_map_tile
+    call _sl_get_map_tile
 
     pop bc
     ld a, [hl]
