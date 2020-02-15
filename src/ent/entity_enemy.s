@@ -12,9 +12,13 @@ ent_enemy_bat_01::
 
     db $00  ;;Velocity X
     db $00  ;;Velocity Y
-    db $00  ;;Direction
+
+    db $00  ;;Direction X
+    db $00  ;;Direction Y
 
     db $06  ;;Sprite ID
+    db $08  ;;Sprite ptr L
+    db $C0  ;;Sprite ptr H
 
     db $05  ;;Max HP
     db $00  ;;Max MP

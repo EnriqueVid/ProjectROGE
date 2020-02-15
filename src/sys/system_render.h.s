@@ -6,6 +6,7 @@ GLOBAL _sr_update_scroll_map
 GLOBAL _sr_draw_row
 GLOBAL _sr_draw_column
 GLOBAL _sr_draw_hud
+GLOBAL _sr_attack_animation
 
 
 
@@ -15,17 +16,20 @@ ep_wx = 2
 ep_wy = 3
 ep_vx = 4
 ep_vy = 5
-ep_dir = 6
-ep_spr = 7
-ep_mHP = 8
-ep_mMP = 9
-ep_mATK = 10
-ep_mDEF = 11
-ep_cHP = 12
-ep_cMP = 13
-ep_cATK = 14
-ep_cDEF = 15
-ep_cSTAT = 16
+ep_dir_x = 6
+ep_dir_y = 7
+ep_spr = 8
+ep_spr_ptr_L = 9
+ep_spr_ptr_H = 10
+ep_mHP = 11
+ep_mMP = 12
+ep_mATK = 13
+ep_mDEF = 14
+ep_cHP = 15
+ep_cMP = 16
+ep_cATK = 17
+ep_cDEF = 18
+ep_cSTAT = 19
 
 
 MAPw = 50

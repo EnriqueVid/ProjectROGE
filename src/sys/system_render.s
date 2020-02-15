@@ -4,7 +4,154 @@ SECTION "SYS_RENDER_VARS", WRAM0
 sr_actual_x: ds $01
 sr_actual_y: ds $01
 
+
+
+
 SECTION "SYS_RENDER_FUNCS", ROM0
+
+
+;               /       -8       \  /           +18            \  /    -10    \
+attack_anim: db $FE, $FE, $04, $04, $03, $03, $02, $FC, $FC, $FC, $80
+
+
+
+;;==============================================================================================
+;;                                       ATTACK ANIMATION
+;;----------------------------------------------------------------------------------------------
+;; Dibuja el HUD
+;;
+;; INPUT:
+;;  HL -> entity_playable a animar
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  
+;;
+;;==============================================================================================
+_sr_attack_animation:
+
+    push hl
+    
+    ld bc, ep_dir_x
+    add hl, bc
+    ldi a, [hl]
+    ld [sr_actual_x], a
+    ld a, [hl]
+    ld [sr_actual_y], a
+
+    pop hl
+    ld bc, ep_spr_ptr_L
+    add hl, bc
+    ldi a, [hl]
+    ld c, a
+    ld a, [hl]
+    
+    ld h, a
+    ld l, c
+
+    ld a, $40
+    ;ld [sr_anim_counter], a
+    ld bc, attack_anim
+    ;BC -> Puntero a la animacion
+
+    
+.loop:
+    dec a
+    call _wait_Vblank
+    jr nz, .loop
+
+    push hl
+
+    ldi a, [hl]                 ;;C000
+    ld e, a
+    ld a, [bc]
+
+    push af
+    ld a, [sr_actual_y]
+    cp $00
+    jr z, .check_X
+
+        cp $01
+        jr nz, .check_up
+            pop af
+            push af
+            add e
+            dec hl
+            ld [hl], a
+            ld de, 0004
+            add hl, de
+            ld [hl], a
+
+            dec hl
+            dec hl
+            dec hl
+            jr .check_X
+
+.check_up:
+            pop af
+            push af
+            ld d, a
+            ld a, e
+            sub d
+            dec hl
+            ld [hl], a
+            ld de, 0004
+            add hl, de
+            ld [hl], a
+
+            dec hl
+            dec hl
+            dec hl
+
+.check_X:
+
+    ld a, [hl]
+    ld e, a
+    ld a, [sr_actual_x]
+    cp $00
+    jr z, .end
+    
+        cp $01
+        jr nz, .check_left
+            pop af
+            push af
+            add e
+            ld [hl], a
+            ld de, 0004
+            add hl, de
+            add a, 8
+            ld [hl], a
+            jr .end
+
+.check_left:
+            pop af
+            push af
+            ld d, a
+            ld a, e
+            sub d
+            ld [hl], a
+            ld de, 0004
+            add hl, de
+            add a, 8
+            ld [hl], a
+
+   
+.end:
+
+
+    pop af
+    pop hl
+
+    inc bc
+    ld a,[bc]
+    cp $80
+    ret z
+    
+    ld a, $40
+    jr .loop
+
 
 
 ;;==============================================================================================
@@ -636,4 +783,9 @@ _sr_load_tiles:
     call _ldir              ;; HL -> Destino | DE -> Origen | BC -> Cantidad
 
     ret
+
+
+
+
+
 

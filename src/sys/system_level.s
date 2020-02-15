@@ -93,6 +93,7 @@ _sl_update_scroll:
 _sl_set_scroll_screen:
 
     push hl
+    
     push bc
 
     ld hl, ml_camera
@@ -102,12 +103,12 @@ _sl_set_scroll_screen:
     ld a, scrollConst
     ldi [hl], a                 ;;ec_scroll_active
     inc hl                      ;;ec_scroll_counter
+    pop bc
     ld a, b
     ldi [hl], a                 ;;ec_scroll_dir_x
     ld a, c
     ld [hl], a                  ;;ec_scroll_dir_y
     
-    pop bc
     pop hl
     ret
 

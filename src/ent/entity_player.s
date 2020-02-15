@@ -9,9 +9,13 @@ ent_player_default_window_y: db $40+16
 
 ent_player_default_vx: db $00
 ent_player_default_vy: db $00
-ent_player_default_dir: db $00
+
+ent_player_default_dir_X: db $00
+ent_player_default_dir_Y: db $01
 
 ent_player_default_sprite_id: db $07
+ent_player_default_sprite_ptr_L: db $00
+ent_player_default_sprite_ptr_H: db $C0
 
 ent_player_default_max_HP: db $0F
 ent_player_default_max_MP: db $0A
