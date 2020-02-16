@@ -26,6 +26,79 @@ max_enemies = 8
 
 SECTION "MAN_PLAYABLE_FUNCS", ROM0
 
+;;==============================================================================================
+;;                                    MANAGER PLAYABLE MEW ENEMY
+;;----------------------------------------------------------------------------------------------
+;; Anade un nuevo enemigo al vector
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_mp_new_enemy:
+
+    ld a, [mp_enemy_num]
+    inc a
+    ld [mp_enemy_num], a
+
+    ld a, [mp_enemy_next_h]
+    ld h, a
+    ld a, [mp_enemy_next_l]
+    ld l, a
+
+    push hl
+    
+    ;; DE -> Origen
+    ;; HL -> Destino
+    ;; BC -> Cantidad
+    ld de, ent_enemy_bat_01
+    ld bc, entity_enemy_size
+    call _ldir
+
+    ld hl, $C008
+    ld bc, $0008
+
+    ld a, [mp_enemy_num]
+    dec a
+    cp $00
+    jr z, .continue
+.loop:
+    add hl, bc 
+    dec a
+    jr nz, .loop
+.continue:
+
+    ld d, h
+    ld a, l
+
+    pop hl
+    push hl
+
+    ld bc, ep_spr_ptr_L
+    add hl, bc
+
+    ldi [hl], a
+    ld a, d
+    ld [hl], a
+
+    pop hl
+
+    ld bc, entity_enemy_size
+    add hl, bc
+
+    ld a, h
+    ld [mp_enemy_next_h], a
+    ld a, l
+    ld [mp_enemy_next_l], a
+
+    ret
+
 
 
 ;;==============================================================================================

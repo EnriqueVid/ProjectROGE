@@ -113,7 +113,9 @@ _main:
     call _sr_draw_hud
 
     call _mg_game_loop
-    
+
+    jp _main
+
 
 _collisions:
     push bc

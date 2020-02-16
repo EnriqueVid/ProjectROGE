@@ -2,6 +2,140 @@ INCLUDE "src/sys/system_level.h.s"
 
 SECTION "SYS_LEVEL_FUNCS", ROM0
 
+enemy_positions: db $12, $0B, $06, $13, $0E, $16, $0D, $1F, $07, $29, $1F, $1C, $00, $00, $00, $00
+;enemy_positions: db $06, $13, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+
+
+;;========================================================================================
+;;                                     SPAWN ENEMIES
+;;----------------------------------------------------------------------------------------
+;; Crea a los enemigos en diferentes posiciones del mapa
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DELETES: 
+;;  AF, BC, HL
+;;
+;;========================================================================================
+_sl_spawn_enemies:
+
+
+    ld hl, mp_enemy_array
+    ld bc, enemy_positions
+
+    ld a, [mp_enemy_num]
+    cp $00
+    jr z, .continue
+
+.loop:
+    push af
+    push hl
+
+    ld a, [bc]
+    ld d, a
+    ldi [hl], a
+    inc bc
+    ld a, [bc]
+    ld e, a
+    ldi [hl], a
+    
+    push bc
+
+    ld bc, mp_player
+    ld a, [bc]
+    sub d
+    
+
+    jr c, .derecha
+;izquierda
+        cp $06
+        jr c, .end_derecha
+            ld a, $F0
+            ldi [hl], a
+            inc bc
+            jr .end_x
+.derecha:
+        cp $FB
+        jr nc, .end_derecha
+            ld a, $B0
+            ldi [hl], a
+            inc bc
+            jr .end_x
+.end_derecha:
+
+
+    sla a
+    sla a
+    sla a
+    sla a
+    ld d, a
+    inc bc
+    inc bc
+    ld a, [bc]
+    sub d
+    ldi [hl], a
+
+    dec bc
+.end_x:
+    ld a, [bc]
+    sub e
+
+
+    jr c, .abajo
+;arriba
+        
+        cp $05
+        jr c, .end_abajo
+            ld a, $00
+            ldi [hl], a
+            jr .end_y
+.abajo:
+        
+        cp $FC
+        jr nc, .end_abajo
+            ld a, $A0
+            ldi [hl], a
+            jr .end_y
+.end_abajo:
+
+
+    sla a
+    sla a
+    sla a
+    sla a
+    ld e, a
+    inc bc
+    inc bc
+    ld a, [bc]
+    sub e
+    ldi [hl], a
+
+    ;call _jri
+
+.end_y:
+
+    pop bc
+
+    pop hl
+    ld de, entity_enemy_size
+    add hl, de
+
+    inc bc
+
+    pop af
+    dec a
+    jr nz, .loop
+
+
+.continue:
+
+
+    ret
+
 
 
 ;;========================================================================================
@@ -48,7 +182,7 @@ _sl_update_scroll:
         ld b, a
         ld a, [hl]         ;; scroll_dir_y
         add b
-        call _wait_Vblank
+        call _wait_Vblank  
         ld [$FF42], a
 
         pop af
@@ -57,6 +191,8 @@ _sl_update_scroll:
         ld bc, ec_scroll_active
         add hl, bc
         ld [hl], a
+
+        call _sp_scroll_enemies ;; Realizamos el scroll del resto de playable_entity
 
         ret
 
@@ -360,17 +496,17 @@ _sl_correct_hor:
 ;;  HL -> Puntero al tile
 ;;
 ;; DESTROYS:
-;;  AF, BC, DE, HL
+;;  AF, DE, HL
 ;;
 ;;==============================================================================================
 _sl_get_map_tile:
-    nop
-    ld hl, _mapa_Prueba_01
+    ld hl, ml_map
     xor a
     ld d, a
     ld e, b 
     add hl, de
     ld a, c
+    inc a
     ld de, MAPw
     cp $0
     ret z

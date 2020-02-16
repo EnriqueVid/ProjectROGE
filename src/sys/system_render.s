@@ -13,12 +13,59 @@ SECTION "SYS_RENDER_FUNCS", ROM0
 ;               /       -8       \  /           +18            \  /    -10    \
 attack_anim: db $FE, $FE, $04, $04, $03, $03, $02, $FC, $FC, $FC, $80
 
+;;==============================================================================================
+;;                                       DRAW ENEMIES
+;;----------------------------------------------------------------------------------------------
+;; Actualiza el sprite de los enemigos
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  
+;;
+;;==============================================================================================
+_sr_draw_enemies:
+    ld hl, mp_enemy_array
+    ld a, [mp_enemy_num]
+    cp $00
+    jr z, .continue
+.loop:
+    push af
+    push hl
+
+    ld bc, ep_spr_ptr_L
+    add hl, bc
+    ldi a, [hl]
+    ld c, a
+    ld a, [hl]
+    ld b, a
+
+    pop hl
+    push hl
+
+    call _sr_draw_sprite    
+
+    pop hl
+    ld bc, entity_enemy_size
+    add hl, bc
+    pop af
+    dec a
+    jr nz, .loop
+
+.continue:
+    ret
+
+
 
 
 ;;==============================================================================================
 ;;                                       ATTACK ANIMATION
 ;;----------------------------------------------------------------------------------------------
-;; Dibuja el HUD
+;; Anima al entity playable para atacar
 ;;
 ;; INPUT:
 ;;  HL -> entity_playable a animar
@@ -176,7 +223,7 @@ _sr_draw_hud:
     
 _window_loop:
     push af
-    ld a, $0B
+    ld a, $0F
     call _sr_draw_tile
     ld bc, 02
     add hl, bc

@@ -6,9 +6,10 @@ GLOBAL _sl_correct_vert
 GLOBAL _sl_init_level
 GLOBAL _sl_set_scroll_screen
 GLOBAL _sl_update_scroll
+GLOBAL _sl_spawn_enemies
 
 
-
+entity_enemy_size = 21
 
 
 ec_tilemap_x = 0
@@ -33,7 +34,7 @@ MAPw = 50
 MAPh = 50
 
 scrollConst = 16
-scrollCounterConst = 255
+scrollCounterConst = $2
 
 GBSw = 11             ;; Game Boy Screen Width (en tiles de 16x16 px). Es 11 por el offset
 GBSh =  9             ;; Game Boy Screen Height (en tiles de 16x16 px)

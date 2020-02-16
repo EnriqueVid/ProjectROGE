@@ -7,6 +7,7 @@ GLOBAL _sr_draw_row
 GLOBAL _sr_draw_column
 GLOBAL _sr_draw_hud
 GLOBAL _sr_attack_animation
+GLOBAL _sr_draw_enemies
 
 
 
@@ -31,6 +32,7 @@ ep_cATK = 17
 ep_cDEF = 18
 ep_cSTAT = 19
 
+entity_enemy_size = 21
 
 MAPw = 50
 MAPh = 50

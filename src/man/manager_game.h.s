@@ -1,4 +1,5 @@
 GLOBAL mg_input_data
+GLOBAL mg_win_condition
 
 
 GLOBAL _mg_init
@@ -27,3 +28,5 @@ ep_cMP = 16
 ep_cATK = 17
 ep_cDEF = 18
 ep_cSTAT = 19
+
+entity_enemy_size = 21

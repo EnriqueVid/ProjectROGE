@@ -7,8 +7,8 @@ ent_enemy_bat_01::
     db $00  ;;Position X
     db $00  ;;Position Y
 
-    db $00  ;;Window X
-    db $00  ;;Window Y
+    db $40  ;;Window X
+    db $40  ;;Window Y
 
     db $00  ;;Velocity X
     db $00  ;;Velocity Y
@@ -16,7 +16,7 @@ ent_enemy_bat_01::
     db $00  ;;Direction X
     db $00  ;;Direction Y
 
-    db $06  ;;Sprite ID
+    db $08  ;;Sprite ID
     db $08  ;;Sprite ptr L
     db $C0  ;;Sprite ptr H
 

@@ -71,9 +71,9 @@ sprite_player_downright_01:
 
 
 sprite_bat_01:
-    db $04              ;; Sprite ID Left
+    db $0C              ;; Sprite ID Left
     db %00000000        ;; Sprite Attributes Left
-    db $04              ;; Sprite ID Right
+    db $0C              ;; Sprite ID Right
     db %00100000        ;; Sprite Attributes Right
 
 
@@ -83,18 +83,22 @@ sprite_bat_01:
 ;;--------------------------------------------
 
 tile_index::
-    dw tile_floor_01            ;; 00
-    dw tile_wall_background     ;; 01
-    dw tile_wall_top            ;; 02
-    dw tile_wall_bottom         ;; 03
-    dw tile_wall_left           ;; 04
-    dw tile_wall_right          ;; 05
-    dw tile_wall_topleft        ;; 06
-    dw tile_wall_topright       ;; 07
-    dw tile_wall_bottomleft     ;; 08
-    dw tile_wall_bottomright    ;; 09
-    dw tile_staris              ;; 0A
-    dw tile_hud_01              ;; 0B
+    dw tile_floor_01                ;; 00
+    dw tile_wall_background         ;; 01
+    dw tile_wall_top                ;; 02
+    dw tile_wall_bottom             ;; 03
+    dw tile_wall_left               ;; 04
+    dw tile_wall_right              ;; 05
+    dw tile_wall_topleft_int        ;; 06
+    dw tile_wall_topright_int       ;; 07
+    dw tile_wall_bottomleft_int     ;; 08
+    dw tile_wall_bottomright_int    ;; 09
+    dw tile_wall_topleft_ext        ;; 0A
+    dw tile_wall_topright_ext       ;; 0B
+    dw tile_wall_bottomleft_ext     ;; 0C
+    dw tile_wall_bottomright_ext    ;; 0D
+    dw tile_staris                  ;; 0E
+    dw tile_hud_01                  ;; 0F
 
 tile_wall_background:
     db $03          ;; Tile TL
@@ -126,29 +130,53 @@ tile_wall_right:
     db $1A          ;; Tile BL
     db $18          ;; Tile BR
 
-tile_wall_topleft:
+tile_wall_topleft_int:
     db $1C          ;; Tile TL
     db $1E          ;; Tile TR
     db $1D          ;; Tile BL
     db $1F          ;; Tile BR
 
-tile_wall_topright:
+tile_wall_topright_int:
     db $20          ;; Tile TL
     db $22          ;; Tile TR
     db $21          ;; Tile BL
     db $23          ;; Tile BR
 
-tile_wall_bottomleft:
+tile_wall_bottomleft_int:
     db $28          ;; Tile TL
     db $2A          ;; Tile TR
     db $29          ;; Tile BL
     db $2B          ;; Tile BR
 
-tile_wall_bottomright:
+tile_wall_bottomright_int:
     db $24          ;; Tile TL
     db $26          ;; Tile TR
     db $25          ;; Tile BL
     db $27          ;; Tile BR
+
+tile_wall_topleft_ext:
+    db $34          ;; Tile TL
+    db $36          ;; Tile TR
+    db $35          ;; Tile BL
+    db $37          ;; Tile BR
+
+tile_wall_topright_ext:
+    db $38          ;; Tile TL
+    db $3A          ;; Tile TR
+    db $39          ;; Tile BL
+    db $3B          ;; Tile BR
+
+tile_wall_bottomleft_ext:
+    db $30          ;; Tile TL
+    db $32          ;; Tile TR
+    db $31          ;; Tile BL
+    db $33          ;; Tile BR
+
+tile_wall_bottomright_ext:
+    db $2C          ;; Tile TL
+    db $2E          ;; Tile TR
+    db $2D          ;; Tile BL
+    db $2F          ;; Tile BR
 
 tile_floor_01:
     db $0C          ;; Tile TL
@@ -163,8 +191,8 @@ tile_staris:
     db $0B          ;; Tile BR
 
 tile_hud_01:
-    db $2C          ;; Tile TL
-    db $2C          ;; Tile TR
+    db $3C          ;; Tile TL
+    db $3C          ;; Tile TR
     db $00          ;; Tile BL
     db $00          ;; Tile BR
 

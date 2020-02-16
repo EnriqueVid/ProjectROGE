@@ -44,6 +44,10 @@ _mg_game_loop:
 	cp $0 
 	jr nz, .no_input
 
+    ld a, [mg_win_condition]
+    cp $00
+    ret nz 
+
     call _su_input
 
     ;;Comprobamos el input de movimiento
@@ -55,14 +59,26 @@ _mg_game_loop:
     or b
     jr z, .no_move
 
-        ;;call check_collisions
-
         ld hl, mp_player
         ld de, ep_dir_x
         add hl, de
         ld a, b
         ldi [hl], a 
         ld a, c
+        ld [hl], a
+        
+        ld hl, mp_player
+        call _sp_playable_collisions
+        ld a, b
+        or c
+        jr z, .no_input
+
+        ld hl, mp_player
+        ld a, [hl]
+        add a, b
+        ldi [hl], a
+        ld a, [hl]
+        add a, c
         ld [hl], a
 
         push bc
@@ -89,10 +105,13 @@ _mg_game_loop:
         call _sc_physical_attack
         
 
+.ia_engine:
+
 
 .no_input:
 
     call _sl_update_scroll
+    call _sr_draw_enemies
 
     jr _mg_game_loop
 
@@ -127,12 +146,21 @@ _mg_init:
     call _mp_init
     call _ml_init
 
+    call _sl_init_level
+    call _sr_draw_hud
+
     ld hl, mp_player
     ld bc, $C000
     call _sr_draw_sprite
 
-    call _sl_init_level
-    call _sr_draw_hud
+    call _mp_new_enemy
+    call _mp_new_enemy
+    call _mp_new_enemy
+    call _mp_new_enemy
+    call _mp_new_enemy
+    call _mp_new_enemy
 
+    call _sl_spawn_enemies
+    call _sr_draw_enemies
 
     ret
