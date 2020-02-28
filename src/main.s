@@ -39,7 +39,7 @@ _main:
 
 
     
-    ld      a, $80              ;; Seteamos el LYC para que cuando el hsync coincida con el LYC se active el bit de coincidencia del LCDSTAT
+    ld      a, $88              ;; Seteamos el LYC para que cuando el hsync coincida con el LYC se active el bit de coincidencia del LCDSTAT
     ld      [$FF45], a
 
     ld hl, $FF41                ;; Activamos la comprobacion en el bit de coincidencia de LCDSTAT
@@ -58,6 +58,10 @@ _main:
 
     ld hl, $8000
     ld a, 1
+    call _sr_load_tiles
+
+    ld hl, $8800
+    ld a, 2
     call _sr_load_tiles
 
     ld  hl, $9800
@@ -100,7 +104,6 @@ _main:
     ;call _set_scroll_map
     ;call _draw_column
     ;call _draw_row
-
 
     call _mg_init
 

@@ -29,6 +29,14 @@ _su_input:
 
     ld a, [$FF00]           ;; Obtenemos el dpad
     ld a, [$FF00]           ;; Obtenemos el dpad
+    
+
+    ld a, %11101111         ;; Comprobar D-Pad
+    ld [$FF00], a
+
+    ld a, [$FF00]           ;; Obtenemos el dpad
+    ld a, [$FF00]           ;; Obtenemos el dpad
+
 
 	bit 0, a
 	jr nz, .check_move_left

@@ -1,12 +1,16 @@
 INCLUDE "src/sys/system_physics.h.s"
 
+SECTION "SYS_PHYSICS_VARS", WRAM0
+sp_special_tile:    ds $01
+
+
 SECTION "SYS_PHYSICS_FUNCS", ROM0
 
 
 ;;==============================================================================================
 ;;                                    PLAYABLE COLLISIONS
 ;;----------------------------------------------------------------------------------------------
-;; Calcula las colisiones de una entidad dada una direccion
+;; Calcula las colisiones con en mapay con todas la entidades de una entidad dada una direccion
 ;;
 ;; INPUT:
 ;;  HL -> Puntero a la entidad playable
@@ -21,73 +25,73 @@ SECTION "SYS_PHYSICS_FUNCS", ROM0
 ;;==============================================================================================
 _sp_playable_collisions:
     
-    push bc
+    push bc                 ;;Guardamos la direccion inicial del jugador
     
-    ldi a, [hl] ;;ent_x
+    ldi a, [hl] ;;ent_x     ;;Obtenemos en DE la posicion x,y de la entidad
     ld d, a
     ld a, [hl]  ;;ent_y
     ld e, a
     
-    add c
+    add c                   ;;Añadimos a direccion en y para obtener la posicion final en Y de la entidad
     ld c, a
     ld a, d
-    ld b, a 
+    ld b, a                 ;;BC = Posicion actualizada de la entidad en Y
 
-    push de
-    call _sl_get_map_tile ;;CHECK ENT Y +- 1
-    pop de
-    pop bc
+    push de                 ;;Guardamos la posicion inicial de la entidad
+    call _sl_get_map_tile   ;;CHECK ENT Y +- 1
+    pop de                  ;;Recuperamos la posicion inicial de la entidad
+    pop bc                  ;;Recuperamos la direccion inicial de la entidad
 
-    ld a, [hl]
-    cp $00
-    jr z, .continue01
-    cp $0E
-    jr z, .continue01
-    jr .end
+    ld a, [hl]              
+    
+
+    cp $14                  ;;Comprobamos si colisiona con algun tile del escenario (<14 = Tiles solidos)
+    jr nc, .continue01
+    ld c, $00               ;;Si colisiona en Y con algún tile sólido, la ponemos a 0
 
 .continue01:
-    push bc
-    ld a, d
+    push bc                 ;;Guardamos en BC la direccion inicial (Modificada si colisiona en Y)
+    ld a, d                 
     add b
     ld b, a
     ld a, e
-    ld c, a
+    ld c, a                 ;; Guardamos en BC la posicion actualizada en X de la entidad
 
-    push de
-    call _sl_get_map_tile ;;CHECK ENT X +- 1
-    pop de
-    pop bc
+    push de                 ;;Guardamos la posicion inicial de la entidad
+    call _sl_get_map_tile   ;;CHECK ENT X +- 1
+    pop de                  ;;Recuperamos la posicion inicial de la entidad
+    pop bc                  ;;Recuperamos la direccion inicial de la entidad
 
     ld a, [hl]
-    cp $00
-    jr z, .continue02
-    cp $0E
-    jr z, .continue02
-    jr .end
-
+    cp $14
+    jr nc, .continue02
+    ld b, $00               ;;Si colisiona en X, la ponemos a 0
+    ld a, c
+    or b
+    jr z, .end              ;;Si B y C valen 0, acabamos (no se puede mover)
+ 
 .continue02:
     
-    push bc
-    ld a, d
+    push bc                 ;;Guardamos en BC la direccion inicial (Modificada si colisiona en Y o en X)
+    ld a, d                 
     add b
     ld b, a
     ld a, e
     add c
-    ld c, a
+    ld c, a                 ;; Guardamos en BC la posicion actualizada en X y en Y de la entidad
 
-    push de 
+    push de                 ;;Guardamos la posicion inicial de la entidad 
+    call _sl_get_map_tile   ;;CHECK ENT X +- 1 && Y +- 1
+    pop de                  ;;Recuperamos la posicion inicial de la entidad
+    pop bc                  ;;Recuperamos la direccion inicial de la entidad
+
+    ld a, [hl]              ;;Comprobamos el tile al que se mueve
+    cp $14
+    jr c, .end              ;;Si colisiona con un tile solido, acabamos
     
-    call _sl_get_map_tile ;;CHECK ENT X +- 1 && Y +- 1
-    pop de
-    pop bc
-
-    ld a, [hl]
-    cp $00
-    jr z, .continue03
-    cp $0E
-    jr z, .win
-    jr .end
-
+    ;;NO HAY NUNGUN TILE SOLIDO
+    ld [sp_special_tile], a
+    ;; A = Tile NO solido, se comprueba al final por si hay alguna entidad encima.
 .continue03:
 
     push bc
@@ -107,7 +111,8 @@ _sp_playable_collisions:
     ld a, [hl]
     xor c
     or d
-    jr z, .end
+    jr z, .pre_pre_end
+    
     pop de
     pop bc
 
@@ -147,6 +152,11 @@ _sp_playable_collisions:
 
 .loop_end:
     pop bc
+
+    ld a, [sp_special_tile]
+    cp $16
+    jr z, .win
+
     ret
 
  
@@ -168,7 +178,7 @@ _sp_playable_collisions:
 .win:
     ld a, $01
     ld [mg_win_condition], a
-    jr .continue03
+    ret
 
 
 

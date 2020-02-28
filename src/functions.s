@@ -15,7 +15,7 @@ _wait_Vblank:
 
 _VRAM_wait:
 	push af
-    di
+    ;di
 .loop:
     ld a,[$FF41]  		;STAT - LCD Status (R/W)
 		;-LOVHCMM
@@ -47,6 +47,20 @@ _ldir:
 	ld  a, b
 	or  c
 	jr	nz, _ldir
+    ret
+
+;; DE -> Origen
+;; HL -> Destino
+;; BC -> Cantidad
+_ldir_tile:
+    ld	a, [de]		            
+	inc de
+    call _VRAM_wait
+	ldi	[hl], a		                    
+	dec	bc
+	ld  a, b
+	or  c
+	jr	nz, _ldir_tile
     ret
 
 ;;  A -> GB palette, not GBC

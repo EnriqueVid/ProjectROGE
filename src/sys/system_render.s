@@ -218,21 +218,54 @@ _sr_attack_animation:
 ;;
 ;;==============================================================================================
 _sr_draw_hud:
-    ld a, 10
-    ld hl, $9C00
+;     ld a, 10
+;     ld hl, $9C00
     
-_window_loop:
+; _window_loop:
+;     push af
+;     ld a, $0F
+;     call _sr_draw_tile
+;     ld bc, 02
+;     add hl, bc
+;     pop af
+;     dec a
+;     jr nz, _window_loop
+
+    
+    ld hl, $9C00
+    ld bc, base_hud_end - base_hud 
+    ld de, base_hud
+    call _ldir_tile
+    ;; DE -> Origen
+    ;; HL -> Destino
+    ;; BC -> Cantidad
+    ld hl, $9C20
+    ld bc, hud_text_separation_end - hud_text_separation
+    ld de, hud_text_separation
+    call _ldir_tile
+    ;; DE -> Origen
+    ;; HL -> Destino
+    ;; BC -> Cantidad
+    ld a, $02
+    ld hl, $9C40
+.loop:
     push af
-    ld a, $0F
-    call _sr_draw_tile
-    ld bc, 02
+    ld bc, hud_text_area_end - hud_text_area
+    ld de, hud_text_area
+    push hl
+    call _ldir_tile
+    ; DE -> Origen
+    ;; HL -> Destino
+    ;; BC -> Cantidad
+    pop hl
+    ld bc, $0020
     add hl, bc
     pop af
     dec a
-    jr nz, _window_loop
+    jr nz, .loop
 
     ld hl, $FF4A      
-    ld a, $80         ;; Window Y
+    ld a, $88         ;; Window Y
     ldi [hl], a    ;; Seteamos la window 
     ld a, $07
     ld [hl], a

@@ -13,6 +13,10 @@ mg_input_data: ds $03       ;; +-> Datos de las pulsaciones de los botones (x, y
                             ;; | btn Bit 2 = Select
                             ;; | btn Bit 3 = Start
 
+;;Variables auxiliares
+aux_prev_input_x: ds $01    ;;
+aux_prev_input_y: ds $01    ;;
+
 
 
 SECTION "MAN_GAME_FUNCS", ROM0
@@ -35,20 +39,94 @@ SECTION "MAN_GAME_FUNCS", ROM0
 ;;==============================================================================================
 _mg_game_loop:
 
-    ei
+    ;ei
 
     ld hl, ml_camera
     ld bc, 10
     add hl, bc
     ld a, [hl]
 	cp $0 
-	jr nz, .no_input
+	jp nz, .no_input
 
     ld a, [mg_win_condition]
     cp $00
     ret nz 
 
     call _su_input
+
+    ;;Comprobamos el input de los botones de accion
+    ld hl, mg_input_data
+    inc hl
+    inc hl
+    
+    ld a, [hl]
+    bit 0, a
+    jr nz, .check_B
+        xor a
+        ld [aux_prev_input_x], a
+        ld [aux_prev_input_y], a
+        ld hl, mp_player
+        call _sr_attack_animation
+        call _sc_physical_attack
+        jp .no_move
+
+.check_B:
+    bit 1, a
+    jr nz, .check_select
+        ld hl, mg_input_data
+        ldi a, [hl]
+        ld b, a
+        ld a, [hl]
+        ld c, a
+
+        ld a, b
+        cp $00
+        jr nz, .input_x_no_zero
+            ld a, [aux_prev_input_x]
+            ld b, a
+
+.input_x_no_zero:
+        ld a, c
+        cp $00
+        jr nz, .input_y_no_zero
+            ld a, [aux_prev_input_y]
+            ld c, a
+
+.input_y_no_zero:
+        ld hl, mp_player
+        ld de, ep_dir_x 
+        add hl, de
+        or b
+        jr z, .no_move
+
+        ld a, b
+        ld [aux_prev_input_x], a
+        ldi[hl], a
+        ld a, c
+        ld [aux_prev_input_y], a
+        ld [hl], a
+
+        jr .no_move
+    
+.check_select:
+    bit 2, a
+    jr nz, .check_start
+        xor a
+        ld [aux_prev_input_x], a
+        ld [aux_prev_input_y], a
+
+.check_start:
+    bit 3, a
+    jr nz, .no_action
+        xor a
+        ld [aux_prev_input_x], a
+        ld [aux_prev_input_y], a
+
+.no_action:
+
+    xor a
+    ld [aux_prev_input_x], a
+    ld [aux_prev_input_y], a
 
     ;;Comprobamos el input de movimiento
     ld hl, mg_input_data
@@ -57,23 +135,35 @@ _mg_game_loop:
     ldi a, [hl]
     ld c, a
     or b
-    jr z, .no_move
+    jr z, .no_input
+
+        
+        
+        ld hl, mp_player                ;; +->Cambiamos la variable direccion del jugador
+        ld de, ep_dir_x                 ;; |
+        add hl, de                      ;; |
+        ld a, b                         ;; |
+        ldi [hl], a                     ;; |
+        ld a, c                         ;; |
+        ld [hl], a                      ;; |
+        
 
         ld hl, mp_player
-        ld de, ep_dir_x
-        add hl, de
-        ld a, b
-        ldi [hl], a 
-        ld a, c
-        ld [hl], a
-        
-        ld hl, mp_player
-        call _sp_playable_collisions
+        call _sp_playable_collisions    ;;Comprobamos las colisiones en la direccion del jugador
         ld a, b
         or c
         jr z, .no_input
 
-        ld hl, mp_player
+
+        ld hl, mp_player                ;; +->Actualizamos la direccion del jugador
+        ld de, ep_dir_x                 ;; |
+        add hl, de                      ;; |
+        ld a, b                         ;; |
+        ldi [hl], a                     ;; |
+        ld a, c                         ;; |
+        ld [hl], a                      ;; |
+
+        ld hl, mp_player                ;; Actualizamos la posicion del jugador
         ld a, [hl]
         add a, b
         ldi [hl], a
@@ -82,7 +172,7 @@ _mg_game_loop:
         ld [hl], a
 
         push bc
-        call _sr_update_scroll_map
+        call _sr_update_scroll_map      
         pop bc
 
 		call _sl_set_scroll_screen
@@ -93,16 +183,9 @@ _mg_game_loop:
         add a, c
         ld [_player_Y], a
         jr .no_input
-
 .no_move:
     ;;Comprobamos el input de accion
-    ld a, [hl]
-    bit 0, a
-    jr nz, .no_input
-
-        ld hl, mp_player
-        call _sr_attack_animation
-        call _sc_physical_attack
+    
         
 
 .ia_engine:
@@ -113,7 +196,7 @@ _mg_game_loop:
     call _sl_update_scroll
     call _sr_draw_enemies
 
-    jr _mg_game_loop
+    jp _mg_game_loop
 
     ret
 
@@ -142,6 +225,8 @@ _mg_init:
     ld [mg_input_data], a
     ld [mg_input_data + 1], a
     ld [mg_input_data + 2], a
+    ld [aux_prev_input_x], a
+    ld [aux_prev_input_y], a
     
     call _mp_init
     call _ml_init
