@@ -199,6 +199,10 @@ _sp_playable_collisions:
 ;;==============================================================================================
 _sp_scroll_enemies:
 
+    ld a, [mp_enemy_num]
+    cp $00
+    ret z
+
     ld hl, ml_camera
     ld bc, ec_scroll_dir_x
     add hl, bc

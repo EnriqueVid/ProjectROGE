@@ -72,9 +72,6 @@ _sc_physical_attack:
 
     xor a
     dec hl
-    ldi [hl], a
-    ldi [hl], a
-    ldi [hl], a
-    ldi [hl], a
+    call _mp_delete_enemy
 
     ret

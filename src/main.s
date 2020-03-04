@@ -44,6 +44,15 @@ _main:
 
     ld hl, $FF41                ;; Activamos la comprobacion en el bit de coincidencia de LCDSTAT
     set 6, [hl]
+;;---------------  INICIAR RELOJ  ---------------
+    ld a, %00000101
+    ld [$FF07], a
+
+
+
+;;---------------  DEFINIR PALETA  ---------------
+    ld a, %11100100		        ;;DDCCBBAA .... A=Background 0=Black, 3=White
+    call _define_palette
 
 
 ;;---------------  CARGAR LOS TILES EN VRAM  ---------------
@@ -67,11 +76,6 @@ _main:
     ld  hl, $9800
     ld  bc, $9BFF-9801
     call _clear_data
-
-
-;;---------------  DEFINIR PALETA  ---------------
-    ld a, %11100100		        ;;DDCCBBAA .... A=Background 0=Black, 3=White
-    call _define_palette
 
 
 ;;---------------  ACTIVAR INTERRUPCIONES --------------

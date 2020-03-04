@@ -1,0 +1,1 @@
+GLOBAL _si_respawn_enemy

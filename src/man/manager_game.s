@@ -16,6 +16,7 @@ mg_input_data: ds $03       ;; +-> Datos de las pulsaciones de los botones (x, y
 ;;Variables auxiliares
 aux_prev_input_x: ds $01    ;;
 aux_prev_input_y: ds $01    ;;
+aux_prev_input_btn: ds $01  ;;
 
 
 
@@ -68,11 +69,15 @@ _mg_game_loop:
         ld hl, mp_player
         call _sr_attack_animation
         call _sc_physical_attack
+
+        ld a, %00000001
+        ld [aux_prev_input_btn], a
         jp .no_move
 
 .check_B:
     bit 1, a
     jr nz, .check_select
+        
         ld hl, mg_input_data
         ldi a, [hl]
         ld b, a
@@ -97,7 +102,7 @@ _mg_game_loop:
         ld de, ep_dir_x 
         add hl, de
         or b
-        jr z, .no_move
+        jp z, .no_move
 
         ld a, b
         ld [aux_prev_input_x], a
@@ -106,14 +111,25 @@ _mg_game_loop:
         ld [aux_prev_input_y], a
         ld [hl], a
 
-        jr .no_move
+        ld a, %00000010
+        ld [aux_prev_input_btn], a
+        jp .no_move
     
+
 .check_select:
     bit 2, a
     jr nz, .check_start
+        ld a, [aux_prev_input_btn]
+        bit 2, a
+        jp nz, .no_move
+
         xor a
         ld [aux_prev_input_x], a
         ld [aux_prev_input_y], a
+
+        ld a, %00000100
+        ld [aux_prev_input_btn], a
+        jp .no_move
 
 .check_start:
     bit 3, a
@@ -122,11 +138,16 @@ _mg_game_loop:
         ld [aux_prev_input_x], a
         ld [aux_prev_input_y], a
 
+        ld a, %00001000
+        ld [aux_prev_input_btn], a
+        jr .no_move
+
 .no_action:
 
     xor a
     ld [aux_prev_input_x], a
     ld [aux_prev_input_y], a
+    ld [aux_prev_input_btn], a
 
     ;;Comprobamos el input de movimiento
     ld hl, mg_input_data
@@ -182,7 +203,37 @@ _mg_game_loop:
         ld a, [_player_Y]
         add a, c
         ld [_player_Y], a
-        jr .no_input
+
+
+        ;;Control de reaparición de los enemigos
+        ld a, [mp_respawn_steps]
+        cp $00
+        jr z, .spawn_enemy
+
+            dec a
+            ld [mp_respawn_steps], a
+            jr .no_move
+.spawn_enemy:
+
+            ld a, [mp_enemy_num]
+            cp $06
+            jr z, .no_move
+
+            inc a
+            ld [mp_enemy_num], a
+
+            ;db $18, $FE
+            call _si_respawn_enemy
+
+            call _generate_random
+            srl a
+            srl a
+            srl a
+            srl a
+            inc a
+            ld [mp_respawn_steps], a
+
+        jr .no_move
 .no_move:
     ;;Comprobamos el input de accion
     
@@ -238,11 +289,17 @@ _mg_init:
     ld bc, $C000
     call _sr_draw_sprite
 
+    xor a
     call _mp_new_enemy
+    xor a
     call _mp_new_enemy
+    xor a
     call _mp_new_enemy
+    xor a
     call _mp_new_enemy
+    xor a
     call _mp_new_enemy
+    xor a
     call _mp_new_enemy
 
     call _sl_spawn_enemies

@@ -72,6 +72,12 @@ _su_input:
 
     ld a, [$FF00]           ;; Obtenemos los botones pulsados
     ld a, [$FF00]           ;; Obtenemos los botones pulsados
+
+    ld a, %11011111
+    ld [$FF00], a
+
+    ld a, [$FF00]           ;; Obtenemos los botones pulsados
+    ld a, [$FF00]           ;; Obtenemos los botones pulsados
     ld [hl], a              ;; Bit 0 = A
                             ;; Bit 1 = B
                             ;; Bit 2 = Select

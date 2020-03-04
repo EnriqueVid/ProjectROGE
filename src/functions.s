@@ -1,6 +1,62 @@
 INCLUDE "src/functions.h.s"
 
-SECTION "Functions", ROM0
+SECTION "FUNCTION_VARS", WRAM0
+
+rand_seed: ds $01
+
+
+SECTION "FUNCTION_FUNCS", ROM0
+
+
+;;==============================================================================================
+;;                                    GENERATE RANDOM
+;;----------------------------------------------------------------------------------------------
+;; Genera un número aleatorio a partir del reloj interno. 
+;; Emplea un LFSR para la generación inicial.
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  A -> Numero aleatorio generado
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_generate_random:
+
+    ld a, [$FF05]           ;;Timer Counter. Se incrementa en funcion de la configuración establecida
+    ld e, a
+
+.loop:
+    ld d, a
+    
+    rr d
+    rr d
+    rr d
+    rr d
+    xor d
+
+    rr d
+    xor d
+
+    rr d
+    xor d
+
+    rr d
+    rr d
+    xor d
+
+    ld d, a
+    ld a, [$FF04]           ;; Divider Register. Se incrementa 16384 veces por segundo
+    xor d
+
+    cp e
+    jr z, .loop
+
+    ret
+
 
 ;;Espera hasta estar en VBlank
 _wait_Vblank:

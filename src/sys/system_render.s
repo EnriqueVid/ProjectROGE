@@ -246,7 +246,7 @@ _sr_draw_hud:
     ;; DE -> Origen
     ;; HL -> Destino
     ;; BC -> Cantidad
-    ld a, $02
+    ld a, $03
     ld hl, $9C40
 .loop:
     push af
@@ -264,8 +264,15 @@ _sr_draw_hud:
     dec a
     jr nz, .loop
 
+    ld hl, $9C92
+    ld a, $92
+    call _VRAM_wait
+    ld [hl], a
+
     ld hl, $FF4A      
-    ld a, $88         ;; Window Y
+    ;ld a, $88         ;; Window Y
+    ld a, $68
+
     ldi [hl], a    ;; Seteamos la window 
     ld a, $07
     ld [hl], a
