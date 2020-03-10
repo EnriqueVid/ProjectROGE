@@ -1,4 +1,5 @@
 INCLUDE "src/main.h.s"
+INCLUDE "src/ent/entity_room.h.s"
 
 
 SECTION "MAIN", ROM0

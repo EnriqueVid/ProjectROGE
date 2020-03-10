@@ -1,3 +1,6 @@
+IF DEF (m_define_entity_item)
+
+ELSE
 m_define_entity_item: MACRO
 
     ds $01              ;; Item ID
@@ -9,6 +12,8 @@ m_define_entity_item: MACRO
     ds $01              ;; Item DEF
 
 ENDM
+
+ENDC
 
 ei_id   = 0
 ei_desc = 1

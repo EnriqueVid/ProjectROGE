@@ -1,3 +1,6 @@
+IF DEF(m_define_entity_camera)
+
+ELSE
 m_define_entity_camera: MACRO
 
                     ds $01          ;; Tilemap X
@@ -17,21 +20,24 @@ ec_bgmap_prt_BL_H:  ds $01          ;; BG map ptr (BL) H
 
 ENDM
 
-ec_tilemap_x = 0
-ec_tilemap_y = 1
-ec_tilemap_ptr_l = 2
-ec_tilemap_ptr_h = 3
+ENDC
 
-ec_bgmap_ptr_tl_l = 4
-ec_bgmap_ptr_tl_h = 5
-ec_bgmap_ptr_tr_l = 6
-ec_bgmap_ptr_tr_h = 7
-ec_bgmap_ptr_bl_l = 8
-ec_bgmap_ptr_bl_h = 9
+ec_tilemap_x EQUS "00"
+ec_tilemap_y EQUS "01"
+ec_tilemap_ptr_l EQUS "02"
+ec_tilemap_ptr_h EQUS "03"
 
-ec_scroll_active = 10
-ec_scroll_counter = 11
-ec_scroll_dir_x = 12
-ec_scroll_dir_y = 13
+ec_bgmap_ptr_tl_l EQUS "04"
+ec_bgmap_ptr_tl_h EQUS "05"
+ec_bgmap_ptr_tr_l EQUS "06"
+ec_bgmap_ptr_tr_h EQUS "07"
+ec_bgmap_ptr_bl_l EQUS "08"
+ec_bgmap_ptr_bl_h EQUS "09"
 
-entity_camera_size = 14
+ec_scroll_active EQUS "10"
+ec_scroll_counter EQUS "11"
+ec_scroll_dir_x EQUS "12"
+ec_scroll_dir_y EQUS "13"
+
+entity_camera_size EQUS "14"
+

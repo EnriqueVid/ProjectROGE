@@ -1,3 +1,6 @@
+IF DEF (m_define_entity_playable)
+
+ELSE
 m_define_entity_playable: MACRO
 
     ds $01              ;; Position X
@@ -27,6 +30,7 @@ m_define_entity_playable: MACRO
     ds $01              ;; Current Status Effect
 
 ENDM
+ENDC
 
 ep_x = 0
 ep_y = 1

@@ -16,3 +16,7 @@ ent_enemy_bat_01:
     db $01  ;;Max DEF
 
     db $01  ;;Enemy ID
+    db $00  ;;Attack Type
+    db $02  ;;IA State
+    db $00  ;;Objective X
+    db $00  ;;Objective Y

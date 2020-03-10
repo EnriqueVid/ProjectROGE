@@ -1,6 +1,10 @@
 INCLUDE "src/man/manager_game.h.s"
 INCLUDE "src/man/manager_playable.h.s"
 INCLUDE "src/man/manager_level.h.s"
+INCLUDE "src/ent/entity_playable.h.s"
+INCLUDE "src/ent/entity_enemy.h.s"
+
+
 
 
 SECTION "MAN_GAME_VARS", WRAM0
@@ -49,9 +53,54 @@ _mg_game_loop:
 	cp $0 
 	jp nz, .no_input
 
+;;__________DELETE_THIS__________________
+    ld hl, mp_enemy_array
+    ld a, [mp_enemy_num]
+    cp $00
+    jr z, .deletethis_loop_end
+
+.deletethis_loop:
+    push af
+    push hl
+    call _sr_enemies_initial_draw
+    pop hl
+    pop af
+
+    ld bc, entity_enemy_size
+    add hl, bc
+    dec a
+    jr nz, .deletethis_loop
+
+.deletethis_loop_end:
+;;_______________________________________
+
+
+
     ld a, [mg_win_condition]
     cp $00
     ret nz 
+
+    ;;Control de reaparición de los enemigos
+    
+    ld a, [mp_respawn_steps]
+    cp $00
+    jr nz, .no_spawn_enemy
+
+    ld a, [mp_enemy_num]
+    cp $01                  ;;Máximo número de enemigos
+    ;cp $06                  ;;Máximo número de enemigos
+    jr z, .no_spawn_enemy
+
+    call _si_respawn_enemy
+    call _generate_random
+    srl a
+    srl a
+    srl a
+    srl a
+    inc a
+    ld [mp_respawn_steps], a
+
+.no_spawn_enemy:
 
     call _su_input
 
@@ -102,7 +151,7 @@ _mg_game_loop:
         ld de, ep_dir_x 
         add hl, de
         or b
-        jp z, .no_move
+        jp z, .no_input
 
         ld a, b
         ld [aux_prev_input_x], a
@@ -113,7 +162,7 @@ _mg_game_loop:
 
         ld a, %00000010
         ld [aux_prev_input_btn], a
-        jp .no_move
+        jp .no_input
     
 
 .check_select:
@@ -204,42 +253,41 @@ _mg_game_loop:
         add a, c
         ld [_player_Y], a
 
-
-        ;;Control de reaparición de los enemigos
-        ld a, [mp_respawn_steps]
-        cp $00
-        jr z, .spawn_enemy
-
-            dec a
-            ld [mp_respawn_steps], a
-            jr .no_move
-.spawn_enemy:
-
-            ld a, [mp_enemy_num]
-            cp $06
-            jr z, .no_move
-
-            inc a
-            ld [mp_enemy_num], a
-
-            ;db $18, $FE
-            call _si_respawn_enemy
-
-            call _generate_random
-            srl a
-            srl a
-            srl a
-            srl a
-            inc a
-            ld [mp_respawn_steps], a
-
-        jr .no_move
 .no_move:
-    ;;Comprobamos el input de accion
     
-        
+;;Control de reaparición de los enemigos
+ld a, [mp_respawn_steps]
+cp $00
+jr z, .ia_engine
+    dec a
+    ld [mp_respawn_steps], a
+           
 
 .ia_engine:
+    ld hl, mp_enemy_array
+    ld a, [mp_enemy_num]
+    cp $00
+    jr z, .no_input
+
+.ia_loop:
+    push af
+
+    push hl
+    call _si_choose_IA_action
+    pop hl
+
+    push hl
+    call _si_move_to
+    pop hl
+
+    pop af
+
+    ld bc, entity_enemy_size
+    add hl, bc
+
+    dec a
+    jr nz, .ia_loop
+
 
 
 .no_input:
@@ -289,18 +337,22 @@ _mg_init:
     ld bc, $C000
     call _sr_draw_sprite
 
-    xor a
-    call _mp_new_enemy
-    xor a
-    call _mp_new_enemy
-    xor a
-    call _mp_new_enemy
-    xor a
-    call _mp_new_enemy
-    xor a
-    call _mp_new_enemy
-    xor a
-    call _mp_new_enemy
+    ;xor a
+    ;call _mp_new_enemy
+    ;xor a
+    ;call _mp_new_enemy
+    ;xor a
+    ;call _mp_new_enemy
+    ;xor a
+    ;call _mp_new_enemy
+    ;xor a
+    ;call _mp_new_enemy
+    ;xor a
+    ;call _mp_new_enemy
+    ld bc, $0403
+    ld de, $0505
+    call _ml_new_room
+
 
     call _sl_spawn_enemies
     call _sr_draw_enemies

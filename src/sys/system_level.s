@@ -1,4 +1,7 @@
 INCLUDE "src/sys/system_level.h.s"
+INCLUDE "src/ent/entity_camera.h.s"
+INCLUDE "src/ent/entity_enemy.h.s"
+
 
 SECTION "SYS_LEVEL_FUNCS", ROM0
 
@@ -78,8 +81,8 @@ _sl_spawn_enemies:
     ld a, [bc]
     sub d
     ldi [hl], a
-
     dec bc
+    
 .end_x:
     ld a, [bc]
     sub e

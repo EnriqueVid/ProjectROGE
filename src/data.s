@@ -110,8 +110,8 @@ tile_index::
     dw tile_staris                  ;; 22 -> $16
     dw tile_item_money              ;; 23 -> $17
     dw tile_item_weapon             ;; 24 -> $18
-    dw tile_item_spell              ;; 25 -> $19
-    dw tile_item_01                 ;; 26 -> $1A
+    dw tile_item_shield             ;; 25 -> $19
+    dw tile_item_spell              ;; 26 -> $1A
     dw tile_item_02                 ;; 27 -> $1B
     dw tile_item_03                 ;; 28 -> $1C
     dw tile_item_04                 ;; 29 -> $1D
@@ -278,7 +278,7 @@ tile_item_spell:
     db $65          ;; Tile BL
     db $67          ;; Tile BR
 
-tile_item_01:
+tile_item_shield:
     db $68          ;; Tile TL
     db $6A          ;; Tile TR
     db $69          ;; Tile BL

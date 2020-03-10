@@ -1,4 +1,6 @@
 INCLUDE "src/sys/system_physics.h.s"
+INCLUDE "src/ent/entity_enemy.h.s"
+INCLUDE "src/ent/entity_camera.h.s"
 
 SECTION "SYS_PHYSICS_VARS", WRAM0
 sp_special_tile:    ds $01
@@ -14,7 +16,7 @@ SECTION "SYS_PHYSICS_FUNCS", ROM0
 ;;
 ;; INPUT:
 ;;  HL -> Puntero a la entidad playable
-;;  BC -> Direccion X, Y del jugador
+;;  BC -> Direccion X, Y de la entidad
 ;;
 ;; OUTPUT:
 ;;  BC -> Direccion actualizada en funcion de las colisiones
@@ -221,7 +223,6 @@ _sp_scroll_enemies:
         cp $01
         jr nz, .izquierda
 ;derecha:
-            ld hl, mp_enemy_array
             ld a, [mp_enemy_num]
 .derecha_loop:
             push af

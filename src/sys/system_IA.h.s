@@ -1,1 +1,3 @@
 GLOBAL _si_respawn_enemy
+GLOBAL _si_choose_IA_action
+GLOBAL _si_move_to

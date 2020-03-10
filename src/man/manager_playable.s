@@ -1,5 +1,7 @@
 INCLUDE "src/man/manager_playable.h.s"
-INCLUDE "src/ent/entity_enemy.h.s" ;; entity_enemy.h.s incluye entity_player.h.s que incluye entity_playable.h.s
+INCLUDE "src/ent/entity_playable.h.s"
+INCLUDE "src/ent/entity_player.h.s"
+INCLUDE "src/ent/entity_enemy.h.s"
 
 SECTION "MAN_PLAYABLE_VARS", WRAM0
 
@@ -135,7 +137,8 @@ _mp_delete_enemy:
 ;; Anade un nuevo enemigo al vector
 ;;
 ;; INPUT:
-;;  A -> Enemy_ID
+;;  A  -> Enemy_ID
+;;  BC -> Enemy X, Y 
 ;;
 ;; OUTPUT:
 ;;  NONE
@@ -146,6 +149,7 @@ _mp_delete_enemy:
 ;;==============================================================================================
 _mp_new_enemy:
 
+    push bc
     ld e, a
     
     ld a, [mp_enemy_num]
@@ -171,6 +175,15 @@ _mp_new_enemy:
     ld e, [hl]
     inc hl
     ld d, [hl]              ;; DE -> Puntero a la platilla del enemigo
+
+    pop hl
+    pop bc
+    push hl
+
+    ld a, b
+    ldi [hl], a
+    ld a, c
+    ld [hl], a
 
     pop hl
     push hl
@@ -253,6 +266,7 @@ _mp_new_enemy:
     ld [hl], a
 
     pop hl
+    push hl
 
     ld bc, entity_enemy_size
     add hl, bc
@@ -261,6 +275,9 @@ _mp_new_enemy:
     ld [mp_enemy_next_h], a
     ld a, l
     ld [mp_enemy_next_l], a
+
+    pop hl
+    call _sr_enemies_initial_draw
 
     ret
 

@@ -21,7 +21,7 @@ SECTION "FUNCTION_FUNCS", ROM0
 ;;  A -> Numero aleatorio generado
 ;;
 ;; DESTROYS:
-;;  AF, BC, DE, HL
+;;  AF, DE
 ;;
 ;;==============================================================================================
 _generate_random:

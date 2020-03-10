@@ -1,4 +1,7 @@
 INCLUDE "src/sys/system_render.h.s"
+INCLUDE "src/ent/entity_playable.h.s"
+INCLUDE "src/ent/entity_enemy.h.s"
+
 
 SECTION "SYS_RENDER_VARS", WRAM0
 sr_actual_x: ds $01
@@ -12,6 +15,105 @@ SECTION "SYS_RENDER_FUNCS", ROM0
 
 ;               /       -8       \  /           +18            \  /    -10    \
 attack_anim: db $FE, $FE, $04, $04, $03, $03, $02, $FC, $FC, $FC, $80
+
+;;==============================================================================================
+;;                                    ENEMIES INITIAL DRAW
+;;----------------------------------------------------------------------------------------------
+;; Realiza el dibujado inicial del enemigo seleccionado
+;;
+;; INPUT:
+;;  HL -> Puntero al enemigo
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  
+;;
+;;==============================================================================================
+_sr_enemies_initial_draw:
+
+    
+    ldi a, [hl]
+    ld d, a
+    ldi a, [hl]
+    ld e, a
+    ;;DE -> Enemy X, Y
+
+    ld bc, mp_player
+    ld a, [bc]
+    sub d
+
+    jr c, .derecha
+;izquierda
+        cp $06
+        jr c, .end_derecha
+            ld a, $F0
+            ldi [hl], a
+            inc bc
+            jr .end_x
+.derecha:
+        cp $FB
+        jr nc, .end_derecha
+            ld a, $B0
+            ldi [hl], a
+            inc bc
+            jr .end_x
+.end_derecha:
+
+    sla a
+    sla a
+    sla a
+    sla a
+    ld d, a
+    inc bc
+    inc bc
+    ld a, [bc]
+    sub d
+    ldi [hl], a
+    dec bc
+
+
+.end_x:
+    ld a, [bc]
+    sub e
+
+
+    jr c, .abajo
+;arriba
+        
+        cp $05
+        jr c, .end_abajo
+            ld a, $00
+            ldi [hl], a
+            jr .end_y
+.abajo:
+        
+        cp $FC
+        jr nc, .end_abajo
+            ld a, $A0
+            ldi [hl], a
+            jr .end_y
+.end_abajo:
+
+
+    sla a
+    sla a
+    sla a
+    sla a
+    ld e, a
+    inc bc
+    inc bc
+    ld a, [bc]
+    sub e
+    ldi [hl], a
+
+.end_y:
+
+    ;db $18, $FE
+
+    ret
+
 
 ;;==============================================================================================
 ;;                                       DRAW ENEMIES
@@ -321,7 +423,7 @@ _sr_update_scroll_map:
     call _ml_save_tilemap
     ld bc, GBSw - 1
     add hl, bc
-    ld bc, $FFCE  ;;$FFCE -> -50 | MAPw = 50
+    ld bc, MAPw * -1  ;;$FFCE -> -50 | MAPw = 50
     add hl, bc
 
     ld b, h
@@ -359,7 +461,7 @@ _sr_update_scroll_map:
     ld bc, $FFFF
     add hl, bc
     call _ml_save_tilemap
-    ld bc, $FFCE  ;;$FFCE -> -50 | MAPw = 50
+    ld bc, MAPw * -1  ;;$FFCE -> -50 | MAPw = 50
     add hl, bc
 
     ld b, h
@@ -395,7 +497,7 @@ _sr_update_scroll_map:
     push hl
     call _ml_load_tilemap
 
-    ld bc, $FFCE  ;;$FFCE -> -50 | MAPw = 50
+    ld bc, MAPw * -1 ;;$FFCE -> -50 | MAPw = 50
     add hl, bc
     call _ml_save_tilemap
     ld bc, $FFFF

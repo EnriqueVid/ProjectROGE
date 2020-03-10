@@ -1,8 +1,8 @@
-INCLUDE "src/ent/entity_playable.h.s"
-
 GLOBAL default_entity_player
 
+IF DEF(m_define_entity_player)
 
+ELSE
 m_define_entity_player: MACRO
 
     m_define_entity_playable
@@ -16,6 +16,7 @@ m_define_entity_player: MACRO
     ds $01              ;; Default DEF
 
 ENDM
+ENDC
 
 ent_player_eq_W    = 20
 ent_player_eq_A    = 21

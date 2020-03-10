@@ -1,4 +1,7 @@
 INCLUDE "src/sys/system_combat.h.s"
+INCLUDE "src/ent/entity_playable.h.s"
+INCLUDE "src/ent/entity_enemy.h.s"
+
 
 SECTION "SYS_COMBAT_FUNCS", ROM0
 
