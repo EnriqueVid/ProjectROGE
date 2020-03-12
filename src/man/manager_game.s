@@ -189,7 +189,7 @@ _mg_game_loop:
 
         ld a, %00001000
         ld [aux_prev_input_btn], a
-        jr .no_move
+        jp .no_move
 
 .no_action:
 
@@ -205,7 +205,7 @@ _mg_game_loop:
     ldi a, [hl]
     ld c, a
     or b
-    jr z, .no_input
+    jp z, .no_input
 
         
         
@@ -222,7 +222,7 @@ _mg_game_loop:
         call _sp_playable_collisions    ;;Comprobamos las colisiones en la direccion del jugador
         ld a, b
         or c
-        jr z, .no_input
+        jp z, .no_input
 
 
         ld hl, mp_player                ;; +->Actualizamos la direccion del jugador
@@ -232,6 +232,55 @@ _mg_game_loop:
         ldi [hl], a                     ;; |
         ld a, c                         ;; |
         ld [hl], a                      ;; |
+
+
+        push bc                         ;; Comprobamos en que sala esta el jugador
+        ld hl, mp_player
+        ldi a, [hl]
+        add b
+        ld b, a
+        ld a, [hl]
+        add c
+        ld c, a
+        call _sl_check_room      
+        
+        push af
+        ld hl, mp_player
+        ldi a, [hl]
+        ld b, a
+        ld a, [hl]
+        ld c, a
+        dec hl
+        ;BC -> Player X, Y
+        pop af
+
+        ld de, ep_room                  ;; Comprobamos si ha salido/entrado de una habitación
+        add hl, de
+        cp $80                          ;; A -> Room actual del jugador ($80 = ninguna)
+        jr nz, .no_out
+        
+
+            ld a, [hl]                  ;;Comprobamos si ya estaba fuera de una habitacion
+            cp $80
+            jr z, .end_room_check
+
+            ld a, $80
+            ldi [hl], a
+            ld a, b
+            ldi [hl], a
+            ld a, c
+            ld [hl], a
+
+            jr .end_room_check
+.no_out:
+        ldi [hl], a 
+        ld a, $80
+        ldi [hl], a
+        ld [hl], a
+
+.end_room_check:
+        pop bc
+
 
         ld hl, mp_player                ;; Actualizamos la posicion del jugador
         ld a, [hl]
@@ -276,9 +325,9 @@ jr z, .ia_engine
     call _si_choose_IA_action
     pop hl
 
-    push hl
-    call _si_move_to
-    pop hl
+    ;push hl
+    ;call _si_move_to
+    ;pop hl
 
     pop af
 
@@ -352,9 +401,83 @@ _mg_init:
     ld bc, $0403
     ld de, $0505
     call _ml_new_room
+    ld bc, $1103
+    ld de, $0506
+    call _ml_new_room
+    ld bc, $1D03
+    ld de, $0605
+    call _ml_new_room
+    ld bc, $0411
+    ld de, $0505
+    call _ml_new_room
+    ld bc, $0F0F
+    ld de, $0605
+    call _ml_new_room
+    ld bc, $1912
+    ld de, $0506
+    call _ml_new_room
+    ld bc, $0419
+    ld de, $0605
+    call _ml_new_room
+    ld bc, $0F18
+    ld de, $0505
+    call _ml_new_room
 
 
-    call _sl_spawn_enemies
-    call _sr_draw_enemies
+    xor a
+    ld bc, $0708
+    call _ml_add_exit
+
+    ld a, 1
+    ld bc, $1605
+    call _ml_add_exit
+    ld a, 1
+    ld bc, $1309
+    call _ml_add_exit
+
+    ld a, 2
+    ld bc, $1D06
+    call _ml_add_exit
+    ld a, 2
+    ld bc, $2108
+    call _ml_add_exit
+
+    ld a, 3
+    ld bc, $0611
+    call _ml_add_exit
+    ld a, 3
+    ld bc, $0716
+    call _ml_add_exit
+
+    ld a, 4
+    ld bc, $140F
+    call _ml_add_exit
+    ld a, 4
+    ld bc, $1214
+    call _ml_add_exit
+
+    ld a, 5
+    ld bc, $1C12
+    call _ml_add_exit
+    ld a, 5
+    ld bc, $1915
+    call _ml_add_exit
+
+    ld a, 6
+    ld bc, $0519
+    call _ml_add_exit
+    ld a, 6
+    ld bc, $0A1C
+    call _ml_add_exit
+
+    ld a, 7
+    ld bc, $1218
+    call _ml_add_exit
+    ld a, 7
+    ld bc, $0F1B
+    call _ml_add_exit
+
+    ;call _sl_spawn_enemies
+    ;call _sr_draw_enemies
 
     ret

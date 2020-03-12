@@ -27,13 +27,17 @@ ent_player_default_current_MP: db $0A
 ent_player_default_current_ATK: db $0A
 ent_player_default_current_DEF: db $0A
 
-ent_player_default_current_status_effect: db $00
+ent_player_default_current_status_effect: db $BB
 
-ent_player_default_eq_weapon: db $00
+ent_player_default_room: db $00
+ent_player_default_exit_point_x: db $00
+ent_player_default_exit_point_y: db $00 
+
+ent_player_default_eq_weapon: db $BB
 ent_player_default_eq_armor: db $00
 ent_player_default_eq_item: db $00
 
 ent_player_default_def_HP  db $00
 ent_player_default_def_MP  db $00
 ent_player_default_def_ATK db $00
-ent_player_default_def_DEF db $00
+ent_player_default_def_DEF db $AA

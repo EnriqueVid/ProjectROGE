@@ -7,6 +7,8 @@ GLOBAL _sl_init_level
 GLOBAL _sl_set_scroll_screen
 GLOBAL _sl_update_scroll
 GLOBAL _sl_spawn_enemies
+GLOBAL _sl_check_room
+GLOBAL _sl_get_random_exit
 
 
 

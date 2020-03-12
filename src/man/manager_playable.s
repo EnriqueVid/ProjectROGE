@@ -234,6 +234,10 @@ _mp_new_enemy:
     ld de, ent_enemy_id
     add hl, de
     ld [hl], a              ;; HL -> ent_enemy_id
+    inc hl
+    inc hl
+    ld a, $00
+    ld [hl],  a 
 
 
     pop hl

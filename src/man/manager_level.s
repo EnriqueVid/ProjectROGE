@@ -36,6 +36,64 @@ SECTION "MAN_LEVEL_FUNCS", ROM0
 
 
 
+
+;;==============================================================================================
+;;                                          ADD EXIT
+;;----------------------------------------------------------------------------------------------
+;; Anade una salida a la habitacion
+;;
+;; INPUT:
+;;   A -> Room ID
+;;  BC -> Exit X, Y
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF
+;;
+;;==============================================================================================
+_ml_add_exit:
+    
+    ld hl, ml_room_array
+    cp $00
+    jr z, .end_loop
+
+.loop:
+    ld de, entity_room_size
+    add hl, de
+    dec a
+    jr nz, .loop
+
+.end_loop:
+
+    ;HL -> Puntero a la Habitacion 
+    ld de, ent_room_exit_num
+    add hl, de
+    ld a, [hl]
+    cp 4
+    ret z
+
+    push af
+    inc a
+    ldi [hl], a
+    pop af
+
+    sla a
+    ld d, $00
+    ld e, a
+    add hl, de
+    ld a, b
+    ldi [hl], a
+    ld a, c
+    ldi [hl], a
+
+    ;db $18, $fe
+
+    ret
+
+
+
 ;;==============================================================================================
 ;;                                          NEW ROOM
 ;;----------------------------------------------------------------------------------------------
@@ -58,7 +116,7 @@ _ml_new_room:
     ld bc, entity_room_size
     ld a, [ml_room_num]
     cp $00
-    jr .continue
+    jr z, .continue
 .loop:
     add hl, bc
     dec a
@@ -78,11 +136,24 @@ _ml_new_room:
     ;;HL -> ROOM ID
     
     ld a, [ml_room_num]
-    ld [hl], a  ;;ROOM ID = ml_room_num
+    ldi [hl], a  ;;ROOM ID = ml_room_num
     inc a
     ld [ml_room_num], a
 
+    ld a, h
+    ld [ml_room_next_h], a
+    ld a, l
+    ld [ml_room_next_l], a
 
+    ld a, $09
+.loop2:
+    push af
+    xor a
+    ldi [hl], a
+    pop af
+    dec a
+    jr nz, .loop2
+    
     ret
 
 

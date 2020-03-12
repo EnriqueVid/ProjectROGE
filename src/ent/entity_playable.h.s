@@ -29,6 +29,10 @@ m_define_entity_playable: MACRO
 
     ds $01              ;; Current Status Effect
 
+    ds $01              ;; Current Room
+    ds $01              ;; Exit Point X
+    ds $01              ;; Exit Point Y
+
 ENDM
 ENDC
 
@@ -52,5 +56,11 @@ ep_cMP = 16
 ep_cATK = 17
 ep_cDEF = 18
 ep_cSTAT = 19
+ep_room = 20
+ep_exit_x = 21
+ep_exit_y = 22
 
-ent_playable_size = 20
+ent_playable_size = 23
+
+
+STATUS_PARAL = 1

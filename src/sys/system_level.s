@@ -1,12 +1,145 @@
 INCLUDE "src/sys/system_level.h.s"
 INCLUDE "src/ent/entity_camera.h.s"
 INCLUDE "src/ent/entity_enemy.h.s"
+INCLUDE "src/ent/entity_room.h.s"
 
 
 SECTION "SYS_LEVEL_FUNCS", ROM0
 
 enemy_positions: db $12, $0B, $06, $13, $0E, $16, $0D, $1F, $07, $29, $1F, $1C, $00, $00, $00, $00
 ;enemy_positions: db $06, $13, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+
+
+
+
+
+;;========================================================================================
+;;                                     GET RANDOM EXIT
+;;----------------------------------------------------------------------------------------
+;; Devuelve las coordenadas de una salida dado el ID de una habitacion
+;;
+;; INPUT:
+;;  A -> ID de la habitacion
+;;
+;; OUTPUT:
+;;  BC -> Coordenadas de la salida
+;;
+;; DELETES: 
+;;  AF, BC, DE, HL
+;;
+;;========================================================================================
+_sl_get_random_exit:
+
+    ld hl, ml_room_array
+    cp $00
+    jr z, .end_loop
+
+.loop:
+    ld de, entity_room_size
+    add hl, de
+    dec a
+    jr nz, .loop
+
+.end_loop:
+    ;;HL -> Room Pointer
+    
+    ld bc, ent_room_exit_num
+    add hl, bc
+    ldi a, [hl]
+    ld b, a
+
+    push hl
+
+    call _generate_random
+
+    pop hl                      ;HL -> Exit01 X 
+    and %00000011
+    cp b
+    jr c, .no_correct_exit
+
+        ld a, b
+        dec a
+
+.no_correct_exit:
+
+    sla a
+    ld b, $00
+    ld c, a
+    add hl, bc
+    
+    ldi a, [hl]
+    ld b, a
+    ld a, [hl]
+    ld c, a
+
+    ret
+
+
+
+;;========================================================================================
+;;                                     CHECK ROOM
+;;----------------------------------------------------------------------------------------
+;; Devuelve en que sala se encuentra una posicion dada. 
+;; $80 significa que no esta en ninguna.
+;;
+;; INPUT:
+;;  BC -> Posicion X,Y a comprobar
+;;
+;; OUTPUT:
+;;  A -> ID de la habitación
+;;
+;; DELETES: 
+;;  AF, BC, DE, HL
+;;
+;;========================================================================================
+_sl_check_room:
+
+    ld hl, ml_room_array
+    ld a, [ml_room_num]
+    cp $00
+    jr z, .continue
+
+.loop:
+    push hl
+    push af
+
+    ldi a, [hl]
+    ld d, a
+    ld a, b
+    cp d
+    jr c, .no_inside
+    ldi a, [hl]
+    ld e, a
+    ld a, c
+    cp e
+    jr c, .no_inside
+    ldi a, [hl]
+    add d
+    cp b
+    jr c, .no_inside
+    ldi a, [hl]
+    add e
+    cp c
+    jr c, .no_inside
+
+    pop af
+    ld a, [hl]
+    pop hl
+    ret
+
+.no_inside:
+    pop af
+    pop hl
+    ld de, entity_room_size 
+    add hl, de
+    dec a
+    jr nz, .loop
+
+.continue:
+
+    ld a, $80
+    ret
+
 
 
 ;;========================================================================================

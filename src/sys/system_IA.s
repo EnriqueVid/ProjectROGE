@@ -1,5 +1,6 @@
 INCLUDE "src/sys/system_IA.h.s"
 INCLUDE "src/ent/entity_enemy.h.s"
+INCLUDE "src/ent/entity_playable.h.s"
 
 
 SECTION "SYS_IA_VARS", WRAM0
@@ -8,6 +9,233 @@ SECTION "SYS_IA_VARS", WRAM0
 
 
 SECTION "SYS_IA_FUNCS", ROM0
+
+
+
+
+;;==============================================================================================
+;;                                    CHOOSE IA ACTION
+;;----------------------------------------------------------------------------------------------
+;; Selecciona la accion que va a hacer el enemigo
+;;
+;; INPUT:
+;;  HL -> Puntero al enemigo
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_si_choose_IA_action:
+    
+    push hl
+
+    ld bc, ent_enemy_ia_state
+    add hl, bc
+    ld a, [hl]
+    cp IA_STATE_NO_IA
+    ret z
+    cp IA_STATE_SLEEP
+    jr nz, .no_sleep    ;; Comprobamos si el enemigo esta dorimido
+
+        ;;Si esta dormido comprobamos a que distancia esta del jugador
+        pop hl
+        push hl
+        ldi a, [hl]
+        ld b, a
+        ld a, [hl]
+        ld c, a
+        call _sp_check_distance_player
+        pop hl
+
+        ;;Si esta a mas de una casilla no se hace nada
+        ld a, b
+        cp 2
+        ret nc
+
+        ld a, c
+        cp 2
+        ret nc
+
+        ;;Si esta a una casilla del jugador, se despierta
+        ld bc, ent_enemy_ia_state
+        add hl, bc
+        ld a, IA_STATE_IDLE
+        ld[hl], a
+        ret
+        
+
+.no_sleep:
+    ;;Si no esta dormido, se comprueba que tipo de ataque tiene
+    pop hl
+    push hl
+    ld bc, ent_enemy_atk_type
+    add hl, bc
+    ld a, [hl]
+    cp ATTACK_MELEE
+    jr z, .check_melee
+
+        ;;Comprobar ataque a distancia
+        ;pop hl
+        jr .check_paral
+
+.check_melee:
+
+        ;;Comprobar ataque a melee
+        ;pop hl
+
+    ;;Si no puede atacar, se comprueba si esta paralizado para ver si se mueve
+.check_paral:
+    pop hl
+    push hl
+
+    ld bc, ep_cSTAT
+    ld a, [hl]
+    cp STATUS_PARAL
+    jr nz, .check_chase
+        
+        ;;Si esta paralizado se actualiaza su estado y nada mas
+
+        pop hl
+        ;call su_update_status
+        ret
+
+.check_chase
+    ;;Si no esta paralizado se comprueba si puede perseguir al jugador por distancia al mismo
+    pop hl
+    push hl
+
+    ldi a, [hl]
+    ld b, a
+    ld a, [hl]
+    ld c, a
+    call _sp_check_distance_player
+
+    ld a, b
+    add c
+    ;;Si el jugador está a 2 o menos casillas le perseguimos activamente
+    cp $03
+    jr nc, .check_room
+
+        pop hl
+        ;call _si_move_to
+        ret
+
+.check_room:
+    ;;Si el jugador no esta al alcance comprobamos si el enemigo esta en una sala
+
+    pop hl
+    push hl
+
+    ldi a, [hl]
+    ld b, a
+    ld a, [hl]
+    ld c, a
+    
+    call _sl_check_room     ;; A -> room_id ($80 = none)
+    
+    ;;Si no esta en una sala, hacemos que el enemigo simplemente se mueva por los pasillos
+    cp $80
+    jr nz, .check_player_room
+
+        pop hl
+        ;call sp_wander
+        ret
+
+.check_player_room:
+
+    ;; Si el enemigo esta en una habitacion, se comprueba si el jugador esta en la misma
+    ld hl, mp_player
+    ld bc, ep_room
+    add hl, bc
+    ld a, b
+    ld a, [hl]
+    cp b
+    jr nz, .check_player_was_here
+    
+    ;;si el enemigo esta en la misma sala que el jugador, este lo persique de forma directa
+        
+        ;;Almacenamos que el enemigo ha visto al jugador en la misma sala
+        pop hl
+        ld bc, ent_enemy_last_player_room
+        add hl, bc
+        ld [hl], a
+
+
+        ;call move_to
+        ret
+
+
+.check_player_was_here:
+
+    ;;Si el jugador no esta en la misma sala comprobamos si lo hemos visto antes
+    pop hl
+    push hl
+    ld bc, ent_enemy_last_player_room
+    add hl, bc
+    ld a, [hl]
+    cp $80
+    jr nz, .chase_player_last_pos
+
+        ;;Si el jugador no estaba en esta sala, nos movemos hacia el objetivo, en caso de no haber, elige uno
+        pop hl
+        push hl
+
+        ld bc, ent_enemy_objective_x
+        add hl, bc
+
+        ldi a, [hl]
+        ld b, a
+        ld a, [hl]
+        ld c, a
+        cp $80
+        jr nz, .continue_move_to
+
+            pop hl
+            push hl
+            ld bc, ep_room
+            add hl, bc
+            ld a, [hl]
+            call _sl_get_random_exit
+
+            db $18, $FE
+
+.continue_move_to:
+        pop hl
+        
+
+
+
+
+
+
+
+        ret
+        
+        ;db $18, $FE
+
+.chase_player_last_pos:
+    
+    ;;Si el jugador estaba en la misma sala, marcamos la posicion de su salida como objetivo
+    ld a, $80
+    ld [hl], a
+    
+    dec hl
+    dec hl
+
+    ld a, $80
+    ldi [hl], a
+    ldi [hl], a
+    
+    pop hl
+
+
+
+
+    ret
+
 
 
 ;;==============================================================================================
@@ -146,55 +374,6 @@ ret
 
 
 
-
-;;==============================================================================================
-;;                                    CHOOSE IA ACTION
-;;----------------------------------------------------------------------------------------------
-;; Genera un enemigo en el nivel en una posicion valida a una distancia del jugador
-;;
-;; INPUT:
-;;  HL -> Puntero al enemigo
-;;
-;; OUTPUT:
-;;  NONE
-;;
-;; DESTROYS:
-;;  AF, BC, DE, HL
-;;
-;;==============================================================================================
-_si_choose_IA_action:
-    
-;     ld de, mp_player
-;     ld a, [de]
-;     ld b, [hl]
-;     sub b
-;     jr c, .derecha
-;         ld b, $FF
-; .derecha:
-;         ld b, $01
-
-
-;     inc hl
-;     inc de
-
-    ld bc, ent_enemy_ia_state
-    add hl, bc
-    
-    ld a, $01
-    ldi [hl], a
-
-    ld bc, mp_player
-    ld a, [bc]
-    ldi [hl], a
-    inc bc
-    ld a, [bc]
-    ld [hl], a
-
-
-    ret
-
-
-
 ;;==============================================================================================
 ;;                                    RESPAWN ENEMY
 ;;----------------------------------------------------------------------------------------------
@@ -303,8 +482,8 @@ _si_respawn_enemy:
 
     xor a
     ;;____________DELETE THIS__________________
-    ;ld b, $05
-    ;ld c, $04
+    ld b, $05
+    ld c, $04
     ;;_________________________________________
 
     call _mp_new_enemy

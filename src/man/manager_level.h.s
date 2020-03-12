@@ -13,3 +13,4 @@ GLOBAL _ml_save_bgmap_tl
 GLOBAL _ml_save_bgmap_bl
 GLOBAL _ml_save_tilemap
 GLOBAL _ml_new_room
+GLOBAL _ml_add_exit

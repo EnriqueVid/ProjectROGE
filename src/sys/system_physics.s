@@ -9,6 +9,45 @@ sp_special_tile:    ds $01
 SECTION "SYS_PHYSICS_FUNCS", ROM0
 
 
+
+;;==============================================================================================
+;;                                  CHECK PLAYER DISTANCE
+;;----------------------------------------------------------------------------------------------
+;; calcula y devuelve la distancia absoluta de un punto al jugador
+;;
+;; INPUT:
+;;  BC -> Corrdenadas X,Y a calcular la distncia
+;;
+;; OUTPUT:
+;;  BC -> Distancia absoluta X, Y
+;;
+;; DESTROYS:
+;;  AF, BC, DE
+;;
+;;==============================================================================================
+_sp_check_distance_player:
+
+    ld de, mp_player
+    ld a, [de]
+    sub b
+    jr nc, .no_corregir_x
+        xor $FF
+        inc a
+
+.no_corregir_x:
+    ld b, a
+    
+    inc de
+    ld a, [de]
+    sub c
+    jr nc, .no_corregir_y
+        xor $FF
+        inc a
+
+.no_corregir_y
+    ld c, a
+    ret
+
 ;;==============================================================================================
 ;;                                    PLAYABLE COLLISIONS
 ;;----------------------------------------------------------------------------------------------
