@@ -231,9 +231,26 @@ _mp_new_enemy:
     pop hl
     push hl
 
-    ld de, ent_enemy_id
-    add hl, de
-    ld [hl], a              ;; HL -> ent_enemy_id
+    ld bc, ent_enemy_id
+    add hl, bc
+    ldi [hl], a              ;; HL -> ent_enemy_id
+
+    inc de
+    ld a, [de]
+    ldi [hl], a             ;; HL -> ent_enemy_attack_type
+    
+    xor a
+    ldi [hl], a             ;; HL -> ent_enemy_IA_state
+
+    ld a, $80
+    ldi [hl], a             ;; HL -> ent_enemy_objective_x
+    ldi [hl], a             ;; HL -> ent_enemy_objective_y
+    ldi [hl], a             ;; HL -> ent_enemy_last_player_room 
+
+
+
+    ld a, $80
+
     inc hl
     inc hl
     ld a, $00

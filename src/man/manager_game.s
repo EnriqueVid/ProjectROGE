@@ -63,9 +63,43 @@ _mg_game_loop:
     push af
     push hl
     call _sr_enemies_initial_draw
+    
+    pop hl
+    push hl 
+    ld bc, ent_enemy_ia_state 
+    add hl, bc
+    ld a, [hl]
+    cp IA_STATE_ATTACK
+    jr nz, .continue_deletethis_loop
+
+    pop hl
+    push hl
+    call _sr_attack_animation
+
+    pop hl
+    push hl
+    ld bc, ent_enemy_objective_x 
+    add hl, bc
+    ldi a, [hl]
+    ld b, a
+    ld a, [hl]
+    ld c, a
+
+    pop hl
+    push hl
+    call _sc_attack_melee
+
+    pop hl
+    push hl
+    ld bc, ent_enemy_ia_state 
+    add hl, bc
+    ld a, IA_STATE_IDLE
+    ld [hl], a
+
+
+.continue_deletethis_loop:
     pop hl
     pop af
-
     ld bc, entity_enemy_size
     add hl, bc
     dec a
@@ -87,8 +121,8 @@ _mg_game_loop:
     jr nz, .no_spawn_enemy
 
     ld a, [mp_enemy_num]
-    cp $01                  ;;Máximo número de enemigos
-    ;cp $06                  ;;Máximo número de enemigos
+    ;cp $01                  ;;Máximo número de enemigos
+    cp $06                  ;;Máximo número de enemigos
     jr z, .no_spawn_enemy
 
     call _si_respawn_enemy
@@ -96,7 +130,7 @@ _mg_game_loop:
     srl a
     srl a
     srl a
-    srl a
+    ;srl a
     inc a
     ld [mp_respawn_steps], a
 
@@ -116,8 +150,32 @@ _mg_game_loop:
         ld [aux_prev_input_x], a
         ld [aux_prev_input_y], a
         ld hl, mp_player
+        
+        push hl
+        ld de, ep_dir_x
+        add hl, de
+        ldi a, [hl]
+        ld d, a
+        ld a, [hl]
+        ld e, a
+        ld a, $01
+
+        pop hl
+        push hl
+        call _sc_check_attack_melee
+        
+        cp $00
+        jr z, .p_attack_failed
+
+        pop hl
+        push hl
+
+        call _sc_attack_melee
+
+
+.p_attack_failed:
+        pop hl
         call _sr_attack_animation
-        call _sc_physical_attack
 
         ld a, %00000001
         ld [aux_prev_input_btn], a
@@ -338,11 +396,11 @@ jr z, .ia_engine
     jr nz, .ia_loop
 
 
-
 .no_input:
 
     call _sl_update_scroll
     call _sr_draw_enemies
+    ;call _wait_Vblank
 
     jp _mg_game_loop
 

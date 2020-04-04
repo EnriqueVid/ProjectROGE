@@ -16,7 +16,8 @@ SECTION "SYS_PHYSICS_FUNCS", ROM0
 ;; calcula y devuelve la distancia absoluta de un punto al jugador
 ;;
 ;; INPUT:
-;;  BC -> Corrdenadas X,Y a calcular la distncia
+;;  BC -> Coordenadas X,Y a calcular la distncia
+;;  DE -> Direccion X,Y hacia el jugador
 ;;
 ;; OUTPUT:
 ;;  BC -> Distancia absoluta X, Y
@@ -27,25 +28,44 @@ SECTION "SYS_PHYSICS_FUNCS", ROM0
 ;;==============================================================================================
 _sp_check_distance_player:
 
-    ld de, mp_player
-    ld a, [de]
+    push hl
+
+    ld de, $0101
+
+    ld hl, mp_player
+    ldi a, [hl]
     sub b
     jr nc, .no_corregir_x
         xor $FF
         inc a
+        ld d, $FF
 
 .no_corregir_x:
     ld b, a
+    cp $00
+    jr nz, .no_cambiar_dir_x
+
+        ld d, $00
+
+.no_cambiar_dir_x:
     
-    inc de
-    ld a, [de]
+    ld a, [hl]
     sub c
     jr nc, .no_corregir_y
         xor $FF
         inc a
+        ld e, $FF
 
 .no_corregir_y
     ld c, a
+    cp $00
+    jr nz, .no_cambiar_dir_y
+
+        ld e, $00
+
+.no_cambiar_dir_y:
+
+    pop hl
     ret
 
 ;;==============================================================================================

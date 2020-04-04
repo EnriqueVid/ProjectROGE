@@ -30,8 +30,8 @@ m_define_entity_playable: MACRO
     ds $01              ;; Current Status Effect
 
     ds $01              ;; Current Room
-    ds $01              ;; Exit Point X
-    ds $01              ;; Exit Point Y
+    ds $01              ;; Aux Coord X
+    ds $01              ;; Aux Coord Y
 
 ENDM
 ENDC
@@ -57,8 +57,8 @@ ep_cATK = 17
 ep_cDEF = 18
 ep_cSTAT = 19
 ep_room = 20
-ep_exit_x = 21
-ep_exit_y = 22
+ep_aux_x = 21     ;; En enemigos sirve para guardar su posicion anterior 
+ep_aux_y = 22     ;; En el jugador sirve para guardar la posicion por la que salio de una sala
 
 ent_playable_size = 23
 

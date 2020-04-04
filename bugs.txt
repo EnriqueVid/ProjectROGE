@@ -1,0 +1,2 @@
+[ ] - BUG: A veces se dibuja un tile (8x8) mal en el tilemap.
+[X] - BUG: Los enemigos explotan cuando estan uno frente al otro.

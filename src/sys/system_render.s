@@ -177,7 +177,7 @@ _sr_draw_enemies:
 ;;
 ;; DESTROYS:
 ;;  
-;;
+;;  AF, BC, DE, HL
 ;;==============================================================================================
 _sr_attack_animation:
 
@@ -372,8 +372,8 @@ _sr_draw_hud:
     ld [hl], a
 
     ld hl, $FF4A      
-    ;ld a, $88         ;; Window Y
-    ld a, $68
+    ld a, $88         ;; Window Y
+    ;ld a, $68
 
     ldi [hl], a    ;; Seteamos la window 
     ld a, $07

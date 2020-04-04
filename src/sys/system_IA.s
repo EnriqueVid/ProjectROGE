@@ -36,7 +36,8 @@ _si_choose_IA_action:
     add hl, bc
     ld a, [hl]
     cp IA_STATE_NO_IA
-    ret z
+    cp IA_STATE_ATTACK
+    jp z, .failure
     cp IA_STATE_SLEEP
     jr nz, .no_sleep    ;; Comprobamos si el enemigo esta dorimido
 
@@ -84,7 +85,51 @@ _si_choose_IA_action:
 .check_melee:
 
         ;;Comprobar ataque a melee
+        pop hl
+        push hl
+        ldi a, [hl]
+        ld c, [hl]
+        ld b, a
+        call _sp_check_distance_player
+        ;BC -> Distance X,Y 
+        ;DE -> Direction X,Y
+
+        ld a, b
+        cp 2
+        jr nc, .check_paral
+
+        ld a, c
+        cp 2
+        jr nc, .check_paral
+
+
+        pop hl
+        push hl
+        push de
+
+        xor a
+        call _sc_check_attack_melee
+        
+        pop de
+
+        cp $00
+        jr z, .check_paral
+
+        pop hl
+        ;push hl
+        ld bc, ep_dir_x
+        add hl, bc
+
+        ld [hl], d
+        inc hl
+        ld [hl], e
+        
         ;pop hl
+        
+        ;call _sr_attack_animation
+        ;db $18, $FE
+
+        ret
 
     ;;Si no puede atacar, se comprueba si esta paralizado para ver si se mueve
 .check_paral:
@@ -92,6 +137,7 @@ _si_choose_IA_action:
     push hl
 
     ld bc, ep_cSTAT
+    add hl, bc
     ld a, [hl]
     cp STATUS_PARAL
     jr nz, .check_chase
@@ -116,11 +162,31 @@ _si_choose_IA_action:
     ld a, b
     add c
     ;;Si el jugador está a 2 o menos casillas le perseguimos activamente
-    cp $03
+    cp $04
     jr nc, .check_room
 
         pop hl
-        ;call _si_move_to
+        push hl
+        ld bc, ent_enemy_objective_x
+        add hl, bc
+
+        ld bc, mp_player
+        ld a, [bc]
+        ldi [hl], a
+        inc bc
+        ld a, [bc]
+        ld [hl], a 
+        pop hl
+        push hl
+
+        call _si_move_to
+        
+        pop hl
+        ld bc, ent_enemy_objective_x
+        add hl, bc
+        ld a, $80
+        ldi [hl], a
+        ld [hl], a
         ret
 
 .check_room:
@@ -135,13 +201,26 @@ _si_choose_IA_action:
     ld c, a
     
     call _sl_check_room     ;; A -> room_id ($80 = none)
+
+    pop hl
+    push hl
+    ld bc, ep_room
+    add hl, bc
+    ld [hl], a
     
     ;;Si no esta en una sala, hacemos que el enemigo simplemente se mueva por los pasillos
     cp $80
     jr nz, .check_player_room
 
         pop hl
-        ;call sp_wander
+        push hl
+        ld bc, ent_enemy_objective_x
+        add hl, bc
+        ld a, $80
+        ldi [hl], a
+        ld [hl], a
+        pop hl
+        call _si_wander
         ret
 
 .check_player_room:
@@ -150,21 +229,43 @@ _si_choose_IA_action:
     ld hl, mp_player
     ld bc, ep_room
     add hl, bc
-    ld a, b
+    ld b, a
     ld a, [hl]
     cp b
     jr nz, .check_player_was_here
     
-    ;;si el enemigo esta en la misma sala que el jugador, este lo persique de forma directa
+    ;;si el enemigo esta en la misma sala que el jugador, este lo persigue de forma directa
         
         ;;Almacenamos que el enemigo ha visto al jugador en la misma sala
         pop hl
+        push hl
         ld bc, ent_enemy_last_player_room
         add hl, bc
         ld [hl], a
 
+        pop hl
+        push hl
+        ld bc, ent_enemy_objective_x
+        add hl, bc
 
-        ;call move_to
+        ld bc, mp_player
+        ld a, [bc]
+        ldi [hl], a
+        inc bc
+        ld a, [bc]
+        ld [hl], a 
+        pop hl
+        push hl
+
+        call _si_move_to
+        
+        pop hl
+        ld bc, ent_enemy_objective_x
+        add hl, bc
+        ld a, $80
+        ldi [hl], a
+        ld [hl], a
+
         ret
 
 
@@ -199,42 +300,371 @@ _si_choose_IA_action:
             add hl, bc
             ld a, [hl]
             call _sl_get_random_exit
+            pop hl
+            push hl
+            ld de, ent_enemy_objective_x
+            add hl, de
+            ld [hl], b
+            inc hl
+            ld [hl], c
+ 
 
-            db $18, $FE
 
 .continue_move_to:
         pop hl
+        push hl 
+
+        call _si_move_to
+        cp a, $80
+        jr z, .not_in_exit
+
+            pop hl
+
+            push hl
+            ld bc, ent_enemy_objective_x
+            add hl, bc
+            ld a, $80
+            ldi [hl], a
+            ld [hl], a
+            pop hl
+
+            call _si_wander
+
+            ret
+
+.not_in_exit:
         
-
-
-
-
-
-
-
+        pop hl
         ret
         
-        ;db $18, $FE
 
 .chase_player_last_pos:
     
-    ;;Si el jugador estaba en la misma sala, marcamos la posicion de su salida como objetivo
+    ;;Si el jugador estaba en la misma sala, marcamos la posicion de su salida como objetivo y eliminamos el haberlo visto
     ld a, $80
     ld [hl], a
     
-    dec hl
-    dec hl
+    ld hl, mp_player
+    ld de, ep_aux_x
+    add hl, de
+    ldi a, [hl]
+    ld e, [hl]
 
-    ld a, $80
-    ldi [hl], a
-    ldi [hl], a
-    
+    ;; AE -> Player exit X,Y
+
     pop hl
+    push hl
+    ld bc, ent_enemy_objective_x
+    add hl, bc
+
+    ldi [hl], a 
+    ld [hl], e
+
+    pop hl
+    push hl
+    call _si_move_to
+    cp a, $80
+    jr z, .not_in_exit
+
+        pop hl
+        push hl
+        
+        ld bc, ent_enemy_objective_x
+        add hl, bc
+        ld a, $80
+        ldi [hl], a
+        ld [hl], a
+        pop hl
+
+        call _si_wander
+
+        ret
+
+.not_in_player_exit:
+        
+    pop hl
+    ret
+
+.failure
+
+    pop hl
+    ret
 
 
+;;==============================================================================================
+;;                                            WANDER
+;;----------------------------------------------------------------------------------------------
+;; Se mueve en una de 4 direcciones sin ir hacia atrás, se usa para el movimiento en los pasillos
+;; el orden de movimiento es: R, L, U, D
+;;
+;; INPUT:
+;;  HL -> Puntero al enemigo
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_si_wander:
 
+    push hl
+    ld bc, ep_aux_x
+    add hl, bc
+    ld d, [hl]
+    inc hl
+    ld e, [hl]
+
+    ;;DE -> Previous X,Y
+
+    pop hl
+    
+    ld b, [hl]
+    inc hl
+    ld c, [hl]
+
+    ;;BC -> Current X,Y
+
+    dec hl
+    ;;HL -> Enemy Ptr
+
+.try_right:
+    push de
+    push bc
+    push hl
+
+    ld bc, $0100
+    
+    call _sp_playable_collisions
+    ld a, b
+    or c
+    jr z, .try_left
+        
+        pop hl
+        pop bc
+        pop de
+        push de
+        push bc
+        push hl
+
+        ld a, $1
+        add b
+        ld b, a
+        ;;BC -> Future position
+        
+        ;a = b          Comprobamos si la posicion futura y la pasada son la misma
+        xor d
+        ld d, a
+        ld a, c
+        xor e
+        or d
+
+        jr z, .try_left
+
+            pop hl
+            pop bc
+            pop de
+            
+            push hl
+            ld a, $1
+            add b
+            ldi [hl], a
+            ld [hl], c
+            pop hl
+
+            ld de, ep_aux_x
+            add hl, de
+            ld [hl], b
+            inc hl
+            ld [hl], c
+
+            ret
+
+;;---------------------------------------------
+.try_left:
+    pop hl
+    pop bc
+    pop de
+    push de
+    push bc
+    push hl
+
+    ld bc, $FF00
+    
+    call _sp_playable_collisions
+    ld a, b
+    or c
+    jr z, .try_up
+        pop hl
+        pop bc
+        pop de
+        push de
+        push bc
+        push hl
+
+        ld a, $FF
+        add b
+        ld b, a
+        ;;BC -> Future position
+        
+        ;a = b          Comprobamos si la posicion futura y la pasada son la misma
+        xor d
+        ld d, a
+        ld a, c
+        xor e
+        or d
+
+        jr z, .try_up
+
+            pop hl
+            pop bc
+            pop de
+            
+            push hl
+            ld a, $FF
+            add b
+            ldi [hl], a
+            ld [hl], c
+            pop hl
+
+            ld de, ep_aux_x
+            add hl, de
+            ld [hl], b
+            inc hl
+            ld [hl], c
+
+            ret
+
+;;---------------------------------------------
+.try_up:
+
+    pop hl
+    pop bc
+    pop de
+    push de
+    push bc
+    push hl
+
+    ld bc, $00FF
+    
+    call _sp_playable_collisions
+    ld a, b
+    or c
+    jr z, .try_down
+
+        pop hl
+        pop bc
+        pop de
+        push de
+        push bc
+        push hl
+
+        ld a, $FF
+        add c
+        ld c, a
+        ;;BC -> Future position
+        
+        ;a = c          Comprobamos si la posicion futura y la pasada son la misma
+        xor e
+        ld e, a
+        ld a, b
+        xor d
+        or e
+
+        jr z, .try_down
+
+            pop hl
+            pop bc
+            pop de
+            
+            push hl
+            ld [hl], b
+            inc hl
+            ld a, $FF
+            add c
+            ld [hl], a
+            pop hl
+
+            ld de, ep_aux_x
+            add hl, de
+            ld [hl], b
+            inc hl
+            ld [hl], c
+
+            ret
+
+;;---------------------------------------------
+.try_down:
+    pop hl
+    pop bc
+    pop de
+    push de
+    push bc
+    push hl
+
+    ld bc, $0001
+    
+    call _sp_playable_collisions
+    ld a, b
+    or c
+    jr z, .no_move
+
+        pop hl
+        pop bc
+        pop de
+        push de
+        push bc
+        push hl
+
+        ld a, $01
+        add c
+        ld c, a
+        ;;BC -> Future position
+        
+        ;a = c          Comprobamos si la posicion futura y la pasada son la misma
+        xor e
+        ld e, a
+        ld a, b
+        xor d
+        or e
+
+        jr z, .no_move
+
+            pop hl
+            pop bc
+            pop de
+            
+            push hl
+            ld [hl], b
+            inc hl
+            ld a, $01
+            add c
+            ld [hl], a
+            pop hl
+
+            ld de, ep_aux_x
+            add hl, de
+            ld [hl], b
+            inc hl
+            ld [hl], c
+
+            ret
+
+;;---------------------------------------------
+.no_move:
+    pop hl
+    pop bc
+    pop de
+
+    ld de, ep_aux_x
+    add hl, de
+    ld [hl], b
+    inc hl
+    ld [hl], c
 
     ret
+
 
 
 
@@ -254,7 +684,7 @@ _si_choose_IA_action:
 ;;
 ;;==============================================================================================
 _si_move_to:
-    
+ 
    ;Guardamos en BC el objetivo del movimiento
     push hl
     ld bc, ent_enemy_objective_x    
@@ -313,15 +743,15 @@ _si_move_to:
     jr nz, .not_arrived
 
         ld a, d
-        cp $02
-        jr nc, .not_arrived
-        ld a, e
-        cp $02
-        jr nc, .not_arrived
+        or e
+        jr nz, .not_arrived
 
             pop bc
+            
             ;;HA LLEGADO AL DESTINO
-            ;;Comprobar si debe atacar o moverse a otro lado
+            
+            ld a, $00
+
             ret
 
 .not_arrived:
@@ -356,19 +786,31 @@ _si_move_to:
 
 .moverse:
     push hl
+   
     ld a, [hl]
+    ld d, a
     add b
     ldi [hl], a
     ld a, [hl]
+    ld e, a
     add c
     ld [hl], a 
+
+    ;;DE -> Previous X,Y
     pop hl
+    ld bc, ep_aux_x
+    add hl, bc
+    ld [hl], d
+    inc hl
+    ld [hl], e
+
 
     pop bc
 
 
     ;db $18, $FE
 
+    ld a, $80
 
 ret
 
@@ -482,8 +924,8 @@ _si_respawn_enemy:
 
     xor a
     ;;____________DELETE THIS__________________
-    ld b, $05
-    ld c, $04
+    ;ld b, $05
+    ;ld c, $04
     ;;_________________________________________
 
     call _mp_new_enemy

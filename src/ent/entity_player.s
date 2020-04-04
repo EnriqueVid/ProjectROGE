@@ -1,8 +1,8 @@
 SECTION "ENT_PLAYER_DEFAULT", ROM0
 
 default_entity_player::
-ent_player_default_x: db $07
-ent_player_default_y: db $06
+ent_player_default_x: db $1B ;;$07
+ent_player_default_y: db $15 ;;$06
 
 ent_player_default_window_x: db $48+8
 ent_player_default_window_y: db $40+16

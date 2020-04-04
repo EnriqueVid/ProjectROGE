@@ -4,7 +4,7 @@ SECTION "ENT_ENEMY_TYPES", ROM0
 
 
 ent_enemy_index::
-    dw ent_enemy_bat_01 ;;01 -> $01
+    dw ent_enemy_bat_01 ;;00 -> $00
 
 
 ent_enemy_bat_01:
@@ -15,8 +15,8 @@ ent_enemy_bat_01:
     db $02  ;;Max ATK
     db $01  ;;Max DEF
 
-    db $01  ;;Enemy ID
-    db $00  ;;Attack Type
+    db $00  ;;Enemy ID
+    db ATTACK_MELEE  ;;Attack Type
     ;db $03  ;;IA State
     ;db $00  ;;Objective X
     ;db $00  ;;Objective Y
