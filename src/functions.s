@@ -8,6 +8,95 @@ rand_seed: ds $01
 SECTION "FUNCTION_FUNCS", ROM0
 
 
+
+
+;;==============================================================================================
+;;                                    GENERATE RANDOM
+;;----------------------------------------------------------------------------------------------
+;; Convierte un numero hexadecimal de hasta $FF a decimal y lo devielve en DE
+;;
+;; INPUT:
+;;  A -> Numero en hexadecimal para convertir
+;;
+;; OUTPUT:
+;;  DE -> Numero decimal convertido, Cada nibble representa una unidad/decena/centena
+;;
+;; DESTROYS:
+;;  AF, B, DE
+;;
+;;==============================================================================================
+_hex2dec:
+
+    ld de, $0000
+
+    cp $C8                  ;200 decimal
+    jr c, .check_cent
+    sub $C8
+    ld d, $02
+    jr .check_daa
+
+.check_cent:
+    cp $64                  ;100 decimal
+    jr c, .check_daa
+    sub $64
+    ld d, $01 
+
+.check_daa
+    ld b, a
+    xor a
+
+.bit0:
+    bit 0, b
+    jr z, .bit1
+    add a, $01
+    daa
+
+.bit1:
+    bit 1, b
+    jr z, .bit2
+    add a, $02
+    daa
+
+.bit2:
+    bit 2, b
+    jr z, .bit3
+    add a, $04
+    daa
+
+.bit3:
+    bit 3, b
+    jr z, .bit4
+    add a, $08
+    daa
+
+.bit4:
+    bit 4, b
+    jr z, .bit5
+    add a, $16
+    daa
+
+.bit5:
+    bit 5, b
+    jr z, .bit6
+    add a, $32
+    daa
+
+.bit6:
+    bit 6, b
+    jr z, .bit_end
+    add a, $64
+    daa
+    
+.bit_end:
+
+    ld e, a
+
+    ;db $18, $FE
+
+    ret
+
+
+
 ;;==============================================================================================
 ;;                                    GENERATE RANDOM
 ;;----------------------------------------------------------------------------------------------
@@ -75,8 +164,11 @@ _VRAM_wait:
 .loop:
     ld a,[$FF41]  		;STAT - LCD Status (R/W)
 		;-LOVHCMM
-    and %00000010		;MM=video mode (0/1 =Vram available)  		
+    and %00000010		;MM=video mode (0/1 =Vram available)  	
+    ;dec	a
     jr nz,.loop
+    
+    ;db $18,$FE
     pop af	
 	ret
 
@@ -85,6 +177,7 @@ _VRAM_wait:
 ; BC -> CANTIDAD 
 _clear_data:
     xor a
+    call _VRAM_wait
     ldi [hl], a
     dec bc
     ld a, b

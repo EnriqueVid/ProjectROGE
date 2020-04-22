@@ -2,6 +2,7 @@ GLOBAL _sr_load_tiles
 GLOBAL _sr_draw_sprite
 GLOBAL _sr_draw_tile
 GLOBAL _sr_draw_screen
+GLOBAL _sr_draw_screen_8x8
 GLOBAL _sr_update_scroll_map
 GLOBAL _sr_draw_row
 GLOBAL _sr_draw_column
@@ -9,6 +10,10 @@ GLOBAL _sr_draw_hud
 GLOBAL _sr_attack_animation
 GLOBAL _sr_draw_enemies
 GLOBAL _sr_enemies_initial_draw
+GLOBAL _sr_update_draw_player_hud
+GLOBAL _sr_fade_out
+GLOBAL _sr_fade_in
+GLOBAL _sr_draw_main_menu_info
 
 
 

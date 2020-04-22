@@ -1,6 +1,17 @@
 
 SECTION "DATA", ROM0
 
+
+;;--------------------------------------------
+;;LEVEL INDEX
+;;--------------------------------------------
+level_index::
+    dw ent_map_01
+    dw ent_map_02
+
+
+
+
 ;;--------------------------------------------
 ;;SPRITE DATA
 ;;--------------------------------------------
@@ -339,12 +350,19 @@ tileset_index::
     dw tileset_04       ;;  Tileset 01
     dw tileset_02       ;;  Sprites 01
     dw tileset_03       ;;  HUD 01
+    dw tileset_05       ;;  MAIN MENU
+    dw tileset_06       ;;  PAUSE MENU
 
 tileset_size::
     dw tileset_04_end - tileset_04      ;;  Tileset 01
     dw tileset_02_end - tileset_02      ;;  Sprites 01
     dw tileset_03_end - tileset_03      ;;  HUD 01
+    dw tileset_05_end - tileset_05      ;;  MAIN MENU
+    dw tileset_06_end - tileset_06      ;;  PAUSE MENU
 
+
+
+SECTION "TILE_DATA", ROMX
 
 tileset_01: 
 INCBIN "assets/tileset-01.bin"      ;;  Tileset 01
@@ -360,4 +378,12 @@ tileset_03_end:
 
 tileset_04:
 INCBIN "assets/tileset_castle_01.bin"
-tileset_04_end
+tileset_04_end:
+
+tileset_05:                        ;; MAIN MENU
+INCBIN "assets/tileset-Main-Menu.bin"
+tileset_05_end:
+
+tileset_06:                        ;; PAUSE MENU
+INCBIN "assets/tileset-Pause-Menu.bin"
+tileset_06_end:

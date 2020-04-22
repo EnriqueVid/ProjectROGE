@@ -15,6 +15,8 @@ m_define_entity_player: MACRO
     ds $01              ;; Default ATK
     ds $01              ;; Default DEF
 
+    ds $01              ;; Player Lvl
+
 ENDM
 ENDC
 
@@ -27,4 +29,7 @@ ent_player_def_MP  = 27
 ent_player_def_ATK = 28
 ent_player_def_DEF = 29
 
-entity_player_size = 30
+ent_player_Lvl     = 30
+
+
+entity_player_size = 31

@@ -109,7 +109,7 @@ _si_choose_IA_action:
 
         xor a
         call _sc_check_attack_melee
-        
+
         pop de
 
         cp $00
@@ -436,6 +436,7 @@ _si_wander:
 
     ld bc, $0100
     
+    xor a
     call _sp_playable_collisions
     ld a, b
     or c
@@ -492,6 +493,7 @@ _si_wander:
 
     ld bc, $FF00
     
+    xor a
     call _sp_playable_collisions
     ld a, b
     or c
@@ -548,6 +550,7 @@ _si_wander:
 
     ld bc, $00FF
     
+    xor a
     call _sp_playable_collisions
     ld a, b
     or c
@@ -605,6 +608,7 @@ _si_wander:
 
     ld bc, $0001
     
+    xor a
     call _sp_playable_collisions
     ld a, b
     or c
@@ -733,6 +737,7 @@ _si_move_to:
     push bc
     push hl
     push de
+    xor a
     call _sp_playable_collisions
     pop de
     pop hl
@@ -770,6 +775,7 @@ _si_move_to:
             ld c, $00
             push hl
             push de
+            xor a
             call _sp_playable_collisions 
             pop de
             pop hl
@@ -779,6 +785,7 @@ _si_move_to:
             ld b, $00
             push hl
             push de
+            xor a
             call _sp_playable_collisions 
             pop de
             pop hl

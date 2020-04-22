@@ -1,7 +1,243 @@
 INCLUDE "src/sys/system_user.h.s"
+INCLUDE "src/ent/entity_playable.h.s"
+INCLUDE "src/ent/entity_hud.h.s"
 
 
 SECTION "SYS_USER_FUNCS", ROM0
+
+
+
+
+;;==============================================================================================
+;;                                    UPDATE PLAYER HUD
+;;----------------------------------------------------------------------------------------------
+;; Actualiza el hud con todos los datos necesarios
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_su_update_all_hud_data:
+
+    ld bc, mg_hud
+
+    ld hl, mp_player
+    ld de, ep_mHP
+    add hl, de
+
+    ldi a, [hl]     ;A -> Player Max Health
+
+    push bc         ; Sacamos el Max HP en decimal
+    call _hex2dec
+    pop bc
+
+    ld a, d                 ;; Guardamos las centenas del Max HP
+    ld [bc], a
+
+    ld a, e                 ;; Guardamos las decenas del Max HP
+    srl a
+    srl a
+    srl a
+    srl a
+    inc bc
+    ld [bc], a
+
+    ld a, e                 ;; Guardamos las unidades del Max HP
+    and %00001111
+    inc bc
+    ld [bc], a
+
+
+    ldi a, [hl]     ;A -> Player Max ManaPoints
+
+    push bc         ; Sacamos el Max HP en decimal
+    call _hex2dec
+    pop bc
+
+    ld a, e                 ;; Guardamos las decenas del Max MP
+    srl a
+    srl a
+    srl a
+    srl a
+    inc bc
+    ld [bc], a
+
+    ld a, e                 ;; Guardamos las unidades del Max MP
+    and %00001111
+    inc bc
+    ld [bc], a
+
+
+    ;ahora cargamos el ataque del jugador
+    ld hl, mg_hud
+    ld bc, eh_atk_c
+    add hl, bc
+    ld b, h
+    ld c, l
+
+    ld hl, mp_player
+    ld de, ep_cATK
+    add hl, de
+
+    ldi a, [hl]     ;A -> Player Attack
+
+    push bc         ; Sacamos el Atk en decimal
+    call _hex2dec
+    pop bc
+
+    ld a, d                 ;; Guardamos las centenas del Atk
+    ld [bc], a
+
+    ld a, e                 ;; Guardamos las decenas del Atk
+    srl a
+    srl a
+    srl a
+    srl a
+    inc bc
+    ld [bc], a
+
+    ld a, e                 ;; Guardamos las unidades del Atk
+    and %00001111
+    inc bc
+    ld [bc], a
+
+    inc bc
+    ldi a, [hl]
+
+    push bc         ; Sacamos el Def en decimal
+    call _hex2dec
+    pop bc
+
+    ld a, d                 ;; Guardamos las centenas del Def
+    ld [bc], a
+
+    ld a, e                 ;; Guardamos las decenas del Def
+    srl a
+    srl a
+    srl a
+    srl a
+    inc bc
+    ld [bc], a
+
+    ld a, e                 ;; Guardamos las unidades del Def
+    and %00001111
+    inc bc
+    ld [bc], a
+
+
+    ld a, [mg_actual_level] ;; Sacamos el piso actual 
+
+    push bc
+    call _hex2dec
+    pop bc
+
+    ld a, e                 ;; Guardamos las decenas del Piso
+    srl a
+    srl a
+    srl a
+    srl a
+    inc bc
+    ld [bc], a
+
+    ld a, e                 ;; Guardamos las unidades del Piso
+    and %00001111
+    inc bc
+    ld [bc], a
+
+
+    ;inc bc
+    ;ld hl, [mp_player]
+    ;ld de, ent_player_Lvl
+    ;continua en la funcion de abajo
+
+
+;;==============================================================================================
+;;                                    UPDATE PLAYER HUD
+;;----------------------------------------------------------------------------------------------
+;; Actualiza el hud con los datos del jugador
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_su_update_player_hud_data:
+
+    ld hl, mg_hud
+    ld bc, eh_c_hp_c
+    add hl, bc
+    ld b, h
+    ld c, l
+
+
+    ld hl, mp_player
+    ld de, ep_cHP
+    add hl, de
+    
+    ;db $18, $FE
+
+    ldi a, [hl]
+
+    push bc                 ;; Sacamos el HP en decimal
+    call _hex2dec
+    pop bc
+
+    ld a, d                 ;; Guardamos las centenas del  HP
+    ld [bc], a
+
+    ld a, e                 ;; Guardamos las decenas del HP
+    srl a
+    srl a
+    srl a
+    srl a
+    inc bc
+    ld [bc], a
+
+    ld a, e                 ;; Guardamos las unidades del HP
+    and %00001111
+    inc bc
+    ld [bc], a
+
+
+    ldi a, [hl]             ;; Sacamos el MP en decimal
+    push bc
+    call _hex2dec
+    pop bc
+
+    ld a, e                 ;; Guardamos las decenas del MP
+    srl a
+    srl a
+    srl a
+    srl a
+    inc bc
+    ld [bc], a
+
+    ld a, e                 ;; Guardamos las unidades del MP
+    and %00001111
+    inc bc
+    ld [bc], a
+
+
+    
+
+
+
+    ;db $18, $FE
+
+    ret
+
+
 
 ;;==============================================================================================
 ;;                                    SYSTEM USER INPUT

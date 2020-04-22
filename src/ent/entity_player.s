@@ -19,12 +19,12 @@ ent_player_default_sprite_ptr_H: db $C0
 
 ent_player_default_max_HP: db $0F
 ent_player_default_max_MP: db $0A
-ent_player_default_max_ATK: db $0A
+ent_player_default_max_ATK: db $02
 ent_player_default_max_DEF: db $0A
 
 ent_player_default_current_HP: db $0F
 ent_player_default_current_MP: db $0A
-ent_player_default_current_ATK: db $0A
+ent_player_default_current_ATK: db $02
 ent_player_default_current_DEF: db $0A
 
 ent_player_default_current_status_effect: db $BB

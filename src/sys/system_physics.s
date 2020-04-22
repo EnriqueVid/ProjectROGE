@@ -4,6 +4,7 @@ INCLUDE "src/ent/entity_camera.h.s"
 
 SECTION "SYS_PHYSICS_VARS", WRAM0
 sp_special_tile:    ds $01
+aux_is_player: ds $01
 
 
 SECTION "SYS_PHYSICS_FUNCS", ROM0
@@ -76,6 +77,7 @@ _sp_check_distance_player:
 ;; INPUT:
 ;;  HL -> Puntero a la entidad playable
 ;;  BC -> Direccion X, Y de la entidad
+;;   A -> Tipo de Entidad (0=NPC, 1=Player)
 ;;
 ;; OUTPUT:
 ;;  BC -> Direccion actualizada en funcion de las colisiones
@@ -85,6 +87,10 @@ _sp_check_distance_player:
 ;;
 ;;==============================================================================================
 _sp_playable_collisions:
+
+    ld [aux_is_player], a
+    xor a
+    ld [sp_special_tile], a
     
     push bc                 ;;Guardamos la direccion inicial del jugador
     
@@ -129,7 +135,7 @@ _sp_playable_collisions:
     ld b, $00               ;;Si colisiona en X, la ponemos a 0
     ld a, c
     or b
-    jr z, .end              ;;Si B y C valen 0, acabamos (no se puede mover)
+    jp z, .end              ;;Si B y C valen 0, acabamos (no se puede mover)
  
 .continue02:
     
@@ -214,9 +220,54 @@ _sp_playable_collisions:
 .loop_end:
     pop bc
 
+    ld a, [aux_is_player]
+    cp $00
+    ret z
+
     ld a, [sp_special_tile]
     cp $16
+    ret c
+
+    cp $16
     jr z, .win
+
+    push bc
+
+    ld hl, mp_player
+    ldi a, [hl]
+    add b
+    ld d, a
+    ld a, [hl]
+    add c
+    ld e, a
+    ;push de
+
+    ld hl, ml_map
+    ld b, $00
+    ld c, d
+    ld d, $00
+
+    call _sl_get_tilemap_dir
+
+    ld a, $14
+    ld [hl], a
+
+    ld hl, ml_camera
+    ld de, ec_bgmap_ptr_tl_l
+    add hl, de
+    ldi a, [hl]
+    ld e, a
+    ld d, [hl]
+    ;pop de
+    pop bc                  ;BC -> Dir_x, Dir_y
+
+    ;ld a, h
+    ;cp $9B
+
+    ;[WIP]
+
+    ;db $18, $FE
+    
 
     ret
 
@@ -230,8 +281,8 @@ _sp_playable_collisions:
     pop bc
 .end:
     ld bc, $0000
-    ld a, $00
-    ld [mg_win_condition], a
+    ;ld a, $00
+    ;ld [mg_win_condition], a
     ret
 
 

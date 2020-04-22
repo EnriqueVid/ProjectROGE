@@ -1,6 +1,7 @@
 INCLUDE "src/sys/system_render.h.s"
 INCLUDE "src/ent/entity_playable.h.s"
 INCLUDE "src/ent/entity_enemy.h.s"
+INCLUDE "src/ent/entity_hud.h.s"
 
 
 SECTION "SYS_RENDER_VARS", WRAM0
@@ -15,6 +16,242 @@ SECTION "SYS_RENDER_FUNCS", ROM0
 
 ;               /       -8       \  /           +18            \  /    -10    \
 attack_anim: db $FE, $FE, $04, $04, $03, $03, $02, $FC, $FC, $FC, $80
+
+;;==============================================================================================
+;;                                    UPDATE PLAYER HUD
+;;----------------------------------------------------------------------------------------------
+;; Actualiza el hud con los datos del jugador
+;;
+;; INPUT:
+;;  HL -> Puntero al enemigo
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  
+;;
+;;==============================================================================================
+_sr_draw_main_menu_info:
+
+    ld hl, mg_hud
+    ld bc, eh_atk_c
+    add hl, bc
+
+    ldi a, [hl]
+    ld b, $00            ;Indica si las centenas han sido 0
+    
+    add $30             ;;Comprobamos las centenas
+    cp $31
+    jr nc, .atk_no_cent
+        ld a, $90
+        ld b, $01
+.atk_no_cent:
+    call _VRAM_wait
+    ld[$98F0], a
+
+    ldi a, [hl]
+    add $30
+    ld c, a
+    cp $31
+    jr nc, .atk_no_dec
+        ld a, b
+        cp $00
+        jr z, .atk_no_dec
+            ld c, $90
+.atk_no_dec:
+
+    ld a, c
+    call _VRAM_wait
+    ld[$98F1], a
+    
+    ldi a, [hl]
+    add $30
+    call _VRAM_wait
+    ld[$98F2], a
+
+
+
+
+    ldi a, [hl]
+    ld b, $00            ;Indica si las centenas han sido 0
+    
+    add $30             ;;Comprobamos las centenas
+    cp $31
+    jr nc, .atk_no_cent
+        ld a, $90
+        ld b, $01
+.def_no_cent:
+    call _VRAM_wait
+    ld[$9930], a
+
+    ldi a, [hl]
+    add $30
+    ld c, a
+    cp $31
+    jr nc, .def_no_dec
+        ld a, b
+        cp $00
+        jr z, .def_no_dec
+            ld c, $90
+.def_no_dec:
+
+    ld a, c
+    call _VRAM_wait
+    ld[$9931], a
+    
+    ldi a, [hl]
+    add $30
+    call _VRAM_wait
+    ld[$9932], a
+
+    ret
+
+
+
+;;==============================================================================================
+;;                                    UPDATE PLAYER HUD
+;;----------------------------------------------------------------------------------------------
+;; Actualiza el hud con los datos del jugador
+;;
+;; INPUT:
+;;  HL -> Puntero al enemigo
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  
+;;
+;;==============================================================================================
+_sr_update_draw_player_hud:
+
+    ;Dibujar, Max health
+
+    ld hl, mg_hud
+    ldi a, [hl]
+    ld b, $00            ;Indica si las centenas han sido 0
+    
+    add $81             ;;Comprobamos las centenas
+    cp $82
+    jr nc, .mhp_no_cent
+        dec a
+        ld b, $01
+.mhp_no_cent:
+    call _VRAM_wait
+    ld[$9C05], a
+
+    ldi a, [hl]
+    add $81
+    ld c, a
+    cp $82
+    jr nc, .mhp_no_dec
+        ld a, b
+        cp $00
+        jr z, .mhp_no_dec
+            ld c, $80
+.mhp_no_dec:
+
+    ld a, c
+    call _VRAM_wait
+    ld[$9C06], a
+    
+    ldi a, [hl]
+    add $81
+    call _VRAM_wait
+    ld[$9C07], a
+
+
+
+    ;Dibujar, Max MP
+    ldi a, [hl]
+    add $81
+    cp $82
+    jr nc, .mmp_no_dec
+        dec a
+.mmp_no_dec:
+    call _VRAM_wait
+    ld[$9C0E], a
+
+    ldi a, [hl]
+    add $81
+    call _VRAM_wait
+    ld[$9C0F], a
+
+
+
+    ;Dibujar, Current health
+    ldi a, [hl]
+    ld b, $00
+    
+    add $81             ;;Comprobamos las centenas
+    cp $82
+    jr nc, .chp_no_cent
+        dec a
+        ld b, $01
+.chp_no_cent:
+    call _VRAM_wait
+    ld[$9C01], a
+
+    ldi a, [hl]
+    add $81
+    ld c, a
+    cp $82
+    jr nc, .chp_no_dec
+        ld a, b
+        cp $00
+        jr z, .chp_no_dec
+            ld c, $80
+.chp_no_dec:
+
+    ld a, c
+    call _VRAM_wait
+    ld[$9C02], a
+    
+    ldi a, [hl]
+    add $81
+    call _VRAM_wait
+    ld[$9C03], a
+
+
+    ;Dibujar, Current MP
+    ldi a, [hl]
+    add $81
+    cp $82
+    jr nc, .cmp_no_dec
+        dec a
+.cmp_no_dec:
+    call _VRAM_wait
+    ld[$9C0B], a
+
+    ldi a, [hl]
+    add $81
+    call _VRAM_wait
+    ld[$9C0C], a
+
+
+    ;Dibujar, Floor
+    ld hl, mg_hud
+    ld bc, eh_fl_d
+    add hl, bc
+    
+    ldi a, [hl]
+    add $81
+    call _VRAM_wait
+    ld[$9C12], a
+
+    ldi a, [hl]
+    add $81
+    call _VRAM_wait
+    ld[$9C13], a
+
+
+    ret
+
+
+
+
+
 
 ;;==============================================================================================
 ;;                                    ENEMIES INITIAL DRAW
@@ -662,6 +899,63 @@ _sr_draw_row:
 
     ret
 
+;;==============================================================================================
+;;                                      DRAW SCREEN 8x8
+;;----------------------------------------------------------------------------------------------
+;; Dibuja los tiles de 8x8 px de un tilemap para cubrir la pantalla
+;;
+;; INPUT:
+;;  HL -> Puntero a la memoria de video donde quieres empezar a dibujar
+;;  BC -> Puntero al tilemap donde quieres empezar a dibujar
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_sr_draw_screen_8x8:
+
+    ;db $18, $FE
+
+    xor a
+    ld [sr_actual_x], a
+    ld [sr_actual_y], a
+
+.loop:    
+
+    ld a, [sr_actual_x]
+    cp 20
+    jr z, .change_y
+    inc a
+    ld [sr_actual_x], a
+
+    ld a, [bc]
+    call _VRAM_wait
+    ldi [hl], a
+
+    inc bc
+
+    jr .loop
+
+.change_y:
+
+    ld a, [sr_actual_y]
+    cp 17
+    ret z
+
+    inc a
+    ld [sr_actual_y], a
+    ld de, $000C
+    add hl, de
+
+    xor a
+    ld [sr_actual_x], a
+
+    jr .loop
+
+    ret
 
 
 ;;==============================================================================================
@@ -755,7 +1049,6 @@ _sr_draw_screen:
     pop hl
     ret
 
-    ret
 
 
 
@@ -968,13 +1261,104 @@ _sr_load_tiles:
     ld b, a
     pop hl
 
-    call _VRAM_wait
+    ;call _VRAM_wait
     call _ldir              ;; HL -> Destino | DE -> Origen | BC -> Cantidad
+
+    ret
+
+
+;;==============================================================================================
+;;                                          FADE IN
+;;----------------------------------------------------------------------------------------------
+;; Realiza un efecto de Fade In
+;;
+;; INPUT:
+;;  A -> Velocidad del Fade In
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_sr_fade_in:
+    push af
+.wait_loop_01:
+    call _wait_Vblank
+    dec a
+    jr nz, .wait_loop_01
+
+    ld a, %01000000
+    call _define_palette
+
+    pop af
+    push af
+.wait_loop_02:
+    call _wait_Vblank
+    dec a
+    jr nz, .wait_loop_02
+
+    ld a, %10010000
+    call _define_palette
+
+    pop af
+.wait_loop_03:
+    call _wait_Vblank
+    dec a
+    jr nz, .wait_loop_03
+
+    ld a, %11100100
+    call _define_palette
 
     ret
 
 
 
 
+;;==============================================================================================
+;;                                          FADE OUT
+;;----------------------------------------------------------------------------------------------
+;; realiza un efecto de Fade Out
+;;
+;; INPUT:
+;;  A -> Velocidad del Fade Out
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_sr_fade_out:
+    push af
+.wait_loop_01:
+    call _wait_Vblank
+    dec a
+    jr nz, .wait_loop_01
 
+    ld a, %10010000
+    call _define_palette
+
+    pop af
+    push af
+.wait_loop_02:
+    call _wait_Vblank
+    dec a
+    jr nz, .wait_loop_02
+
+    ld a, %01000000
+    call _define_palette
+
+    pop af
+.wait_loop_03:
+    call _wait_Vblank
+    dec a
+    jr nz, .wait_loop_03
+
+    ld a, %00000000
+    call _define_palette
+
+    ret
 

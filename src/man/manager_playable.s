@@ -322,10 +322,10 @@ _mp_new_enemy:
 _mp_init:
 
     ;;Incializamos al jugador
-    ld hl, mp_player             ;; Destino
-    ld de, default_entity_player ;; Origen
-    ld bc, entity_player_size    ;; Cantidad
-    call _ldir
+    ;ld hl, mp_player             ;; Destino
+    ;ld de, default_entity_player ;; Origen
+    ;ld bc, entity_player_size    ;; Cantidad
+    ;call _ldir
 
     ;;Incializamos las variables de los enemigos
     xor a
@@ -338,11 +338,11 @@ _mp_init:
     ld a, l
     ld [mp_enemy_next_l], a ;; Puntero al enemigo actual L
 
-    ld a, $EA
-    ldi [hl], a                         ;; hl = mp_enemy_array + 1   --> Destino
-    ld de, mp_enemy_array               ;; Origen  
-    ld bc, entity_enemy_size * 8 - 1    ;; Cantidad
-    call _ldir
+    ;ld a, $EA
+    ;ldi [hl], a                         ;; hl = mp_enemy_array + 1   --> Destino
+    ;ld de, mp_enemy_array               ;; Origen  
+    ;ld bc, entity_enemy_size * 8 - 1    ;; Cantidad
+    ;call _ldir
 
 
     ret
