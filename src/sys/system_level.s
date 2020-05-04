@@ -439,6 +439,27 @@ _sl_init_level:
 
     push hl             ;; HL -> screenmap_dir
 
+
+    ;Guardamos la posicion inicial del jugador en el BGmap
+    ld de, $010A
+    add hl, de
+    ld d, h
+    ld e, l
+    
+    push de
+    ld hl, ml_camera
+    ld de, ec_player_bgmap_ptr_l
+    add hl, de
+    pop de
+
+    ld a, e
+    ldi [hl], a
+    ld [hl], d
+
+
+    pop hl
+    push hl
+
     ld de, GBSw * 2 - 2
     add hl, de
     ld a, l
@@ -488,6 +509,8 @@ _sl_init_level:
     ldi [hl], a
     ld a, b
     ld [hl], a
+
+
 
     pop hl
     ; HL -> Puntero a la memoria de video

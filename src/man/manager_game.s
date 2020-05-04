@@ -376,12 +376,6 @@ _mg_game_loop:
         pop bc
 
 		call _sl_set_scroll_screen
-		ld a, [_player_X]
-        add a, b
-        ld [_player_X], a
-        ld a, [_player_Y]
-        add a, c
-        ld [_player_Y], a
 
 .no_move:
     

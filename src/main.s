@@ -5,10 +5,46 @@ INCLUDE "src/man/manager_game.h.s"
 INCLUDE "src/data.h.s"
 
 
+
 SECTION "MAIN", ROM0
+;; DMA CODE
+DMACopy:
+    push af
+    ld a, %11100111             ;;Reiniciamos el mostreo de Sprites
+    ld [$FF40], a
+    ld a, _sprite_buffer/256
+    ld [$FF46], a
+    ld a, $28
+DMACopyWait:
+    dec a
+    jr nz, DMACopyWait
+    pop af
+    reti 
+DMACopyEnd:
+
 
 _main:
     ;INITIAL LOAD
+
+    ld a, $01       ;Activate external RAM
+    ld [$6000], a
+
+    ld a, $0A       ;Enable external RAM
+    ld [$0000], a
+
+    ld a, $01       ;Load bank 0 in external RAM
+    ld [$4000], a
+
+
+    ld a, $AA
+    ld [$A000], a
+    
+    
+    ld a, $00       ;Disable external RAM
+    ld [$0000], a
+
+    ;db $18, $FE
+
     ld a, MAIN_MENU
     ld [mg_game_state], a
 
@@ -187,8 +223,10 @@ _main:
 
 
 
-
+    
 .loop_clear:
+
+    db $18, $FE
     
     ld a, $90
     call _VRAM_wait
@@ -205,3 +243,10 @@ _main:
     ld hl, $9800
 
 jr .loop_clear
+
+
+
+
+
+
+

@@ -194,6 +194,14 @@ _ml_save_bgmap_bl:
     ld [ec_bgmap_prt_BL_L], a
     ret
 
+_ml_save_player_bgmap:
+    ld a, h
+    ld [ec_player_bgmap_prt_H], a
+    ld a, l
+    ld [ec_player_bgmap_prt_L], a
+    ret
+
+
 _ml_save_tilemap:
     ld a, h
     ld [ec_tilemap_ptr_H], a
@@ -236,6 +244,13 @@ _ml_load_bgmap_bl:
     ld a, [ec_bgmap_prt_BL_H]
     ld h, a
     ld a, [ec_bgmap_prt_BL_L]
+    ld l, a
+    ret
+
+_ml_load_player_bgmap:
+    ld a, [ec_player_bgmap_prt_H]
+    ld h, a
+    ld a, [ec_player_bgmap_prt_L]
     ld l, a
     ret
 

@@ -679,6 +679,11 @@ _sr_update_scroll_map:
     call _sl_correct_hor
     call _ml_save_bgmap_bl
 
+    call _ml_load_player_bgmap  ;;Actualizamos la posicion del jugador
+    ld a, 1
+    call _sl_correct_hor
+    call _ml_save_player_bgmap
+
     jr .check_row
 
 .move_left:
@@ -717,6 +722,11 @@ _sr_update_scroll_map:
     call _sl_correct_hor
     call _ml_save_bgmap_bl
 
+    call _ml_load_player_bgmap  ;;Actualizamos la posicion del jugador
+    ld a, -1
+    call _sl_correct_hor
+    call _ml_save_player_bgmap
+
 .check_row:
     ld a, c
     cp 0
@@ -754,6 +764,11 @@ _sr_update_scroll_map:
     ld a, -1
     call _sl_correct_vert
     call _ml_save_bgmap_bl
+
+    call _ml_load_player_bgmap  ;;Actualizamos la posicion del jugador
+    ld a, -1
+    call _sl_correct_vert
+    call _ml_save_player_bgmap
 
     ret
 
@@ -799,6 +814,11 @@ _sr_update_scroll_map:
     ld a, 1
     call _sl_correct_vert
     call _ml_save_bgmap_tl
+
+    call _ml_load_player_bgmap  ;;Actualizamos la posicion del jugador
+    ld a, 1
+    call _sl_correct_vert
+    call _ml_save_player_bgmap
 
     ret
 
@@ -1048,7 +1068,6 @@ _sr_draw_screen:
 .end:
     pop hl
     ret
-
 
 
 

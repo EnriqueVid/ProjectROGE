@@ -4,3 +4,7 @@ GLOBAL _main
 GLOBAL tileset_index
 GLOBAL tileset_size
 GLOBAL _shift_left
+
+GLOBAL DMACopy
+GLOBAL DMACopyEnd
+GLOBAL DMACopyWait

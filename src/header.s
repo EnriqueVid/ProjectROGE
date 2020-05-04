@@ -55,7 +55,7 @@ SECTION "METADATA", ROM0[$0143]
 
     db 0                ;; (&0146)	Super GameBoy flag (&00=normal, &03=SGB)
 
-	db 2     	        ;; (&0147) Cartridge type (special upgrade hardware) 
+	db 3     	        ;; (&0147) Cartridge type (special upgrade hardware) 
                         ;; (0=normal ROM , 1/2=MBC1(max 2MByte ROM and/or 32KByte RAM)
 
                         ;; 0  - ROM ONLY                12 - ROM+MBC3+RAM
@@ -75,7 +75,7 @@ SECTION "METADATA", ROM0[$0143]
 
     db $02              ;; (&0148) Tamaño de la ROM (0=32k, 1=64k, 2=128k, etc)
 
-    db $03              ;; (&0149) Tamaño de la RAM (0=0k, 1=2k, 2=8k, 3=32k)
+    db $02              ;; (&0149) Tamaño de la RAM (0=0k, 1=2k, 2=8k, 3=32k)
 
     db $01              ;; (&014A) Codigo de Region (0=JPN, 1=EU/US)
 
@@ -86,3 +86,9 @@ SECTION "METADATA", ROM0[$0143]
     db $00              ;; (&014D) Header Checksum - No es necesario para emuladores
 
     dw $0000            ;; (&014E - &014F) Global Checksum - No lo usa la GameBoy
+
+SECTION "VB_INTERRUPT_HANDLER", HRAM[$FF80]
+VblankInterruptHandler:;; Destination for DMA commands (Comienzo de la pila)
+
+SECTION "RENDER_VARS", WRAM0[$C000]
+_sprite_buffer: ds 40*4

@@ -252,14 +252,25 @@ _sp_playable_collisions:
     ld a, $14
     ld [hl], a
 
-    ld hl, ml_camera
-    ld de, ec_bgmap_ptr_tl_l
-    add hl, de
-    ldi a, [hl]
-    ld e, a
-    ld d, [hl]
+    pop bc
+    push bc
+
+    call _ml_load_player_bgmap
+    ld a, b
+    call _sl_correct_hor
+
+    ld a, c
+    call _sl_correct_vert
+    
+    ;HL -> BGmap ptr del tile del objeto
+    ld a, $14
+    call _sr_draw_tile
+    
+    ;call _sr_get_player_BGmap
     ;pop de
+
     pop bc                  ;BC -> Dir_x, Dir_y
+    
 
     ;ld a, h
     ;cp $9B

@@ -18,8 +18,13 @@ ent_camera_default::
     db $00  ;;BG map ptr BL L 
     db $00  ;;BG map ptr BL H  
 
+    db $00  ;;Player BG map ptr L
+    db $00  ;;Player BG map ptr H
+
     db $00  ;;Scroll Active
     db $00  ;;Scroll Counter 
     db $00  ;;Scroll Direction X
     db $00  ;;Scroll Direction Y
+
+    
 
