@@ -2,6 +2,7 @@ INCLUDE "src/ent/entity_camera.h.s"
 INCLUDE "src/man/manager_level.h.s"
 INCLUDE "src/ent/entity_map.h.s"
 INCLUDE "src/ent/entity_room.h.s"
+INCLUDE "src/ent/entity_item.h.s"
 
 
 SECTION "MAN_LEVEL_VARS", WRAM0
@@ -26,6 +27,23 @@ ml_room_array:
     m_define_entity_room
     m_define_entity_room
 
+ml_item_num: ds $01
+
+ml_item_next_l: ds $01
+ml_item_next_h: ds $01
+
+ml_item_array:
+    m_define_entity_item
+    m_define_entity_item
+    m_define_entity_item
+    m_define_entity_item
+    m_define_entity_item
+    m_define_entity_item
+    m_define_entity_item
+    m_define_entity_item
+    m_define_entity_item
+    m_define_entity_item
+
 ml_map:
     m_define_entity_map
 
@@ -35,6 +53,120 @@ ml_map:
 SECTION "MAN_LEVEL_FUNCS", ROM0
 
 
+;;==============================================================================================
+;;                                          NEW ITEM
+;;----------------------------------------------------------------------------------------------
+;; Anade una item al mapa
+;;
+;; INPUT:
+;;  A  -> Item ID
+;;  BC -> Item X, Y
+;;  DE -> Quantity
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF
+;;
+;;==============================================================================================
+_ml_new_item:
+
+    push af
+    ld a, [ml_item_num]
+    cp $0A
+    jr z, .end
+
+
+    ld a, [ml_item_next_h]
+    ld h, a
+    ld a, [ml_item_next_l]
+    ld l, a
+
+    ;;HL -> Entity Item ID
+    pop af
+
+    ldi [hl], a
+    push hl
+    push af
+    ;;HL -> Entity Item X
+    ld [hl], b
+    inc hl
+    ;;HL -> Entity Item Y
+    ld [hl], c
+    inc hl
+
+    pop af
+.check_money:
+    cp $FF  ;;Comprobamos si es Dinero
+    jr nz, .check_sword
+        ld a, $17
+        ldi [hl], a             ;; HL -> Entity Item Sprite
+        jr .end_check
+
+.check_sword:
+    cp 10  ;;Comprobamos si es una Espada
+    jr nc, .check_shield
+        ld a, $18
+        ldi [hl], a             ;; HL -> Entity Item Sprite
+        jr .end_check
+
+.check_shield:
+    cp 20  ;;Comprobamos si es un Escudo
+    jr nc, .check_magic
+        ld a, $19
+        ldi [hl], a             ;; HL -> Entity Item Sprite
+        jr .end_check
+
+.check_magic:
+    cp 40  ;;Comprobamos si es una Magia
+    jr nc, .check_HP
+        ld a, $1A
+        ldi [hl], a             ;; HL -> Entity Item Sprite
+        jr .end_check
+
+.check_HP:
+    cp 50  ;;Comprobamos si es un objeto de curacion de HP
+    jr nc, .end_check
+        ld a, $1B
+        ldi [hl], a             ;; HL -> Entity Item Sprite
+        jr .end_check
+
+.end_check:
+    
+    ld [hl], d
+    inc hl
+    ld [hl], e
+    inc hl
+    
+    ld a, [ml_item_num]
+    inc a
+    ld [ml_item_num], a
+
+    ld a, h
+    ld [ml_item_next_h], a
+    ld a, l
+    ld [ml_item_next_l], a
+
+    pop hl
+    ld c, [hl]
+    inc hl
+    ld e, [hl]
+    ld b, $00
+    ld d, $00
+    inc hl
+    ld a, [hl]
+    push af
+
+    ld hl, ml_map
+    call _sl_get_tilemap_dir
+    pop af
+    ld [hl], a
+
+    push af
+.end:
+    pop af
+    ret
 
 
 ;;==============================================================================================
@@ -310,11 +442,18 @@ _ml_init:
 
     xor a
     ld [ml_room_num], a
+    ld [ml_item_num], a
 
     ld hl, ml_room_array
     ld a, h
     ld [ml_room_next_h], a
     ld a, l
     ld [ml_room_next_l], a
+
+    ld hl, ml_item_array
+    ld a, h
+    ld [ml_item_next_h], a
+    ld a, l
+    ld [ml_item_next_l], a
 
     ret

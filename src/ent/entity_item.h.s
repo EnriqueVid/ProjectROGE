@@ -4,22 +4,18 @@ ELSE
 m_define_entity_item: MACRO
 
     ds $01              ;; Item ID
-    ds $10              ;; Descripcion de 16 Caracteres
-
-    ds $01              ;; Item HP
-    ds $01              ;; Item MP
-    ds $01              ;; Item ATK
-    ds $01              ;; Item DEF
+    ds $01              ;; Item X
+    ds $01              ;; Item Y
+    ds $01              ;; Sprite ID
+    ds $02              ;; Item Quantity
 
 ENDM
 
 ENDC
 
-ei_id   = 0
-ei_desc = 1
-ei_HP   = 17
-ei_MP   = 18
-ei_ATK  = 19
-ei_DEF  = 20
+ei_id    = 0
+ei_x     = 1
+ei_y     = 2
+ei_quant = 3
 
-entity_item_sie = 21
+entity_item_sie = 5

@@ -3,6 +3,7 @@ GLOBAL mg_win_condition
 GLOBAL mg_hud
 GLOBAL mg_actual_level
 GLOBAL mg_game_state
+GLOBAL mg_grab_item 
 
 GLOBAL _mg_init
 GLOBAL _mg_game_loop

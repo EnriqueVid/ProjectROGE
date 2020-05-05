@@ -233,38 +233,41 @@ _sp_playable_collisions:
 
     push bc
 
-    ld hl, mp_player
-    ldi a, [hl]
-    add b
-    ld d, a
-    ld a, [hl]
-    add c
-    ld e, a
-    ;push de
+    ld a, $01
+    ld [mg_grab_item], a
 
-    ld hl, ml_map
-    ld b, $00
-    ld c, d
-    ld d, $00
+    ; ld hl, mp_player
+    ; ldi a, [hl]
+    ; add b
+    ; ld d, a
+    ; ld a, [hl]
+    ; add c
+    ; ld e, a
+    ; ;push de
 
-    call _sl_get_tilemap_dir
+    ; ld hl, ml_map
+    ; ld b, $00
+    ; ld c, d
+    ; ld d, $00
 
-    ld a, $14
-    ld [hl], a
+    ; call _sl_get_tilemap_dir
 
-    pop bc
-    push bc
+    ; ld a, $14
+    ; ld [hl], a
 
-    call _ml_load_player_bgmap
-    ld a, b
-    call _sl_correct_hor
+    ; pop bc
+    ; push bc
 
-    ld a, c
-    call _sl_correct_vert
+    ; call _ml_load_player_bgmap
+    ; ld a, b
+    ; call _sl_correct_hor
+
+    ; ld a, c
+    ; call _sl_correct_vert
     
-    ;HL -> BGmap ptr del tile del objeto
-    ld a, $14
-    call _sr_draw_tile
+    ; ;HL -> BGmap ptr del tile del objeto
+    ; ld a, $14
+    ; call _sr_draw_tile
     
     ;call _sr_get_player_BGmap
     ;pop de

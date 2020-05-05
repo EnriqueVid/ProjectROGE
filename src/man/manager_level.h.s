@@ -16,3 +16,4 @@ GLOBAL _ml_save_player_bgmap
 GLOBAL _ml_save_tilemap
 GLOBAL _ml_new_room
 GLOBAL _ml_add_exit
+GLOBAL _ml_new_item

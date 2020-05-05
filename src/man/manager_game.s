@@ -20,6 +20,8 @@ mg_input_data:    ds $03    ;; +-> Datos de las pulsaciones de los botones (x, y
                             ;; | btn Bit 2 = Select
                             ;; | btn Bit 3 = Start
 
+mg_grab_item: ds $01        ;;Indica si se puede coger un objeto o no
+
 mg_hud:
     m_define_entity_hud
 
@@ -58,6 +60,50 @@ _mg_game_loop:
     ld a, [hl]
 	cp $0 
 	jp nz, .no_input
+
+    ld a, [mg_win_condition]
+    cp $00
+    ret nz 
+
+;;----------GRAB OBJECT-----------------
+    ld a, [mg_grab_item]
+    cp $00
+    jr z, .no_grab_item
+    
+    ;---
+    ;Comprobar si cabe el objeto en el inventario
+    ;
+    ;Guardar el objeto en el inventario
+    ;---
+    ld hl, mp_player
+    ldi a, [hl]
+    ld d, a
+    ld e, [hl]
+    ;DE -> Player X,Y
+
+    ld hl, ml_map
+    ld b, $00
+    ld c, d
+    ld d, $00
+    ;BC -> Player X
+    ;DE -> Player Y
+    call _sl_get_tilemap_dir
+
+    ld a, $14
+    ld [hl], a
+
+    call _ml_load_player_bgmap
+    ld a, $14
+    call _sr_draw_tile
+
+    ;db $18, $FE
+
+    xor a
+    ld [mg_grab_item], a
+
+.no_grab_item:
+
+;;--------------------------------------
 
 ;;__________DELETE_THIS__________________
     ld hl, mp_enemy_array
@@ -117,11 +163,6 @@ _mg_game_loop:
 .deletethis_loop_end:
 ;;_______________________________________
 
-
-
-    ld a, [mg_win_condition]
-    cp $00
-    ret nz 
 
     ;;Control de reaparición de los enemigos
     
@@ -449,6 +490,7 @@ _mg_init:
     ld [mg_input_data + 2], a
     ld [aux_prev_input_x], a
     ld [aux_prev_input_y], a
+    ld [mg_grab_item], a
 
     ret
 
@@ -742,6 +784,21 @@ _mg_level_init:
     ld a, 6
     ld bc, $101C
     call _ml_add_exit
+
+    ld a,  $0A
+    ld bc, $1504
+    ld de, $0001
+    call _ml_new_item
+
+    ld a,  $FF
+    ld bc, $1607
+    ld de, $0050
+    call _ml_new_item
+
+    ld a,  $00
+    ld bc, $1C15
+    ld de, $0001
+    call _ml_new_item
 
     ;db $18, $FE
     ret

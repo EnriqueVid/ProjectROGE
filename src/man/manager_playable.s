@@ -8,11 +8,9 @@ SECTION "MAN_PLAYABLE_VARS", WRAM0
 mp_player:
     m_define_entity_player
 
-mp_enemy_num: ds $01
-
+mp_enemy_num:    ds $01
 mp_enemy_next_l: ds $01
 mp_enemy_next_h: ds $01
-
 mp_enemy_array:
     m_define_entity_enemy
     m_define_entity_enemy
@@ -23,7 +21,20 @@ mp_enemy_array:
     m_define_entity_enemy
     m_define_entity_enemy
 
+
+mp_item_bag_num:    ds $01
+mp_item_bag_next_l: ds $01
+mp_item_bag_next_h: ds $01
+mp_item_bag_array:  ds $14
+
+mp_item_chest_num:    ds $01
+mp_item_chest_next_l: ds $01
+mp_item_chest_next_h: ds $01
+mp_item_chest_array:  ds $64
+
 mp_respawn_steps: ds $01
+
+
 
 max_enemies = 8
 
