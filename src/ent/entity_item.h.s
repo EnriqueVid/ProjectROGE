@@ -16,6 +16,7 @@ ENDC
 ei_id    = 0
 ei_x     = 1
 ei_y     = 2
-ei_quant = 3
+sprite   = 3
+ei_quant = 4
 
-entity_item_sie = 5
+entity_item_size = 6

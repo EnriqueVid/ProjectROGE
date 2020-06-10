@@ -1,4 +1,4 @@
-; PAUSE_MENU.INC
+; ITEM_MENU.INC
 ;
 ; Map Include File.
 ;
@@ -20,4 +20,4 @@ pausemenuBank   EQU 0
 
  GLOBAL pausemenu
 
-; End of PAUSE_MENU.INC
+; End of ITEM_MENU.INC

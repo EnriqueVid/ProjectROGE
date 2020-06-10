@@ -2,6 +2,8 @@ GLOBAL ml_camera
 GLOBAL ml_room_num
 GLOBAL ml_room_array
 GLOBAL ml_map
+GLOBAL ml_item_num
+GLOBAL ml_item_array
 
 GLOBAL _ml_init
 GLOBAL _ml_load_bgmap_tr

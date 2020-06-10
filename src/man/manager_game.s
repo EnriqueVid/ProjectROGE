@@ -29,11 +29,13 @@ mg_hud:
 aux_prev_input_x: ds $01    ;;
 aux_prev_input_y: ds $01    ;;
 aux_prev_input_btn: ds $01  ;;
-
+aux_menu_selection: ds $01
+aux_max_menu_selections: ds $01 
 
 
 SECTION "MAN_GAME_FUNCS", ROM0
 
+test_text: db "Hello_World.Here_is_Johnny.Muajajajaja/"
 
 ;;==============================================================================================
 ;;                                    MANAGER PLAYABLE GAME LOOP
@@ -53,6 +55,16 @@ SECTION "MAN_GAME_FUNCS", ROM0
 _mg_game_loop:
 
     ;ei
+    ;;PROBAR COSAS
+    ; ld de, test_text
+    ; ld bc, $9821
+    ; ld hl, $8C00
+    ; call _sr_draw_text
+    
+
+
+
+
 
     ld hl, ml_camera
     ld bc, 10
@@ -70,16 +82,20 @@ _mg_game_loop:
     cp $00
     jr z, .no_grab_item
     
-    ;---
-    ;Comprobar si cabe el objeto en el inventario
-    ;
-    ;Guardar el objeto en el inventario
-    ;---
+
     ld hl, mp_player
     ldi a, [hl]
     ld d, a
     ld e, [hl]
     ;DE -> Player X,Y
+    
+    push de
+
+    call _su_grab_item
+
+    pop de
+    cp $00
+    jr z, .no_grab_item
 
     ld hl, ml_map
     ld b, $00
@@ -590,8 +606,186 @@ _mg_init_main_menu:
 ;;==============================================================================================
 _mg_pause_menu_loop:
 
+
+
 .loop:
 
+    call _su_input
+
+    ;Datos de las pulsaciones de los botones (x, y, btn)
+    ;A, B, Select, Start (0,1,2,3)
+    ld hl, mg_input_data
+
+    inc hl
+    ldi a, [hl]
+    cp $00
+    jr z, .no_movement
+
+        cp $01
+        jr z, .move_down
+
+        ;;COMPROBAMOS EL INPUT HACIA ARRIBA
+        xor a
+        ld [aux_prev_input_btn], a
+
+        ld a, [aux_prev_input_y]
+        cp $FF
+        jr z, .end_action
+
+        ld a, $FF
+        ld [aux_prev_input_y], a
+        ;;FIN DE LA COMPROBACION
+
+        ld hl, $C008
+        
+
+        ld a, [aux_menu_selection]
+        cp $00
+        jr nz, .no_corregir_up
+
+            ld a, $70
+            ld [hl], a
+            ld a, [aux_max_menu_selections]
+            inc a
+            ld [aux_menu_selection], a
+
+.no_corregir_up:
+
+        ld a, [hl]
+        ld b, $10
+        sub b
+        ld [hl], a
+        ld a, [aux_menu_selection]
+        dec a
+        ld [aux_menu_selection], a
+        jr .end_action
+
+.move_down:
+
+        ;;COMPROBAMOS EL INPUT HACIA ABAJO
+        xor a
+        ld [aux_prev_input_btn], a
+
+        ld a, [aux_prev_input_y]
+        cp $01
+        jr z, .end_action
+
+        ld a, $01
+        ld [aux_prev_input_y], a
+        ;;FIN DE LA COMPROBACION
+
+        ld hl, $C008
+        
+        ld a, [aux_menu_selection]
+        cp $04
+        jr nz, .no_corregir_down
+
+            ld a, $10
+            ld [hl], a
+            ld a, $00
+            dec a
+            ld [aux_menu_selection], a
+
+.no_corregir_down:
+
+        ld a, [hl]
+        ld b, $10
+        add b
+        ld [hl], a
+        ld a, [aux_menu_selection]
+        inc a
+        ld [aux_menu_selection], a
+        jr .end_action
+
+.no_movement:
+    xor a
+    ld [aux_prev_input_y], a
+    ld a, [hl]
+    bit 0, a
+    jr nz, .check_b
+
+        jr .go_to_selection
+
+.check_b:
+    bit 1, a
+    jr nz, .check_start
+
+        ld a, GAME_LOOP
+        ld [mg_game_state], a
+        ret
+
+.check_start:
+    bit 3, a
+    jr nz, .no_input
+
+        ld a, GAME_LOOP
+        ld [mg_game_state], a
+        ret
+
+.no_input:
+    xor a
+    ld [aux_prev_input_btn], a
+
+.end_action:
+
+    jp .loop
+
+    
+.go_to_selection:
+    ld a, [aux_menu_selection]
+    cp $00
+    jr nz, .option_2
+        ld a, ITEM_MENU
+        ld [mg_game_state], a
+        ret
+
+.option_2:
+    cp $01
+    jr nz, .option_3
+        ld a, GAME_LOOP
+        ld [mg_game_state], a
+        ret
+
+.option_3:
+    cp $02
+    jr nz, .option_4
+        ld a, GAME_LOOP
+        ld [mg_game_state], a
+        ret
+
+.option_4:
+    cp $03
+    jr nz, .option_5
+        ld a, GAME_LOOP
+        ld [mg_game_state], a
+        ret
+
+.option_5:
+    ld a, GAME_LOOP
+    ld [mg_game_state], a
+    ret
+
+;;==============================================================================================
+;;                              MANAGER PLAYABLE ITEM MENU LOOP
+;;----------------------------------------------------------------------------------------------
+;; Inicializa todo lo necesario para mostrar en main menu
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF
+;;
+;;==============================================================================================
+_mg_item_menu_loop:
+
+    ld a, PAUSE_MENU
+    ld [mg_game_state], a
+
+.loop:
     call _su_input
 
     ld hl, mg_input_data
@@ -599,21 +793,14 @@ _mg_pause_menu_loop:
     inc hl
     ld a, [hl]
 
-    ;db $18, $FE
+
     cp $DF
-    jr z, .loop
+    ret nz
 
-    ld a, GAME_LOOP
-    ld [mg_game_state], a
-
-    ret
-    
-
-
-
+    jr .loop
 
 ;;==============================================================================================
-;;                              MANAGER PLAYABLE INIT PAUSE MENU
+;;                              MANAGER GAME INIT PAUSE MENU
 ;;----------------------------------------------------------------------------------------------
 ;; Inicializa todo lo necesario para mostrar en pause menu
 ;;
@@ -657,10 +844,92 @@ _mg_init_pause_menu:
     ;Borramos los sprites
     ld  hl, $C008                   
     ld  bc, 40*4-8                  
-    call _clear_data                
+    call _clear_data        
+
+    ld hl, $C008
+
+    ld a, $0020
+    ldi [hl], a
+    ld a, $0010
+    ldi [hl], a
+    ld a, $94
+    ld [hl], a        
 
     call _sr_draw_main_menu_info
+    
+    xor a
+    ld [aux_menu_selection], a
+    ld a, $04
+    ld [aux_max_menu_selections], a
 
+
+    ld      hl,$FF40		    ;; FF40 - LCD Control (R/W)
+	set     7,[hl]              ;; Encender la pantalla
+
+    xor a
+    ld hl,$FF42				;; FF42 - FF43  -->  Tile scroll X, Y
+	ldi	[hl], a				
+	ld	[hl], a	
+
+    ret
+
+
+;;==============================================================================================
+;;                              MANAGER GAME INIT ITEM MENU
+;;----------------------------------------------------------------------------------------------
+;; Inicializa todo lo necesario para mostrar en pause menu
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF
+;;
+;;==============================================================================================
+_mg_init_item_menu:
+
+    call _wait_Vblank           ;; Esperamos a Vblank para apagar la pantalla
+    ld      hl,$FF40		    ;; FF40 - LCD Control (R/W)
+	res     7,[hl]              ;; Apagar la pantalla
+
+    ld hl, $9000
+    ld a, 4
+    call _sr_load_tiles
+
+    ld hl, $FF4A      
+    ld a, $90        ;; Window Y
+    ldi [hl], a    ;; Seteamos la window 
+    ld a, $07
+    ld [hl], a
+
+    ld hl, $9800
+    ld bc, ent_map_item_menu
+    call _sr_draw_screen_8x8
+
+    ;Borramos los sprites
+    ld  hl, $C008                   
+    ld  bc, 40*4-8                  
+    call _clear_data        
+
+    ld hl, $C008
+
+    ld a, $0030
+    ldi [hl], a
+    ld a, $0010
+    ldi [hl], a
+    ld a, $94
+    ld [hl], a        
+    
+    xor a
+    ld [aux_menu_selection], a
+    ld a, $04
+    ld [aux_max_menu_selections], a
+
+    ld bc, $0000
+    call _sr_draw_item_name
 
 
     ld      hl,$FF40		    ;; FF40 - LCD Control (R/W)

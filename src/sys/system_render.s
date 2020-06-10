@@ -2,20 +2,159 @@ INCLUDE "src/sys/system_render.h.s"
 INCLUDE "src/ent/entity_playable.h.s"
 INCLUDE "src/ent/entity_enemy.h.s"
 INCLUDE "src/ent/entity_hud.h.s"
+INCLUDE "src/data.h.s"
 
 
 SECTION "SYS_RENDER_VARS", WRAM0
 sr_actual_x: ds $01
 sr_actual_y: ds $01
 
+aux_01: ds $01
+aux_02: ds $01
 
 
 
 SECTION "SYS_RENDER_FUNCS", ROM0
 
+test_text: db "Hello/"
 
 ;               /       -8       \  /           +18            \  /    -10    \
 attack_anim: db $FE, $FE, $04, $04, $03, $03, $02, $FC, $FC, $FC, $80
+
+
+
+;;==============================================================================================
+;;                                    UPDATE PLAYER HUD
+;;----------------------------------------------------------------------------------------------
+;; Actualiza el hud con los datos del jugador
+;;
+;; INPUT:
+;;  A  -> Posicion del primer item a mostrar
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  
+;;
+;;==============================================================================================
+_sr_draw_item_name:
+
+    ld b, $00
+    ld a, c
+    ld a, [mi_player_item_num]
+    cp $00
+    ret z
+    
+    ld hl, mi_player_items
+    add bc
+
+    ;;PRIMER ITEM
+    ldi a, [hl]
+    push hl
+    
+    ld hl, ent_item_index
+    sla a
+    ld b, a
+    add hl, bc
+    ldi a, [hl]
+    ld e, a
+    ld d, [hl]
+
+    ld bc, $9882
+    ld hl, $8A00
+
+    call _sr_draw_text
+
+    pop hl
+
+    ;;SEGUNDO ITEM
+    ldi a, [hl]
+    push hl
+    
+    ld b, $00
+    ld hl, ent_item_index
+    sla a
+    ld c, a
+    add hl, bc
+    ldi a, [hl]
+    ld e, a
+    ld d, [hl]
+
+    ld bc, $98C2
+    ld hl, $8A80
+
+    call _sr_draw_text
+
+    pop hl
+
+    ;;TERCER ITEM
+    ldi a, [hl]
+    push hl
+    
+    ld b, $00
+    ld hl, ent_item_index
+    sla a
+    ld c, a
+    add hl, bc
+    ldi a, [hl]
+    ld e, a
+    ld d, [hl]
+
+    ld bc, $9902
+    ld hl, $8B00
+
+    call _sr_draw_text
+
+    pop hl
+
+    ;;CUARTO ITEM
+    ldi a, [hl]
+    push hl
+    
+    ld b, $00
+    ld hl, ent_item_index
+    sla a
+    ld c, a
+    add hl, bc
+    ldi a, [hl]
+    ld e, a
+    ld d, [hl]
+
+    ld bc, $9942
+    ld hl, $8B80
+
+    call _sr_draw_text
+
+    pop hl
+
+    ;;QUINTO ITEM
+    ldi a, [hl]
+    push hl
+    
+    ld b, $00
+    ld hl, ent_item_index
+    sla a
+    ld c, a
+    add hl, bc
+    ldi a, [hl]
+    ld e, a
+    ld d, [hl]
+
+    ld bc, $9982
+    ld hl, $8C00
+
+    call _sr_draw_text
+
+    pop hl
+
+    
+    
+    
+
+    ret
+
+
 
 ;;==============================================================================================
 ;;                                    UPDATE PLAYER HUD
@@ -38,72 +177,78 @@ _sr_draw_main_menu_info:
     ld bc, eh_atk_c
     add hl, bc
 
+    ;Dibujar Atk
     ldi a, [hl]
-    ld b, $00            ;Indica si las centenas han sido 0
-    
-    add $30             ;;Comprobamos las centenas
-    cp $31
-    jr nc, .atk_no_cent
-        ld a, $90
-        ld b, $01
-.atk_no_cent:
-    call _VRAM_wait
-    ld[$98F0], a
-
+    ld b ,a
     ldi a, [hl]
-    add $30
     ld c, a
-    cp $31
-    jr nc, .atk_no_dec
-        ld a, b
-        cp $00
-        jr z, .atk_no_dec
-            ld c, $90
-.atk_no_dec:
-
-    ld a, c
-    call _VRAM_wait
-    ld[$98F1], a
-    
+    sla c    
+    sla c    
+    sla c    
+    sla c    
     ldi a, [hl]
-    add $30
-    call _VRAM_wait
-    ld[$98F2], a
-
-
-
-
-    ldi a, [hl]
-    ld b, $00            ;Indica si las centenas han sido 0
-    
-    add $30             ;;Comprobamos las centenas
-    cp $31
-    jr nc, .atk_no_cent
-        ld a, $90
-        ld b, $01
-.def_no_cent:
-    call _VRAM_wait
-    ld[$9930], a
-
-    ldi a, [hl]
-    add $30
+    or c
     ld c, a
-    cp $31
-    jr nc, .def_no_dec
-        ld a, b
-        cp $00
-        jr z, .def_no_dec
-            ld c, $90
-.def_no_dec:
 
-    ld a, c
-    call _VRAM_wait
-    ld[$9931], a
-    
+    push hl
+    ld hl, $98EF
+    ld d,  $00
+    ld e,  $01
+    call _sr_draw_number_3
+    pop hl
+
+    ;Dibujar Def
     ldi a, [hl]
-    add $30
-    call _VRAM_wait
-    ld[$9932], a
+    ld b ,a
+    ldi a, [hl]
+    ld c, a
+    sla c    
+    sla c    
+    sla c    
+    sla c    
+    ldi a, [hl]
+    or c
+    ld c, a
+
+    ld hl, $992F
+    ld d,  $00
+    ld e,  $01
+    call _sr_draw_number_3
+
+    ;Dibujar Lvl
+    ld hl, mg_hud
+    ld bc, eh_lvl_c
+    add hl, bc
+    ldi a, [hl]
+    ld b ,a
+    ldi a, [hl]
+    ld c, a
+    sla c    
+    sla c    
+    sla c    
+    sla c    
+    ldi a, [hl]
+    or c
+    ld c, a
+
+
+    ld hl, $98AF
+    ld d,  $00
+    ld e,  $01
+    call _sr_draw_number_3
+
+
+    ;Dibujar Gold
+    ld hl, mi_gold
+    ldi a, [hl]
+    ld b, a
+    ldi a, [hl]
+    ld c, a
+    ld d, [hl]
+
+    ld hl, $9A04
+    ld e,  $01
+    call _sr_draw_number_6
 
     ret
 
@@ -115,7 +260,7 @@ _sr_draw_main_menu_info:
 ;; Actualiza el hud con los datos del jugador
 ;;
 ;; INPUT:
-;;  HL -> Puntero al enemigo
+;;  NONE
 ;;
 ;; OUTPUT:
 ;;  NONE
@@ -126,131 +271,425 @@ _sr_draw_main_menu_info:
 ;;==============================================================================================
 _sr_update_draw_player_hud:
 
-    ;Dibujar, Max health
-
+    ;Dibujar Max HP
     ld hl, mg_hud
     ldi a, [hl]
-    ld b, $00            ;Indica si las centenas han sido 0
-    
-    add $81             ;;Comprobamos las centenas
-    cp $82
-    jr nc, .mhp_no_cent
-        dec a
-        ld b, $01
-.mhp_no_cent:
-    call _VRAM_wait
-    ld[$9C05], a
-
+    ld b ,a
     ldi a, [hl]
-    add $81
     ld c, a
-    cp $82
-    jr nc, .mhp_no_dec
-        ld a, b
-        cp $00
-        jr z, .mhp_no_dec
-            ld c, $80
-.mhp_no_dec:
-
-    ld a, c
-    call _VRAM_wait
-    ld[$9C06], a
-    
+    sla c    
+    sla c    
+    sla c    
+    sla c    
     ldi a, [hl]
-    add $81
-    call _VRAM_wait
-    ld[$9C07], a
+    or c
+    ld c, a
 
+    push hl
+    ld hl, $9C04
+    ld d,  $00
+    ld e,  $81
+    call _sr_draw_number_3
+    pop hl
 
-
-    ;Dibujar, Max MP
-    ldi a, [hl]
-    add $81
-    cp $82
-    jr nc, .mmp_no_dec
-        dec a
-.mmp_no_dec:
-    call _VRAM_wait
-    ld[$9C0E], a
-
-    ldi a, [hl]
-    add $81
-    call _VRAM_wait
-    ld[$9C0F], a
-
-
-
-    ;Dibujar, Current health
-    ldi a, [hl]
+    ;Dibujar Max MP
     ld b, $00
-    
-    add $81             ;;Comprobamos las centenas
-    cp $82
-    jr nc, .chp_no_cent
-        dec a
-        ld b, $01
-.chp_no_cent:
-    call _VRAM_wait
-    ld[$9C01], a
-
     ldi a, [hl]
-    add $81
     ld c, a
-    cp $82
-    jr nc, .chp_no_dec
-        ld a, b
-        cp $00
-        jr z, .chp_no_dec
-            ld c, $80
-.chp_no_dec:
-
-    ld a, c
-    call _VRAM_wait
-    ld[$9C02], a
-    
+    sla c    
+    sla c    
+    sla c    
+    sla c    
     ldi a, [hl]
-    add $81
-    call _VRAM_wait
-    ld[$9C03], a
+    or c
+    ld c, a
+
+    push hl
+    ld hl, $9C0C
+    ld d,  $01
+    ld e,  $81
+    call _sr_draw_number_3
+    pop hl
 
 
-    ;Dibujar, Current MP
+    ;Dibujar Current HP
     ldi a, [hl]
-    add $81
-    cp $82
-    jr nc, .cmp_no_dec
-        dec a
-.cmp_no_dec:
-    call _VRAM_wait
-    ld[$9C0B], a
-
+    ld b ,a
     ldi a, [hl]
-    add $81
-    call _VRAM_wait
-    ld[$9C0C], a
+    ld c, a
+    sla c    
+    sla c    
+    sla c    
+    sla c    
+    ldi a, [hl]
+    or c
+    ld c, a
+
+    push hl
+    ld hl, $9C00
+    ld d,  $00
+    ld e,  $81
+    call _sr_draw_number_3
+    pop hl
 
 
-    ;Dibujar, Floor
+    ;Dibujar Current MP
+    ld b, $00
+    ldi a, [hl]
+    ld c, a
+    sla c    
+    sla c    
+    sla c    
+    sla c    
+    ldi a, [hl]
+    or c
+    ld c, a
+
+    push hl
+    ld hl, $9C09
+    ld d,  $01
+    ld e,  $81
+    call _sr_draw_number_3
+    pop hl
+
+
+    ;Dibujar Current Floor
     ld hl, mg_hud
     ld bc, eh_fl_d
     add hl, bc
+
+    ld b, $00
+    ldi a, [hl]
+    ld c, a
+    sla c    
+    sla c    
+    sla c    
+    sla c    
+    ld a, [hl]
+    or c
+    ld c, a
+
+    ld hl, $9C10
+    ld d,  $01
+    ld e,  $81
+    call _sr_draw_number_3
+
+    ret
+
+;;==============================================================================================
+;;                                    DRAW TEXT
+;;----------------------------------------------------------------------------------------------
+;; Realiza el dibujado de un string de texto 
+;;
+;; INPUT:
+;;  HL -> Puntero a la VRAM
+;;  BC -> Puntero al BGmap
+;;  DE -> Puntero al String
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, HL,   
+;;
+;;==============================================================================================
+_sr_draw_text:
+    ld a, b
+    ld [aux_01], a
+    ld a, c
+    ld [aux_02], a
+
+.main_loop:
+
+    ld a, [de]
+    sub ALPHABET_OFFSET
+    cp $FF
+    ret z
+    cp $FE
+    jr nz, .continue
+
+        inc de
+        ld a, [de]
+        sub ALPHABET_OFFSET
+        push af
+        push hl
+        ld a, [aux_01]
+        ld h, a
+        ld a, [aux_02]
+        ld l, a
+        ld bc, $0020
+        add hl, bc
+        ld b, h
+        ld a, h
+        ld [aux_01], a
+        ld c, l
+        ld a, l
+        ld [aux_02], a
+        pop hl
+        pop af
+
+.continue:
+    push de
+    push hl
+    ld hl, tileset_08
+    ld de, Tile_size
+    cp $00
+    jr z, .end_loop_search
+
+.loop_search:
+
+    add hl, de
+    dec a
+    jr nz, .loop_search
+
+.end_loop_search:
+    ;HL -> Puntero al tile en ROM
+
+    ld d, h
+    ld e, l
+    pop hl
     
-    ldi a, [hl]
-    add $81
-    call _VRAM_wait
-    ld[$9C12], a
+    push bc
+    ld bc, Tile_size
+    call _ldir_tile
+    pop bc
+    
+    ;;Obtenemos el identificador del tile a dibujar
+    ld d, h
+    ld a, l
+    sla d
+    sla d
+    sla d
+    sla d
+    srl a
+    srl a
+    srl a
+    srl a
+    or d
+    dec a
 
-    ldi a, [hl]
-    add $81
     call _VRAM_wait
-    ld[$9C13], a
+    ld [bc], a
 
+    inc bc
+
+    pop de
+    inc de
+    
+    jr .main_loop
+
+
+
+
+;;==============================================================================================
+;;                                    DRAW NUMBER 3
+;;----------------------------------------------------------------------------------------------
+;; Realiza el dibujado de un numero de 3 digitos. 
+;; Cada nibble de los bytes debe simbolizar un numero decimal del 0 al 9.
+;;
+;; INPUT:
+;;  B  -> NADA, Centenas (-, C)
+;;  C  -> Decenas, Unidades (D, U)
+;;  HL -> Puntero a VRAM inicial
+;;  D  -> indica como se dibujan los dos primeros digitos cuando valen 0 (0 -> Normal, 1 -> no hacer nada)
+;;  E  -> Offset del numero respecto al tile
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  
+;;
+;;==============================================================================================
+_sr_draw_number_3:
+    xor a
+    ld [aux_01], a
+
+    ld a, b
+    cp $00
+    jr z, .b_00
+        push hl
+        ld b, $02
+        call _sr_draw_number_tile
+        pop hl
+        inc hl
+        jr .continue_c
+
+.b_00: 
+
+        ld a, $01
+        ld [aux_01], a
+        inc hl
+        ld a, d
+        cp $00
+        jr nz, .continue_c
+
+        ld a, e
+        dec a
+        call _VRAM_wait
+        ld [hl], a
+
+
+.continue_c:
+    inc hl
+    ld a, [aux_01]
+    ld b, a
+    ld a, c
+    call _sr_draw_number_tile
 
     ret
 
 
 
 
+;;==============================================================================================
+;;                                    DRAW NUMBER 6
+;;----------------------------------------------------------------------------------------------
+;; Realiza el dibujado de un numero de 6 digitos. 
+;;
+;; INPUT:
+;;  B  -> Centenas de Millar, Decenas de Millar (Cm, Dm)
+;;  C  -> Unidades de Millar, Centenas (Um, C)
+;;  D  -> Decenas, Unidades (D,U)
+;;  HL -> Puntero a VRAM inicial
+;;  E  -> Offset del numero respecto al tile
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  
+;;
+;;==============================================================================================
+_sr_draw_number_6:
+    
+    xor a
+    ld [aux_01], a
+
+    ld a, b
+    cp $00
+    jr z, .b_00
+        push hl
+        ld b, $01
+        call _sr_draw_number_tile
+        pop hl
+        inc hl
+        inc hl
+        jr .continue_c
+
+.b_00:
+        ld a, $01
+        ld [aux_01], a
+        ld a, e
+        dec a
+        call _VRAM_wait
+        ldi [hl], a
+        call _VRAM_wait
+        ldi [hl], a
+
+.continue_c:
+    
+    ld a, [aux_01]
+    ld b, a
+    xor a
+    ld [aux_01], a
+    
+    ld a, c
+    cp $00
+    jr z, .c_00
+        push hl
+        call _sr_draw_number_tile
+        pop hl
+        inc hl
+        inc hl
+        jr .continue_d
+
+.c_00:
+        ld a, b
+        ld [aux_01], a
+        cp $00
+        jr z, .c_draw_00
+
+        ld a, e
+        dec a
+        call _VRAM_wait
+        ldi [hl], a
+        call _VRAM_wait
+        ldi [hl], a
+        jr .continue_d
+
+
+.c_draw_00:        
+        push hl
+        call _sr_draw_number_tile
+        pop hl
+        inc hl
+        inc hl
+
+.continue_d:
+
+    ld a, [aux_01]
+    ld b, a
+    ld a, d
+    call _sr_draw_number_tile
+ 
+    ret
+
+
+
+;;==============================================================================================
+;;                                    DRAW NUMBER TILE
+;;----------------------------------------------------------------------------------------------
+;; Realiza el dibujado del tile de un numero establecido
+;;
+;; INPUT:
+;;  HL -> Puntero al enemigo
+;;  A  -> 2 Digitos a dibujar
+;;  B  -> Indica que se hace con el primer dijito en caso de ser 0 (0 = dibujar numero, 1 = rellenar con vacio, 2 = no hacer nada)
+;;  E  -> Offset del numero respecto al tile
+;;
+;; OUTPUT:
+;;
+;; DESTROYS:
+;;  
+;;
+;;==============================================================================================
+_sr_draw_number_tile:
+
+    push af
+    srl a
+    srl a
+    srl a
+    srl a
+    push af
+
+    cp $00
+    jr nz, .first_draw
+        
+    ld a, b
+    cp $00
+    jr z, .first_draw
+    cp $02
+    jr z, .continue
+        pop af
+        push af
+        dec a
+
+.first_draw:
+    add e
+    call _VRAM_wait
+    ld [hl], a
+
+.continue:
+    inc hl
+    pop af
+    pop af
+    and %00001111
+    add e
+    call _VRAM_wait
+    ld [hl], a
+
+    ret
 
 
 ;;==============================================================================================

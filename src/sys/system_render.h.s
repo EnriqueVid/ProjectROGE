@@ -14,9 +14,15 @@ GLOBAL _sr_update_draw_player_hud
 GLOBAL _sr_fade_out
 GLOBAL _sr_fade_in
 GLOBAL _sr_draw_main_menu_info
+GLOBAL _sr_draw_number_tile
+GLOBAL _sr_draw_number_6
+GLOBAL _sr_draw_number_3
+GLOBAL _sr_draw_text
+GLOBAL _sr_draw_item_name
 
 
 
+Tile_size = 16
 
 MAPw = 40
 MAPh = 34

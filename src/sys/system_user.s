@@ -1,11 +1,84 @@
 INCLUDE "src/sys/system_user.h.s"
 INCLUDE "src/ent/entity_playable.h.s"
 INCLUDE "src/ent/entity_hud.h.s"
+INCLUDE "src/ent/entity_item.h.s"
 
 
 SECTION "SYS_USER_FUNCS", ROM0
 
+;;==============================================================================================
+;;                                    GRAB ITEM
+;;----------------------------------------------------------------------------------------------
+;; Recoge un objeto del suelo
+;;
+;; INPUT:
+;;  DE -> Player X, Y
+;;
+;; OUTPUT:
+;;  A -> Indica si se puede coger el objeto o no (0=no, 1=si)
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_su_grab_item:
 
+    ld hl, ml_item_array
+    ld a, [ml_item_num]
+
+.loop:
+    push af
+    push hl
+
+    inc hl
+    ldi a, [hl]
+    xor d
+    ld b, a
+
+    ld a, [hl]
+    xor e
+    or b
+
+    cp $00
+    jr z, .loop_end
+
+    pop hl
+    ld bc, entity_item_size
+    add hl, bc
+
+    pop af
+    dec a
+    jr nz, .loop
+    ld a, $00
+    ret
+
+.loop_end:
+    pop hl
+    pop af
+
+    ld a, [hl]
+    cp $FF
+    jr z, .add_money
+
+    call _mi_add_item
+    ret
+
+    db $18, $FE
+
+.add_money:
+
+    ld bc, ei_quant
+    add hl, bc
+    ld b, $00
+    ldi a, [hl]
+    ld c, a
+    ld d, [hl]
+
+    call _mi_add_money
+
+    ld a, $01
+
+    ret
 
 
 ;;==============================================================================================
@@ -151,7 +224,14 @@ _su_update_all_hud_data:
     ld [bc], a
 
 
-    ;inc bc
+    inc bc
+    xor a
+    ld [bc], a
+    inc bc
+    ld [bc], a
+    inc bc
+    ld a, 01
+    ld [bc], a
     ;ld hl, [mp_player]
     ;ld de, ent_player_Lvl
     ;continua en la funcion de abajo

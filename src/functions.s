@@ -185,6 +185,21 @@ _clear_data:
     jr nz, _clear_data
     ret
 
+; HL -> DESTINO
+; BC -> CANTIDAD 
+_clear_data_custom::
+
+    ld d, a
+.loop:
+    call _VRAM_wait
+    ld [hl], d
+    inc hl
+    dec bc
+    ld a, b
+    xor c
+    jr nz, .loop
+    ret
+
 ;; DE -> Origen
 ;; HL -> Destino
 ;; BC -> Cantidad

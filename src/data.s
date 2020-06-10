@@ -1,4 +1,4 @@
-
+INCLUDE "src/data.h.s"
 SECTION "DATA", ROM0
 
 
@@ -33,58 +33,58 @@ sprites_index::
 sprite_player_down_01:
     db $00              ;; Sprite ID Left
     db %00000000        ;; Sprite Attributes Left
-    db $00              ;; Sprite ID Right
-    db %00100000        ;; Sprite Attributes Right
+    db $02              ;; Sprite ID Right
+    db %00000000        ;; Sprite Attributes Right
 
 sprite_player_up_01:
-    db $02              ;; Sprite ID Left
+    db $10              ;; Sprite ID Left
     db %00000000        ;; Sprite Attributes Left
-    db $02              ;; Sprite ID Right
-    db %00100000        ;; Sprite Attributes Right
+    db $12              ;; Sprite ID Right
+    db %00000000        ;; Sprite Attributes Right
 
 sprite_player_left_01:
-    db $06              ;; Sprite ID Left
+    db $08              ;; Sprite ID Left
     db %00000000        ;; Sprite Attributes Left
-    db $04              ;; Sprite ID Right
-    db %00100000        ;; Sprite Attributes Right
+    db $0A              ;; Sprite ID Right
+    db %00000000        ;; Sprite Attributes Right
 
 sprite_player_right_01:
+    db $18              ;; Sprite ID Left
+    db %00000000        ;; Sprite Attributes Left
+    db $1A              ;; Sprite ID Right
+    db %00000000        ;; Sprite Attributes Right
+
+sprite_player_upleft_01:
+    db $0C              ;; Sprite ID Left
+    db %00000000        ;; Sprite Attributes Left
+    db $0E              ;; Sprite ID Right
+    db %00000000        ;; Sprite Attributes Right
+
+sprite_player_upright_01:
+    db $14              ;; Sprite ID Left
+    db %00000000        ;; Sprite Attributes Left
+    db $16              ;; Sprite ID Right
+    db %00000000        ;; Sprite Attributes Right
+
+sprite_player_downleft_01:
     db $04              ;; Sprite ID Left
     db %00000000        ;; Sprite Attributes Left
     db $06              ;; Sprite ID Right
-    db %00100000        ;; Sprite Attributes Right
-
-sprite_player_upleft_01:
-    db $08              ;; Sprite ID Left
-    db %00000000        ;; Sprite Attributes Left
-    db $04              ;; Sprite ID Right
-    db %00100000        ;; Sprite Attributes Right
-
-sprite_player_upright_01:
-    db $04              ;; Sprite ID Left
-    db %00000000        ;; Sprite Attributes Left
-    db $08              ;; Sprite ID Right
-    db %00100000        ;; Sprite Attributes Right
-
-sprite_player_downleft_01:
-    db $0A              ;; Sprite ID Left
-    db %00000000        ;; Sprite Attributes Left
-    db $04              ;; Sprite ID Right
-    db %00100000        ;; Sprite Attributes Right
+    db %00000000        ;; Sprite Attributes Right
 
 sprite_player_downright_01:
-    db $04              ;; Sprite ID Left
+    db $1C              ;; Sprite ID Left
     db %00000000        ;; Sprite Attributes Left
-    db $0A              ;; Sprite ID Right
-    db %00100000        ;; Sprite Attributes Right
+    db $1E              ;; Sprite ID Right
+    db %00000000        ;; Sprite Attributes Right
 
 
 
 
 sprite_bat_01:
-    db $0C              ;; Sprite ID Left
+    db $20              ;; Sprite ID Left
     db %00000000        ;; Sprite Attributes Left
-    db $0C              ;; Sprite ID Right
+    db $20              ;; Sprite ID Right
     db %00100000        ;; Sprite Attributes Right
 
 
@@ -352,6 +352,7 @@ tileset_index::
     dw tileset_03       ;;  HUD 01
     dw tileset_05       ;;  MAIN MENU
     dw tileset_06       ;;  PAUSE MENU
+    dw tileset_07       ;;  Enemy Tiles
 
 tileset_size::
     dw tileset_04_end - tileset_04      ;;  Tileset 01
@@ -359,6 +360,11 @@ tileset_size::
     dw tileset_03_end - tileset_03      ;;  HUD 01
     dw tileset_05_end - tileset_05      ;;  MAIN MENU
     dw tileset_06_end - tileset_06      ;;  PAUSE MENU
+    dw tileset_07_end - tileset_07      ;;  Enemy Tiles
+    ;dw tileset_alphabet_end - tileset_alphabet
+
+
+
 
 
 
@@ -369,7 +375,7 @@ INCBIN "assets/tileset-01.bin"      ;;  Tileset 01
 tileset_01_end:
 
 tileset_02:
-INCBIN "assets/spriteset-01.bin"    ;;  Sprites 01
+INCBIN "assets/Player_sprites.bin"    ;;  Sprites 01
 tileset_02_end:
 
 tileset_03:
@@ -387,3 +393,13 @@ tileset_05_end:
 tileset_06:                        ;; PAUSE MENU
 INCBIN "assets/tileset-Pause-Menu.bin"
 tileset_06_end:
+
+tileset_07:
+INCBIN "assets/Enemy_sprites.bin"    ;;  Sprites 01
+tileset_07_end:
+
+tileset_08::
+INCBIN "assets/tileset-alphabet.bin"    ;;  Sprites 01
+tileset_08_end::
+
+

@@ -26,6 +26,12 @@ DMACopyEnd:
 _main:
     ;INITIAL LOAD
 
+
+    
+    
+    
+
+
     ld a, $01       ;Activate external RAM
     ld [$6000], a
 
@@ -52,6 +58,12 @@ _main:
     ld a, %11100100		        ;;DDCCBBAA .... A=Background 0=White, 3=Black
     call _define_palette
 
+
+
+    
+
+
+
     ;;LOAD FROM SAVE DATA
     xor a
     ld [mg_actual_level], a
@@ -60,6 +72,11 @@ _main:
     ld de, default_entity_player ;; Origen
     ld bc, entity_player_size    ;; Cantidad
     call _ldir
+
+    call _mi_init
+    ;ld bc, $0000
+    ;ld  d, $00
+    ;call _mi_add_money
     
     
 
@@ -126,10 +143,15 @@ _main:
 
     call _mg_init
 
+
+
+
+
+.main_loop:
 ;;MAIN MENU
     ld a, [mg_game_state]
     cp MAIN_MENU
-    jr nz, .init_game_loop
+    jr nz, .return_game_loop
     
     call _mg_init_main_menu
     call _mg_main_menu_loop
@@ -137,16 +159,21 @@ _main:
     ld [mg_game_state], a
     ld a, $FF
     call _sr_fade_out
-    jr .reboot
+    ;jr .reboot
 
 
 
 ;GAME_LOOP
+    
 .init_game_loop:
     ;call _mg_init
     call _mg_level_init
 
 .return_game_loop:
+    ld a, [mg_game_state]
+    cp GAME_LOOP
+    jr nz, .init_pause_menu
+
     call _mg_init
 
     call _wait_Vblank           ;; Esperamos a Vblank para apagar la pantalla
@@ -163,6 +190,10 @@ _main:
 
     ld hl, $8000
     ld a, $01
+    call _sr_load_tiles
+
+    ld hl, $8200
+    ld a, $05
     call _sr_load_tiles
 
     ld hl, $FF4A      
@@ -205,7 +236,13 @@ _main:
     ld hl, $9800
     jr .loop_clear
     
+
+;;PAUSE MENU
+
 .init_pause_menu:
+    ld a, [mg_game_state]
+    cp PAUSE_MENU
+    jr nz, .init_item_menu
 
     call _mg_init_pause_menu
 
@@ -219,11 +256,28 @@ _main:
     ld a, $FF
     call _sr_fade_out
 
-    jr .return_game_loop
-
-
-
     
+
+
+.init_item_menu:
+    ld a, [mg_game_state]
+    cp ITEM_MENU
+    jr nz, .main_loop_end
+
+    call _mg_init_item_menu
+
+    ld a, $FF
+    call _sr_fade_in
+
+
+    call _mg_item_menu_loop
+
+    ld a, $FF
+    call _sr_fade_out
+
+.main_loop_end:
+    jp .main_loop
+
 .loop_clear:
 
     db $18, $FE
