@@ -6,7 +6,7 @@
 ;   Section       : ROM0
 ;   Bank          : 0
 ;   Map size      : 20 x 18
-;   Tile set      : Tileset-Pause-Menu-Alt.gbr
+;   Tile set      : Tileset-Pause-Menu-Alt-2.gbr
 ;   Plane count   : 1 plane (8 bits)
 ;   Plane order   : Tiles are continues
 ;   Tile offset   : 0

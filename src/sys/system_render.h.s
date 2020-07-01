@@ -19,6 +19,8 @@ GLOBAL _sr_draw_number_6
 GLOBAL _sr_draw_number_3
 GLOBAL _sr_draw_text
 GLOBAL _sr_draw_item_name
+GLOBAL _sr_show_item_desc
+GLOBAL _sr_draw_submenu
 
 
 

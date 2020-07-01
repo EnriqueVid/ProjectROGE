@@ -27,11 +27,6 @@ _main:
     ;INITIAL LOAD
 
 
-    
-    
-    
-
-
     ld a, $01       ;Activate external RAM
     ld [$6000], a
 
@@ -60,7 +55,7 @@ _main:
 
 
 
-    
+
 
 
 
@@ -78,6 +73,17 @@ _main:
     ;ld  d, $00
     ;call _mi_add_money
     
+    
+    ld a, $30
+    call _mi_add_item
+    ld a, $10
+    call _mi_add_item
+    ld a, $00
+    call _mi_add_item
+    ld a, $10
+    call _mi_add_item
+    ld a, $20
+    call _mi_add_item
     
 
 
@@ -168,6 +174,7 @@ _main:
 .init_game_loop:
     ;call _mg_init
     call _mg_level_init
+    
 
 .return_game_loop:
     ld a, [mg_game_state]
@@ -206,10 +213,15 @@ _main:
 	set     7,[hl]              ;; Encender la pantalla
     ;call _su_update_all_hud_data
 
+    ld  hl, $C000                   
+    ld  bc, 40*4                  
+    call _clear_data  
 
     ld hl, mp_player
     ld bc, $C000
     call _sr_draw_sprite
+
+    call _sr_draw_enemies
 
     call _sl_init_level
 
@@ -232,7 +244,7 @@ _main:
     inc a
     ld [mg_actual_level], a
     cp $02
-    jp nz, .reboot
+    jp nz, .init_game_loop
     ld hl, $9800
     jr .loop_clear
     
@@ -249,8 +261,6 @@ _main:
     ld a, $FF
     call _sr_fade_in
 
-    ;db $18, $FE
-
     call _mg_pause_menu_loop
 
     ld a, $FF
@@ -258,7 +268,7 @@ _main:
 
     
 
-
+;;ITEM MENU
 .init_item_menu:
     ld a, [mg_game_state]
     cp ITEM_MENU
@@ -269,12 +279,13 @@ _main:
     ld a, $FF
     call _sr_fade_in
 
-
     call _mg_item_menu_loop
 
     ld a, $FF
     call _sr_fade_out
 
+
+;;LOOP END
 .main_loop_end:
     jp .main_loop
 

@@ -21,6 +21,225 @@ test_text: db "Hello/"
 ;               /       -8       \  /           +18            \  /    -10    \
 attack_anim: db $FE, $FE, $04, $04, $03, $03, $02, $FC, $FC, $FC, $80
 
+;;SUBMENU TILES
+submenu_top: db $14, $0F, $0F, $0F, $0F, $0F, $0F, $15
+submenu_row: db $10, $00, $00, $00, $00, $00, $00, $11
+submenu_bottom: db $13, $0F, $0F, $0F, $0F, $0F, $0F, $12
+submenu_text_01: db "Use/"
+submenu_text_02: db "Drop/"
+submenu_text_03: db "Exit/"
+
+
+;;==============================================================================================
+;;                                    DRAW SUBMENU
+;;----------------------------------------------------------------------------------------------
+;; Muestra la descripcion de un item en el menu de objetos
+;;
+;; INPUT:
+;;  HL -> Posicion X,Y en el BGmap
+;;   A -> Numero de opciones del submenu
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  
+;;
+;;==============================================================================================
+_sr_draw_submenu:
+
+    ;BORRAR-----
+    ld hl, $98EC
+    ld a, $03
+    ;-----------
+
+    ;Guardamos AF y HL para dibujar el texto para mas adelante
+        push af
+        push hl
+    ;---------------------------------------------------------
+
+    push af
+    push hl
+
+    ld a, $08
+    ld bc, submenu_top
+
+.loop_top:
+
+    push af
+    ld a, [bc]
+    inc bc
+
+    call _VRAM_wait
+    ldi [hl], a
+
+    pop af
+    dec a
+    jr nz, .loop_top
+
+    pop hl
+    pop af
+
+    sla a
+    dec a
+    ld bc, $20
+    add hl, bc
+
+.loop_rows:
+    push af
+    push hl
+
+    ld bc, submenu_row
+    ld a, $08
+
+.loop_draw_row:
+        push af
+        ld a, [bc]
+        inc bc
+
+        call _VRAM_wait
+        ldi [hl], a
+
+        pop af
+        dec a
+        jr nz, .loop_draw_row
+
+    pop hl
+    ld bc, $20
+    add hl, bc
+
+    pop af
+    dec a
+    jr nz, .loop_rows
+
+
+    ld a, $08
+    ld bc, submenu_bottom
+
+.loop_bottom:
+    push af
+    ld a, [bc]
+    inc bc
+
+    call _VRAM_wait
+    ldi [hl], a
+
+    pop af
+    dec a
+    jr nz, .loop_bottom
+
+
+    ;Cargamos AF y HL para dibujar el texto
+        pop hl
+        pop af
+    ;--------------------------------------
+
+    ld bc, $22
+    add hl, bc
+
+    push hl
+    ;BC -> Ptr BGmap
+    ld b, h
+    ld c, l
+    ;DE -> String
+    ld de, submenu_text_01
+    ;HL -> Ptr VRAM
+    ld hl, $8E70
+    call _sr_draw_text
+    pop hl
+
+
+    ld bc, $40
+    add hl, bc
+
+    push hl
+    ;BC -> Ptr BGmap
+    ld b, h
+    ld c, l
+    ;DE -> String
+    ld de, submenu_text_02
+    ;HL -> Ptr VRAM
+    ld hl, $8EC0
+    call _sr_draw_text
+    pop hl
+
+
+    ld bc, $40
+    add hl, bc
+
+    ;BC -> Ptr BGmap
+    ld b, h
+    ld c, l
+    ;DE -> String
+    ld de, submenu_text_03
+    ;HL -> Ptr VRAM
+    ld hl, $8F10
+    call _sr_draw_text
+
+    ret
+
+
+;;==============================================================================================
+;;                                    SHOW ITEM DESCRIPTION
+;;----------------------------------------------------------------------------------------------
+;; Muestra la descripcion de un item en el menu de objetos
+;;
+;; INPUT:
+;;  A -> Item ID
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  
+;;
+;;==============================================================================================
+_sr_show_item_desc:
+    push af
+
+    ;Limpiamos el texto
+    ld hl, $99E1
+    ld bc, $0012
+    call _clear_data
+
+    ld hl, $9A01
+    ld bc, $0012
+    call _clear_data
+
+    pop af
+
+    ;ret
+    
+    sla a
+    ld b, 0
+    ld c, a
+    ld hl, ent_item_index
+    add hl, bc
+    ldi a, [hl]
+    ld e, a
+    ld d, [hl]
+    ;DE -> Item data
+    
+    ld h, d
+    ld l, e
+.loop_1:
+    ldi a, [hl]
+    cp "/"
+    jr nz, .loop_1
+
+    ;DE -> String
+    ld d, h
+    ld e, l
+    ;HL -> Ptr VRAM
+    ld hl, $8C80
+    ;BC -> Ptr BGmap
+    ld bc, $99E1
+
+    call _sr_draw_text
+    
+    
+
+    ret
 
 
 ;;==============================================================================================
@@ -29,7 +248,7 @@ attack_anim: db $FE, $FE, $04, $04, $03, $03, $02, $FC, $FC, $FC, $80
 ;; Actualiza el hud con los datos del jugador
 ;;
 ;; INPUT:
-;;  A  -> Posicion del primer item a mostrar
+;;  C  -> Posicion del primer item a mostrar
 ;;
 ;; OUTPUT:
 ;;  NONE
@@ -55,7 +274,7 @@ _sr_draw_item_name:
     
     ld hl, ent_item_index
     sla a
-    ld b, a
+    ld c, a
     add hl, bc
     ldi a, [hl]
     ld e, a

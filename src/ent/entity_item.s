@@ -61,11 +61,9 @@ ent_item_index::
 
     dw item_default ;;ID = 50
 
-    
-
 
 item_default:     
-    db "/"              ;;ITEM NAME (8 chars)
+    db "________/"              ;;ITEM NAME (8 chars)
     db "/"      ;;ITEM DESC (16 chars)
     db $03                      ;;ITEM TYPE (00 -> consumable, 01 -> equipment, 02 -> Magic)
     db $00                      ;;ITEM ATTACK
@@ -74,8 +72,8 @@ item_default:
     db $00                      ;;ITEM MP
 
 item_copper_sword_data:     
-    db "c_sword/"               ;;ITEM NAME (8 chars)
-    db "Common sword.ATK:_+1/"       ;;ITEM DESC (16 chars)
+    db "c>sword_/"               ;;ITEM NAME (8 chars)
+    db "Common_sword.ATK:_1/"       ;;ITEM DESC (16 chars)
     db $01                      ;;ITEM TYPE (00 -> consumable, 01 -> equipment, 02 -> Magic)
     db $01                      ;;ITEM ATTACK
     db $00                      ;;ITEM DEFFENSE
@@ -83,8 +81,8 @@ item_copper_sword_data:
     db $00                      ;;ITEM MP
 
 item_copper_shield_data:     
-    db "c_shield/"               ;;ITEM NAME (8 chars)
-    db "Common shield.DEF:_+1/"       ;;ITEM DESC (16 chars)
+    db "c>shield/"               ;;ITEM NAME (8 chars)
+    db "Common_shield.DEF:_1/"       ;;ITEM DESC (16 chars)
     db $01                      ;;ITEM TYPE (00 -> consumable, 01 -> equipment, 02 -> Magic)
     db $00                      ;;ITEM ATTACK
     db $01                      ;;ITEM DEFFENSE
@@ -92,8 +90,8 @@ item_copper_shield_data:
     db $00                      ;;ITEM MP
 
 item_copper_staff_data:     
-    db "c_staff/"               ;;ITEM NAME (8 chars)
-    db "Common staff.DAMAGE:_10/"       ;;ITEM DESC (16 chars)
+    db "c>staff_/"               ;;ITEM NAME (8 chars)
+    db "Common_staff.DMG:_10/"       ;;ITEM DESC (16 chars)
     db $02                      ;;ITEM TYPE (00 -> consumable, 01 -> equipment, 02 -> Magic)
     db $00                      ;;ITEM ATTACK
     db $00                      ;;ITEM DEFFENSE
@@ -101,8 +99,8 @@ item_copper_staff_data:
     db $00                      ;;ITEM MP
 
 item_lesser_potion_data:     
-    db "potion/"               ;;ITEM NAME (8 chars)
-    db "Lesser potion.HP:_10/"       ;;ITEM DESC (16 chars)
+    db "potion__/"               ;;ITEM NAME (8 chars)
+    db "Lesser_potion.HP:_10/"       ;;ITEM DESC (16 chars)
     db $00                      ;;ITEM TYPE (00 -> consumable, 01 -> equipment, 02 -> Magic)
     db $00                      ;;ITEM ATTACK
     db $00                      ;;ITEM DEFFENSE

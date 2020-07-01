@@ -26,11 +26,14 @@ mg_hud:
     m_define_entity_hud
 
 ;;Variables auxiliares
-aux_prev_input_x: ds $01    ;;
-aux_prev_input_y: ds $01    ;;
-aux_prev_input_btn: ds $01  ;;
-aux_menu_selection: ds $01
-aux_max_menu_selections: ds $01 
+aux_prev_input_x: ds $01            ;;
+aux_prev_input_y: ds $01            ;;
+aux_prev_input_btn: ds $01          ;;
+aux_menu_selection: ds $01          ;;
+aux_max_menu_selections: ds $01     ;;
+aux_menu_selections_data: ds $08    ;;
+aux_first_item: ds $01              ;;
+aux_menu_page: ds $01
 
 
 SECTION "MAN_GAME_FUNCS", ROM0
@@ -61,11 +64,6 @@ _mg_game_loop:
     ; ld hl, $8C00
     ; call _sr_draw_text
     
-
-
-
-
-
     ld hl, ml_camera
     ld bc, 10
     add hl, bc
@@ -483,7 +481,7 @@ jr z, .ia_engine
 
 
 ;;==============================================================================================
-;;                                    MANAGER PLAYABLE INIT
+;;                                    MANAGER GAME INIT
 ;;----------------------------------------------------------------------------------------------
 ;; Inicializa el valor de las variables contenidas en manager_game
 ;;
@@ -513,7 +511,7 @@ _mg_init:
 
 
 ;;==============================================================================================
-;;                              MANAGER PLAYABLE INIT MAIN MENU
+;;                                    MAIN MENU LOOP
 ;;----------------------------------------------------------------------------------------------
 ;; Inicializa todo lo necesario para mostrar en main menu
 ;;
@@ -545,7 +543,7 @@ _mg_main_menu_loop:
 
 
 ;;==============================================================================================
-;;                              MANAGER PLAYABLE INIT MAIN MENU
+;;                              INIT MAIN MENU
 ;;----------------------------------------------------------------------------------------------
 ;; Inicializa todo lo necesario para mostrar en main menu
 ;;
@@ -590,7 +588,7 @@ _mg_init_main_menu:
 
 
 ;;==============================================================================================
-;;                              MANAGER PLAYABLE PAUSE MENU LOOP
+;;                                    PAUSE MENU LOOP
 ;;----------------------------------------------------------------------------------------------
 ;; Inicializa todo lo necesario para mostrar en main menu
 ;;
@@ -606,76 +604,18 @@ _mg_init_main_menu:
 ;;==============================================================================================
 _mg_pause_menu_loop:
 
-
+    call _su_menu_input_init
 
 .loop:
 
-    call _su_input
+    call _su_menu_input
 
-    ;Datos de las pulsaciones de los botones (x, y, btn)
-    ;A, B, Select, Start (0,1,2,3)
-    ld hl, mg_input_data
-
-    inc hl
-    ldi a, [hl]
-    cp $00
-    jr z, .no_movement
-
-        cp $01
-        jr z, .move_down
-
-        ;;COMPROBAMOS EL INPUT HACIA ARRIBA
-        xor a
-        ld [aux_prev_input_btn], a
-
-        ld a, [aux_prev_input_y]
-        cp $FF
-        jr z, .end_action
-
-        ld a, $FF
-        ld [aux_prev_input_y], a
-        ;;FIN DE LA COMPROBACION
+;Abajo ---------------------------------------------
+.mov_down:
+    cp $03
+    jr nz, .mov_up
 
         ld hl, $C008
-        
-
-        ld a, [aux_menu_selection]
-        cp $00
-        jr nz, .no_corregir_up
-
-            ld a, $70
-            ld [hl], a
-            ld a, [aux_max_menu_selections]
-            inc a
-            ld [aux_menu_selection], a
-
-.no_corregir_up:
-
-        ld a, [hl]
-        ld b, $10
-        sub b
-        ld [hl], a
-        ld a, [aux_menu_selection]
-        dec a
-        ld [aux_menu_selection], a
-        jr .end_action
-
-.move_down:
-
-        ;;COMPROBAMOS EL INPUT HACIA ABAJO
-        xor a
-        ld [aux_prev_input_btn], a
-
-        ld a, [aux_prev_input_y]
-        cp $01
-        jr z, .end_action
-
-        ld a, $01
-        ld [aux_prev_input_y], a
-        ;;FIN DE LA COMPROBACION
-
-        ld hl, $C008
-        
         ld a, [aux_menu_selection]
         cp $04
         jr nz, .no_corregir_down
@@ -695,75 +635,67 @@ _mg_pause_menu_loop:
         ld a, [aux_menu_selection]
         inc a
         ld [aux_menu_selection], a
-        jr .end_action
+        jr .loop
+;---------------------------------------------------
 
-.no_movement:
-    xor a
-    ld [aux_prev_input_y], a
-    ld a, [hl]
-    bit 0, a
-    jr nz, .check_b
+;Arriba---------------------------------------------
+.mov_up:
+    cp $04
+    jr nz, .btn_A
 
-        jr .go_to_selection
+        ld hl, $C008
+        ld a, [aux_menu_selection]
+        cp $00
+        jr nz, .no_corregir_up
 
-.check_b:
-    bit 1, a
-    jr nz, .check_start
+            ld a, $70
+            ld [hl], a
+            ld a, [aux_max_menu_selections]
+            inc a
+            ld [aux_menu_selection], a
 
+.no_corregir_up:
+
+        ld a, [hl]
+        ld b, $10
+        sub b
+        ld [hl], a
+        ld a, [aux_menu_selection]
+        dec a
+        ld [aux_menu_selection], a
+        jr .loop
+;---------------------------------------------------
+
+
+;Btn A ---------------------------------------------
+.btn_A:
+    cp $05
+    jr nz, .btn_B
+        jp mg_go_to_selection
+;---------------------------------------------------
+
+
+;Btn B ---------------------------------------------
+.btn_B:
+    cp $06
+    jr nz, .btn_start
         ld a, GAME_LOOP
         ld [mg_game_state], a
         ret
+;---------------------------------------------------
 
-.check_start:
-    bit 3, a
-    jr nz, .no_input
 
+;Btn Start -----------------------------------------
+.btn_start:
+    cp $08
+    jr nz, .loop
         ld a, GAME_LOOP
         ld [mg_game_state], a
         ret
+;---------------------------------------------------
 
-.no_input:
-    xor a
-    ld [aux_prev_input_btn], a
+    jr .loop
 
-.end_action:
-
-    jp .loop
-
-    
-.go_to_selection:
-    ld a, [aux_menu_selection]
-    cp $00
-    jr nz, .option_2
-        ld a, ITEM_MENU
-        ld [mg_game_state], a
-        ret
-
-.option_2:
-    cp $01
-    jr nz, .option_3
-        ld a, GAME_LOOP
-        ld [mg_game_state], a
-        ret
-
-.option_3:
-    cp $02
-    jr nz, .option_4
-        ld a, GAME_LOOP
-        ld [mg_game_state], a
-        ret
-
-.option_4:
-    cp $03
-    jr nz, .option_5
-        ld a, GAME_LOOP
-        ld [mg_game_state], a
-        ret
-
-.option_5:
-    ld a, GAME_LOOP
-    ld [mg_game_state], a
-    ret
 
 ;;==============================================================================================
 ;;                              MANAGER PLAYABLE ITEM MENU LOOP
@@ -782,22 +714,357 @@ _mg_pause_menu_loop:
 ;;==============================================================================================
 _mg_item_menu_loop:
 
-    ld a, PAUSE_MENU
-    ld [mg_game_state], a
+    call _su_menu_input_init
 
 .loop:
-    call _su_input
 
-    ld hl, mg_input_data
-    inc hl
-    inc hl
+    call _su_menu_input
+
+;Derecha ---------------------------------------------
+.mov_right:
+    cp $01
+    jr nz, .mov_left
+
+        ld a, [aux_menu_page]
+        cp $03
+        jr nz, .no_corregir_right
+            
+            ld a, $FB
+            ld [aux_first_item], a
+            ld a, $FF
+            
+
+.no_corregir_right:
+        inc a
+        ld [aux_menu_page],a 
+        ld a, [aux_first_item]
+        ld c, $05
+        add c
+        ld [aux_first_item], a
+        ld c, a 
+        
+        call _sr_draw_item_name
+
+        ld a, [aux_menu_selection]
+        jp .show_item_desc
+        
+;---------------------------------------------------
+
+;Izquierda -----------------------------------------
+.mov_left:
+    cp $02
+    jr nz, .mov_down
+
+        ld a, [aux_menu_page]
+        cp $00
+        jr nz, .no_corregir_left
+            
+            ld a, $14
+            ld [aux_first_item], a
+            ld a, $04
+            
+
+.no_corregir_left:
+        dec a
+        ld [aux_menu_page],a 
+        ld a, [aux_first_item]
+        ld c, $05
+        sub c
+        ld [aux_first_item], a
+        ld c, a 
+        
+        call _sr_draw_item_name
+
+        ld a, [aux_menu_selection]
+        jr .show_item_desc
+        
+;---------------------------------------------------
+
+
+;Abajo ---------------------------------------------
+.mov_down:
+    cp $03
+    jr nz, .mov_up
+
+        ld hl, $C008
+        ld a, [aux_menu_selection]
+        cp $04
+        jr nz, .no_corregir_down
+
+            ld a, $20
+            ld [hl], a
+            ld a, $00
+            dec a
+            ld [aux_menu_selection], a
+
+.no_corregir_down:
+
+        ld a, [hl]
+        ld b, $10
+        add b
+        ld [hl], a
+        ld a, [aux_menu_selection]
+        inc a
+        ld [aux_menu_selection], a
+
+        jr .show_item_desc
+;---------------------------------------------------
+
+;Arriba---------------------------------------------
+.mov_up:
+    cp $04
+    jr nz, .btn_A
+
+        ld hl, $C008
+        ld a, [aux_menu_selection]
+        cp $00
+        jr nz, .no_corregir_up
+
+            ld a, $80
+            ld [hl], a
+            ld a, [aux_max_menu_selections]
+            inc a
+            ld [aux_menu_selection], a
+
+.no_corregir_up:
+
+        ld a, [hl]
+        ld b, $10
+        sub b
+        ld [hl], a
+        ld a, [aux_menu_selection]
+        dec a
+        ld [aux_menu_selection], a
+        jr .show_item_desc
+;---------------------------------------------------
+
+;Btn A ---------------------------------------------
+.btn_A:
+    cp $05
+    jr nz, .btn_B
+
+        ld hl, $98EC
+        ld a, $03
+        call _sr_draw_submenu
+        call _mg_submenu_loop
+
+        jp .loop
+;---------------------------------------------------
+
+;Btn B ---------------------------------------------
+.btn_B:
+    cp $06
+    jp nz, .loop
+        ld a, PAUSE_MENU
+        ld [mg_game_state], a
+        ret
+;---------------------------------------------------
+
+    jp .loop
+
+.show_item_desc:
+    ;Mostramos la descripcion del item seleccionado
+    ld c, a
+    ld a, [aux_first_item] 
+    add c
+    ld c, a
+    ld b, $0
+    ld hl, mi_player_items
+    add hl, bc
+        
     ld a, [hl]
+    call _sr_show_item_desc
+
+    xor a
+    jp .loop
 
 
-    cp $DF
-    ret nz
 
-    jr .loop
+;;==============================================================================================
+;;                                     SUBMENU LOOP
+;;----------------------------------------------------------------------------------------------
+;; En un menu, redirige a la seleccion del usuario
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF
+;;
+;;==============================================================================================
+_mg_submenu_loop:
+
+    ld hl, $C00C
+    
+    ld a, $50
+    ldi [hl], a
+
+    ld a, $70
+    ldi [hl], a
+
+    ld a, $94
+    ld [hl], a
+
+    ;Guardamos la seleccion del menu anterior
+    ld a, [aux_menu_selection]
+    push af
+    ;Reiniciamos la seleccion del menu
+    xor a
+    ld [aux_menu_selection], a
+
+    call _su_menu_input_init
+
+.loop:
+
+    call _su_menu_input
+
+;Abajo ---------------------------------------------
+.mov_down:
+    cp $03
+    jr nz, .mov_up
+
+        ld hl, $C00C
+        ld a, [aux_menu_selection]
+        cp $02
+        jr nz, .no_corregir_down
+
+            ld a, $40
+            ld [hl], a
+            ld a, $FF
+            ld [aux_menu_selection], a
+
+.no_corregir_down:
+
+        ld a, [hl]
+        ld b, $10
+        add b
+        ld [hl], a
+        ld a, [aux_menu_selection]
+        inc a
+        ld [aux_menu_selection], a
+
+;---------------------------------------------------
+
+;Arriba --------------------------------------------
+.mov_up:
+    cp $04
+    jr nz, .btn_B
+
+        ld hl, $C00C
+        ld a, [aux_menu_selection]
+        cp $00
+        jr nz, .no_corregir_up
+
+            ld a, $80
+            ld [hl], a
+            ld a, $03
+            ld [aux_menu_selection], a
+
+.no_corregir_up:
+
+        ld a, [hl]
+        ld b, $10
+        sub b
+        ld [hl], a
+        ld a, [aux_menu_selection]
+        dec a
+        ld [aux_menu_selection], a
+
+;---------------------------------------------------
+
+;Btn B ---------------------------------------------
+.btn_B:
+    cp $06
+    jp nz, .loop
+        jr .end
+;---------------------------------------------------
+
+.end:
+    ;cargamos la seleccion del menu anterior
+
+    ld hl, $C00C
+    xor a
+    ld [hl], a
+
+    ld hl, $986C
+    ld bc, $0020
+    ld a,  $0A
+
+.clean_loop_1:
+        push af
+
+        ld a, $11
+        call _VRAM_wait
+        ld [hl], a
+
+        add hl, bc
+        pop af
+        dec a
+        jr nz, .clean_loop_1
+
+    ld a, $12
+    call _VRAM_wait
+    ld [hl], a
+
+
+    ld hl, $986D
+    ld bc, $0007
+    ld a,  $0B
+.clean_loop_2:
+
+        push af
+        push hl
+        push bc
+        ; HL -> DESTINO
+        ; BC -> CANTIDAD 
+        call _clear_data
+        
+        pop bc
+        pop hl
+        ld de, $0020
+        add hl, de
+
+        pop af
+        dec a
+        jr nz, .clean_loop_2
+
+    pop af
+    ld [aux_menu_selection], a
+    xor a
+    ret 
+
+
+
+;;==============================================================================================
+;;                              GO TO SELECTION
+;;----------------------------------------------------------------------------------------------
+;; En un menu, redirige a la seleccion del usuario
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF
+;;
+;;==============================================================================================
+mg_go_to_selection:
+    ld hl, aux_menu_selections_data
+    ld b, $00
+    ld a, [aux_menu_selection] 
+    ld c, a
+    add hl, bc
+
+    ld a, [hl]
+    ld [mg_game_state], a
+
+    ret
+
 
 ;;==============================================================================================
 ;;                              MANAGER GAME INIT PAUSE MENU
@@ -846,6 +1113,14 @@ _mg_init_pause_menu:
     ld  bc, 40*4-8                  
     call _clear_data        
 
+    ;Posicionamos al Player
+    ld hl, $C000
+    ld a, $50
+    ld [hl], a
+    ld hl, $C004
+    ld [hl], a
+
+    ;Ponemos el cursor del menu
     ld hl, $C008
 
     ld a, $0020
@@ -861,6 +1136,20 @@ _mg_init_pause_menu:
     ld [aux_menu_selection], a
     ld a, $04
     ld [aux_max_menu_selections], a
+
+    ;MAIN_MENU = 0
+    ;GAME_LOOP = 1
+    ;PAUSE_MENU = 2
+    ;ITEM_MENU = 3
+    ld hl, aux_menu_selections_data
+    ld a, ITEM_MENU
+    ldi [hl], a         ;Items
+    ld a, GAME_LOOP
+    ldi [hl], a         ;Map
+    ldi [hl], a         ;Options
+    ldi [hl], a         ;Save
+    ld [hl], a          ;Exit
+    
 
 
     ld      hl,$FF40		    ;; FF40 - LCD Control (R/W)
@@ -912,8 +1201,16 @@ _mg_init_item_menu:
     ;Borramos los sprites
     ld  hl, $C008                   
     ld  bc, 40*4-8                  
-    call _clear_data        
+    call _clear_data     
 
+    ;Posicionamos al Player
+    ld hl, $C000
+    xor a
+    ld [hl], a
+    ld hl, $C004
+    ld [hl], a   
+
+    ;Posicionamos el cursor del menu
     ld hl, $C008
 
     ld a, $0030
@@ -925,12 +1222,20 @@ _mg_init_item_menu:
     
     xor a
     ld [aux_menu_selection], a
+    ld [aux_menu_page], a
     ld a, $04
     ld [aux_max_menu_selections], a
 
-    ld bc, $0000
+    ;Dibujamos el nombre de los items y guardamos cual es el primer item que se muestra
+    xor a
+    ld [aux_first_item], a
+    ld c, a
     call _sr_draw_item_name
 
+    ;Mostramos la descripcion del primer item
+    ld hl, mi_player_items
+    ld a, [hl]
+    call _sr_show_item_desc
 
     ld      hl,$FF40		    ;; FF40 - LCD Control (R/W)
 	set     7,[hl]              ;; Encender la pantalla

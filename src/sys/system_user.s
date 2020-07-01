@@ -3,6 +3,14 @@ INCLUDE "src/ent/entity_playable.h.s"
 INCLUDE "src/ent/entity_hud.h.s"
 INCLUDE "src/ent/entity_item.h.s"
 
+SECTION "SYS_USER_VARS", WRAM0
+
+
+;;Variables auxiliares
+aux_prev_input_x: ds $01    ;;
+aux_prev_input_y: ds $01    ;;
+aux_prev_input_btn: ds $01  ;;
+
 
 SECTION "SYS_USER_FUNCS", ROM0
 
@@ -315,6 +323,203 @@ _su_update_player_hud_data:
 
     ;db $18, $FE
 
+    ret
+
+
+
+;;==============================================================================================
+;;                                    SYSTEM MENU INPUT INIT
+;;----------------------------------------------------------------------------------------------
+;; Actualiza el valor del input que realiza el jugador
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  A -> Resultado del input
+;;
+;; DESTROYS:
+;;  AF, BC
+;;
+;;==============================================================================================
+_su_menu_input_init:
+
+    ld a, $FF
+    ld [aux_prev_input_x],   a
+    ld [aux_prev_input_y],   a
+    ld [aux_prev_input_btn], a
+
+    ret
+
+;;==============================================================================================
+;;                                    SYSTEM MENU INPUT
+;;----------------------------------------------------------------------------------------------
+;; Actualiza el valor del input que realiza el jugador para los menus
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  A -> Resultado del input
+;;
+;; DESTROYS:
+;;  AF, BC
+;;
+;;==============================================================================================
+_su_menu_input:
+
+    call _su_input
+
+    ;Datos de las pulsaciones de los botones (x, y, btn)
+    ;A, B, Select, Start (0,1,2,3)
+    ld hl, mg_input_data
+
+    ldi a, [hl]
+    cp $00
+    jr z, .check_vert
+
+        cp $01              ;;Comprobamos el input en el eje X
+        jr nz, .check_left
+        ;;PULSA DERECHA
+        xor a
+        ld [aux_prev_input_btn], a
+        ld [aux_prev_input_y], a
+
+        ld a, [aux_prev_input_x]
+        cp $01
+        jp z, .end_action
+
+        ld a, $01
+        ld [aux_prev_input_x], a
+
+        ld a, $01
+        ret
+
+
+.check_left:
+        ;;PULSA IZQUIERDA
+        xor a
+        ld [aux_prev_input_btn], a
+        ld [aux_prev_input_y], a
+
+        ld a, [aux_prev_input_x]
+        cp $FF
+        jp z, .end_action
+
+        ld a, $FF
+        ld [aux_prev_input_x], a
+
+        ld a, $02
+        ret
+
+.check_vert:
+    xor a
+    ld [aux_prev_input_x], a
+    ldi a, [hl]
+    cp $00
+    jr z, .check_btn
+
+        cp $01
+        jr nz, .check_up
+        ;;PULSA ABAJO
+        xor a
+        ld [aux_prev_input_btn], a
+
+        ld a, [aux_prev_input_y]
+        cp $01
+        jr z, .end_action
+
+        ld a, $01
+        ld [aux_prev_input_y], a
+
+        ld a, $03
+        ret
+
+.check_up:
+        ;;PULSA ARRIBA
+        xor a
+        ld [aux_prev_input_btn], a
+
+        ld a, [aux_prev_input_y]
+        cp $FF
+        jr z, .end_action
+
+        ld a, $FF
+        ld [aux_prev_input_y], a
+
+        ld a, $04
+        ret
+
+.check_btn:
+    xor a
+    ld [aux_prev_input_y], a
+
+    ld a, [hl]
+    cp $DF
+    jr z, .no_input
+
+.check_a:        
+        bit 0, a
+        jr nz, .check_b
+        ;;PULSA A
+        ld a, [aux_prev_input_btn] 
+        bit 0, a
+        jr nz, .end_action          ;Si prev de btn_A, es 0, continua
+
+        ld a, %00000001
+        ld [aux_prev_input_btn], a
+
+        ld a, $05
+        ret
+
+.check_b:
+        bit 1, a
+        jr nz, .check_select
+        ;;PULSA B
+        ld a, [aux_prev_input_btn] 
+        bit 1, a
+        jr nz, .end_action          ;Si prev de btn_B, es 0, continua
+        
+        ld a, %00000010
+        ld [aux_prev_input_btn], a
+
+        ld a, $06
+        ret
+
+.check_select:
+        bit 2, a
+        jr nz, .check_start
+        ;;PULSA START
+        ld a, [aux_prev_input_btn] 
+        bit 2, a
+        jr nz, .end_action          ;Si prev de btn_start, es 0, continua
+        
+        ld a, %00000100
+        ld [aux_prev_input_btn], a
+
+        ld a, $07
+        ret
+
+.check_start:
+        bit 3, a
+        jr nz, .no_input
+        ;;PULSA SELECT
+        ld a, [aux_prev_input_btn] 
+        bit 3, a
+        jr nz, .end_action          ;Si prev de btn_select, es 0, continua
+        
+        ld a, %00001000
+        ld [aux_prev_input_btn], a
+
+        ld a, $08
+        ret
+
+.no_input:
+    xor a
+    ld [aux_prev_input_btn], a
+
+.end_action:
+    xor a
     ret
 
 
