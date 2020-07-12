@@ -70,6 +70,7 @@ item_default:
     db $00                      ;;ITEM DEFFENSE
     db $00                      ;;ITEM HEALTH
     db $00                      ;;ITEM MP
+    db $00                      ;;ITEM ATTRIBUTES
 
 item_copper_sword_data:     
     db "c>sword_/"               ;;ITEM NAME (8 chars)
@@ -94,15 +95,12 @@ item_copper_staff_data:
     db "Common_staff.DMG:_10/"       ;;ITEM DESC (16 chars)
     db $02                      ;;ITEM TYPE (00 -> consumable, 01 -> equipment, 02 -> Magic)
     db $00                      ;;ITEM ATTACK
-    db $00                      ;;ITEM DEFFENSE
-    db $00                      ;;ITEM HEALTH
-    db $00                      ;;ITEM MP
+
 
 item_lesser_potion_data:     
     db "potion__/"               ;;ITEM NAME (8 chars)
     db "Lesser_potion.HP:_10/"       ;;ITEM DESC (16 chars)
     db $00                      ;;ITEM TYPE (00 -> consumable, 01 -> equipment, 02 -> Magic)
-    db $00                      ;;ITEM ATTACK
-    db $00                      ;;ITEM DEFFENSE
     db $0A                      ;;ITEM HEALTH
     db $00                      ;;ITEM MP
+    db $FF                      ;;ITEM ATTRIBUTES

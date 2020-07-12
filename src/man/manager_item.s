@@ -6,12 +6,12 @@ mi_gold:         ds 3
 mi_player_item_num: ds $01
 mi_player_next_item_h: ds $01
 mi_player_next_item_l: ds $01
-mi_player_items: ds 20
+mi_player_items: ds 21
 
 mi_stored_item_num: ds $01
 mi_stored_next_item_h: ds $01
 mi_stored_next_item_l: ds $01
-mi_stored_items: ds 200
+mi_stored_items: ds 201
 
 MAX_PLAYER_ITEMS = 20
 MAX_STORED_ITEMS = 200
@@ -19,10 +19,54 @@ MAX_STORED_ITEMS = 200
 
 SECTION "MAN_ITEM_FUNCS", ROM0
 
+;;==============================================================================================
+;;                                    MANAGER ITEM DELETE PLAYER ITEM
+;;----------------------------------------------------------------------------------------------
+;; Elimina un Item del inventario del jugador
+;;
+;; INPUT:
+;;  HL -> Puntero al Item
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_mi_delete_player_item:
+
+    ld b, h
+    ld c, l
+    
+    inc hl
+
+.loop:
+
+    ldi a, [hl]
+
+    ld [bc], a
+    inc bc
+
+    cp $32 ;;32h = 50d -> Item Default
+    jr nz, .loop
+
+    ld a, [mi_player_next_item_h]
+    ld h, a
+    ld a, [mi_player_next_item_l]
+    ld l, a
+    dec hl
+    ld a, h
+    ld [mi_player_next_item_h], a
+    ld a, l
+    ld [mi_player_next_item_l], a
+
+    ret 
+
 
 
 ;;==============================================================================================
-;;                                    MANAGER ITEM ADD MONEY
+;;                                    MANAGER ITEM ADD ITEM
 ;;----------------------------------------------------------------------------------------------
 ;; Anade un Item al inventario del jugador
 ;;
@@ -178,7 +222,7 @@ _mi_init:
 
     ; HL -> DESTINO
     ; BC -> CANTIDAD
-    ld bc, 20 
+    ld bc, 21 
     ld  a, 50
     call _clear_data_custom
 

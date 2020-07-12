@@ -838,13 +838,13 @@ _mg_item_menu_loop:
         ld a, [aux_menu_selection]
         dec a
         ld [aux_menu_selection], a
-        jr .show_item_desc
+        jp .show_item_desc
 ;---------------------------------------------------
 
 ;Btn A ---------------------------------------------
 .btn_A:
     cp $05
-    jr nz, .btn_B
+    jp nz, .btn_B
         ld a, [aux_first_item]
         ld c, a
         ld b, $00
@@ -905,7 +905,34 @@ _mg_item_menu_loop:
         dec a
         call _mg_submenu_loop
 
-        db $18, $FE
+        cp $04
+        jp z, .loop
+
+        push af
+        ld a, [aux_first_item]
+        ld c, a
+        ld a, [aux_menu_selection]
+        add c
+        ld c, a
+        pop af
+        call _su_item_action
+
+        ld a, [aux_first_item]
+        ld c, a
+        call _sr_draw_item_name
+
+        ld a, [aux_first_item]
+        ld c, a
+        ld a, [aux_menu_selection]
+        add c
+        ld b, $00
+        ld c, a
+        ld hl, mi_player_items
+        add hl, bc
+        ld a, [hl]
+        call _sr_show_item_desc  
+
+        ;db $18, $FE    
 
         jp .loop
 ;---------------------------------------------------
@@ -1086,6 +1113,11 @@ _mg_submenu_loop:
     cp $05
     jp nz, .btn_B
         ld a, [aux_menu_selection]
+        ld b, $00
+        ld c, a
+        ld hl, sub_text
+        add hl, bc
+        ld a, [hl]
         jr .end
 ;---------------------------------------------------
 
@@ -1094,7 +1126,7 @@ _mg_submenu_loop:
 .btn_B:
     cp $06
     jp nz, .loop
-        ld a, [aux_max_menu_selections]
+        ld a, $04 ;;4 = Exit command
         jr .end
 ;---------------------------------------------------
 

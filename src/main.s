@@ -78,12 +78,22 @@ _main:
     call _mi_add_item
     ld a, $0A
     call _mi_add_item
+    ld a, $30
+    call _mi_add_item
     ld a, $00
     call _mi_add_item
     ld a, $10
     call _mi_add_item
+    ld a, $30
+    call _mi_add_item
     ld a, $20
     call _mi_add_item
+    ld a, $30
+    call _mi_add_item
+
+
+    ;ld hl, mi_player_items
+    ;call _mi_delete_player_item
     
 
 

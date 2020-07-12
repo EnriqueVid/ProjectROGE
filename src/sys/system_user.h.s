@@ -4,3 +4,4 @@ GLOBAL _su_update_all_hud_data
 GLOBAL _su_grab_item
 GLOBAL _su_menu_input
 GLOBAL _su_menu_input_init
+GLOBAL _su_item_action

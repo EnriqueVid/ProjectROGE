@@ -14,6 +14,204 @@ aux_prev_input_btn: ds $01  ;;
 
 SECTION "SYS_USER_FUNCS", ROM0
 
+
+
+;;==============================================================================================
+;;                                     USE ITEM
+;;----------------------------------------------------------------------------------------------
+;; Usa el objeto seleccionado
+;;
+;; INPUT:
+;;  HL -> Item_ptr
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_su_use_item:
+
+    push hl
+    ld a, [hl]
+    push af
+
+
+    ld hl, ent_item_index
+    ld b, $00
+    ld c, a
+    sla c
+    add hl, bc
+    ldi a, [hl]
+    ld c, a
+    ld b, [hl]
+    ld h, b
+    ld l, c
+
+.ignore_text_loop_1:
+    ldi a, [hl]
+    cp "/"
+    jr nz, .ignore_text_loop_1
+
+.ignore_text_loop_2:
+    ldi a, [hl]
+    cp "/"
+    jr nz, .ignore_text_loop_2
+
+
+    ;;Comprobamos si es magia o consumible
+    pop af
+    cp $28
+    jr nc, .es_consumible
+    ;;OBJETOS MAGICOS---------------------------------------------------
+
+        pop hl
+        ret
+
+.es_consumible:
+    ;;OBJETOS CONSUMIBLES-----------------------------------------------
+
+        push hl
+
+        ;;Añadimos HP__________________________
+        ld hl, mp_player
+        ld bc, ep_cHP
+        add hl, bc
+
+        ld d, h
+        ld e, l
+        ld a, [de]
+        ld b, a
+
+        pop hl
+        inc hl
+        ldi a, [hl]
+        add b
+        ld [de], a
+
+        push hl
+
+        ;;Comprobamos el overflow del HP
+        ld hl, mp_player
+        ld bc, ep_mHP
+        add hl, bc
+
+        ld b, a
+        ;ld b, $10
+        ld a, [hl]
+        sub b
+        ;db $18, $FE
+        jr nc, .no_corregir_HP
+            ld  a, [hl]
+            ld [de], a
+
+.no_corregir_HP:
+
+        ;;Añadimos MP______________________________
+        ld hl, mp_player
+        ld bc, ep_cMP
+        add hl, bc
+
+        ld d, h
+        ld e, l
+        ld a, [de]
+        ld b, a
+
+        pop hl
+        ldi a, [hl]
+        add b
+        ld [de], a
+
+        push hl
+
+    ;;Comprobamos el overflow del MP
+        ld hl, mp_player
+        ld bc, ep_mMP
+        add hl, bc
+
+        ld b, a
+        ;ld b, $10
+        ld a, [hl]
+        sub b
+        ;db $18, $FE
+        jr nc, .no_corregir_MP
+            ld  a, [hl]
+            ld [de], a
+
+.no_corregir_MP:
+
+        ;;Modificamos los STATS______________________________    
+        ld hl, mp_player
+        ld bc, ep_cSTAT
+        add hl, bc
+
+        ld d, h
+        ld e, l
+        ld a, [de]
+        ld b, a
+
+        pop hl
+
+        ld a, [hl]
+        and b
+        ld [de], a
+
+        pop hl
+
+        call _mi_delete_player_item
+
+        ret
+
+
+;;==============================================================================================
+;;                                    ITEM ACTION
+;;----------------------------------------------------------------------------------------------
+;; Gestiona que accion se realiza sobre un objeto
+;;
+;; INPUT:
+;;  A -> Accion a realizar
+;;  C -> Posicion del item en el vextor de objetos
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_su_item_action:
+
+    ld hl, mi_player_items
+    ld b, $00
+    add hl, bc
+    ;;HL -> Ptr al Item ID
+    ;; A -> Accion a realizar
+
+.check_use:
+    cp $00
+    jr nz, .check_equip
+        call _su_use_item
+        ret
+
+.check_equip:
+    cp $01
+    jr nz, .check_asign
+
+.check_asign:
+    cp $02
+    jr nz, .check_delete
+
+.check_delete:
+    cp $03
+    jr nz, .end
+
+.end:
+
+    db $18, $FE
+
+    ret
+
 ;;==============================================================================================
 ;;                                    GRAB ITEM
 ;;----------------------------------------------------------------------------------------------
