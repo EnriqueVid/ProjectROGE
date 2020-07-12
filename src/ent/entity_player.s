@@ -33,9 +33,9 @@ ent_player_default_room: db $00
 ent_player_default_exit_point_x: db $00
 ent_player_default_exit_point_y: db $00 
 
-ent_player_default_eq_weapon: db $BB
-ent_player_default_eq_armor: db $00
-ent_player_default_eq_item: db $00
+ent_player_default_eq_weapon: db $FF
+ent_player_default_eq_armor: db $FF
+ent_player_default_eq_item: db $FF
 
 ent_player_default_def_HP  db $00
 ent_player_default_def_MP  db $00

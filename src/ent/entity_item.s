@@ -76,19 +76,19 @@ item_copper_sword_data:
     db "c>sword_/"               ;;ITEM NAME (8 chars)
     db "Common_sword.ATK:_1/"       ;;ITEM DESC (16 chars)
     db $01                      ;;ITEM TYPE (00 -> consumable, 01 -> equipment, 02 -> Magic)
-    db $01                      ;;ITEM ATTACK
-    db $00                      ;;ITEM DEFFENSE
     db $00                      ;;ITEM HEALTH
     db $00                      ;;ITEM MP
+    db $05                      ;;ITEM ATTACK
+    db $00                      ;;ITEM DEFFENSE
 
 item_copper_shield_data:     
     db "c>shield/"               ;;ITEM NAME (8 chars)
     db "Common_shield.DEF:_1/"       ;;ITEM DESC (16 chars)
     db $01                      ;;ITEM TYPE (00 -> consumable, 01 -> equipment, 02 -> Magic)
-    db $00                      ;;ITEM ATTACK
-    db $01                      ;;ITEM DEFFENSE
     db $00                      ;;ITEM HEALTH
     db $00                      ;;ITEM MP
+    db $00                      ;;ITEM ATTACK
+    db $01                      ;;ITEM DEFFENSE
 
 item_copper_staff_data:     
     db "c>staff_/"               ;;ITEM NAME (8 chars)

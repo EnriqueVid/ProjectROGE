@@ -2,6 +2,7 @@ INCLUDE "src/sys/system_user.h.s"
 INCLUDE "src/ent/entity_playable.h.s"
 INCLUDE "src/ent/entity_hud.h.s"
 INCLUDE "src/ent/entity_item.h.s"
+INCLUDE "src/ent/entity_player.h.s"
 
 SECTION "SYS_USER_VARS", WRAM0
 
@@ -17,11 +18,155 @@ SECTION "SYS_USER_FUNCS", ROM0
 
 
 ;;==============================================================================================
+;;                                     EQUIP ITEM
+;;----------------------------------------------------------------------------------------------
+;; Equipa el objeto seleccionado, desequipa el objeto equiado anterior
+;;
+;; INPUT:
+;;  C -> Item position
+;;  HL-> Item_ptr
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_su_equip_item:
+
+    ld a, [hl]
+    push af
+
+
+    ld hl, ent_item_index
+    ld d, $00
+    ld e, a
+    sla e
+    add hl, de
+    ldi a, [hl]
+    ld e, a
+    ld d, [hl]
+    ld h, d
+    ld l, e
+
+.ignore_text_loop_1:
+    ldi a, [hl]
+    cp "/"
+    jr nz, .ignore_text_loop_1
+
+.ignore_text_loop_2:
+    ldi a, [hl]
+    cp "/"
+    jr nz, .ignore_text_loop_2
+
+    pop af
+    cp $0A
+    jr nc, .es_escudo
+    ;;EQUIPAR ARMAS----------------------------------------------
+
+        push hl
+
+        ld hl, mp_player
+        ld de, ent_player_eq_W 
+        add hl, de
+        ld a, [hl]
+        cp $FF
+        jr z, .no_unequip_weapon
+
+            ld bc, $AAAA
+            db $18,$FE
+
+.no_unequip_weapon:
+        ld a, c
+        ld [hl], a
+
+        jr .add_stats
+
+
+.es_escudo:
+    ;;EQUIPAR ESCUDOS--------------------------------------------
+        push hl
+
+        ld hl, mp_player
+        ld de, ent_player_eq_S 
+        add hl, de
+        ld a, [hl]
+        cp $FF
+        jr z, .no_unequip_shield
+
+            ld bc, $BBBB
+            db $18,$FE
+
+.no_unequip_shield:
+        ld a, c
+        ld [hl], a
+
+
+.add_stats:
+    
+    ld hl, mp_player
+    ld bc, ep_mHP
+    add hl, bc
+
+    ld d, h
+    ld e, l
+    ld a, [de]
+    ld c, a
+
+    ;;Anadimos HP
+    pop hl
+    inc hl
+    ldi a, [hl]
+    add c
+    ld [de], a
+    
+
+    ;;Anadimos MP
+    inc de
+    ld a, [de]
+    ld c, a
+    ldi a, [hl]
+    add c
+    ld [de], a
+    push hl
+
+    ;;Anadimos Atk
+    ld hl, mp_player
+    ld bc, ep_cATK
+    add hl, bc
+    ld d, h
+    ld e, l
+    ld a, [de]
+    ld c, a
+
+    pop hl
+    ldi a, [hl]
+    add c
+    ;db $18,$FE
+    ld [de], a
+
+    ;;Anadimos Def
+    inc de
+    ld a, [de]
+    ld c, a
+    ld a, [hl]
+    add c
+    ld [de], a
+
+    call _su_update_all_hud_data
+    call _sr_update_draw_player_hud
+
+    ret
+
+
+;;==============================================================================================
 ;;                                     USE ITEM
 ;;----------------------------------------------------------------------------------------------
 ;; Usa el objeto seleccionado
 ;;
 ;; INPUT:
+;;   C -> Item position
 ;;  HL -> Item_ptr
 ;;
 ;; OUTPUT:
@@ -34,6 +179,8 @@ SECTION "SYS_USER_FUNCS", ROM0
 _su_use_item:
 
     push hl
+    push bc
+
     ld a, [hl]
     push af
 
@@ -66,7 +213,9 @@ _su_use_item:
     jr nc, .es_consumible
     ;;OBJETOS MAGICOS---------------------------------------------------
 
+        pop bc
         pop hl
+
         ret
 
 .es_consumible:
@@ -157,9 +306,34 @@ _su_use_item:
         and b
         ld [de], a
 
+        pop bc
+        ld hl, mp_player
+        ld de, ent_player_eq_W 
+        add hl, de
+        ld a, [hl]
+        cp $FF
+        jr z, .no_corregir_eq_w
+        cp c
+        jr c, .no_corregir_eq_w
+            dec a
+            ld [hl], a
+.no_corregir_eq_w:
+        inc hl
+        ld a, [hl]
+        cp $FF
+        jr z, .no_corregir_eq_s
+        cp c
+        jr c, .no_corregir_eq_s
+            dec a
+            ld [hl], a
+.no_corregir_eq_s:
+
         pop hl
 
         call _mi_delete_player_item
+
+        call _su_update_all_hud_data
+        call _sr_update_draw_player_hud
 
         ret
 
@@ -197,6 +371,8 @@ _su_item_action:
 .check_equip:
     cp $01
     jr nz, .check_asign
+        call _su_equip_item
+        ret
 
 .check_asign:
     cp $02
@@ -204,6 +380,10 @@ _su_item_action:
 
 .check_delete:
     cp $03
+    jr nz, .check_unequip
+
+.check_unequip:
+    cp $05
     jr nz, .end
 
 .end:

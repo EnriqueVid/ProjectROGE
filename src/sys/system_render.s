@@ -1,6 +1,7 @@
 INCLUDE "src/sys/system_render.h.s"
 INCLUDE "src/ent/entity_playable.h.s"
 INCLUDE "src/ent/entity_enemy.h.s"
+INCLUDE "src/ent/entity_player.h.s"
 INCLUDE "src/ent/entity_hud.h.s"
 INCLUDE "src/data.h.s"
 
@@ -29,11 +30,12 @@ submenu_row: db $10, $00, $00, $00, $00, $00, $00, $11
 submenu_bottom: db $13, $0F, $0F, $0F, $0F, $0F, $0F, $12
 
 submenu_text: 
-submenu_text_01 db "Use__/"
-submenu_text_02 db "Equip/"
-submenu_text_03 db "Dele>/"
-submenu_text_04 db "Asign/"
-submenu_text_05 db "Exit_/"
+submenu_text_01: db "Use__/"
+submenu_text_02: db "Equip/"
+submenu_text_03: db "Dele>/"
+submenu_text_04: db "Asign/"
+submenu_text_05: db "Exit_/"
+submenu_text_06: db "Uneq>/"
 
 submenu_ttext_size = 6
 
@@ -277,7 +279,7 @@ _sr_show_item_desc:
 
 
 ;;==============================================================================================
-;;                                    UPDATE PLAYER HUD
+;;                                    DRAW ITEM NAME
 ;;----------------------------------------------------------------------------------------------
 ;; Actualiza el hud con los datos del jugador
 ;;
@@ -292,7 +294,8 @@ _sr_show_item_desc:
 ;;
 ;;==============================================================================================
 _sr_draw_item_name:
-
+    push bc
+    
     ld b, $00
     ld a, c
     ld a, [mi_player_item_num]
@@ -401,7 +404,58 @@ _sr_draw_item_name:
 
     pop hl
 
-    
+    pop bc
+    ;;Dibujamos el icono de los items equipados
+    ld a, $05
+    ld hl, $988B
+
+.loop_draw_eq:
+        push af
+        push hl
+
+        ld hl, mp_player
+        ld de, ent_player_eq_W 
+        add hl, de
+        ld d, h
+        ld e, l
+
+        pop hl
+        call _VRAM_wait
+        ld a, $90
+        ld [hl], a
+
+        ld a,[de]
+        inc de
+        cp c
+        jr nz, .check_s
+
+            call _VRAM_wait
+            ld a, $93
+            ld [hl], a
+            jr .continue
+
+.check_s:
+        ld a,[de]
+        cp c
+        jr nz, .continue
+            call _VRAM_wait
+            ld a, $93
+            ld [hl], a
+            jr .continue
+
+.continue:
+        ld a, c
+        inc a
+        ld c, a
+
+        ld de, $0040
+        add hl, de
+
+        pop af
+        dec a
+        jr nz, .loop_draw_eq
+
+    ;;-----------------------------------------
     
     
 

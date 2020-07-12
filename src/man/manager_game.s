@@ -917,6 +917,7 @@ _mg_item_menu_loop:
         pop af
         call _su_item_action
 
+        ;;Redibujamos los items en caso de modificaciones
         ld a, [aux_first_item]
         ld c, a
         call _sr_draw_item_name
