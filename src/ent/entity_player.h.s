@@ -7,7 +7,7 @@ m_define_entity_player: MACRO
 
     m_define_entity_playable
     ds $01              ;; Equiped Weapon
-    ds $01              ;; Equiped Armor
+    ds $01              ;; Equiped Shield
     ds $01              ;; Equiped Item
 
     ds $01              ;; Default HP
@@ -21,8 +21,8 @@ ENDM
 ENDC
 
 ent_player_eq_W    = 23
-ent_player_eq_A    = 24
-ent_player_aq_I    = 25
+ent_player_eq_S    = 24
+ent_player_eq_I    = 25
 
 ent_player_def_HP  = 26
 ent_player_def_MP  = 27

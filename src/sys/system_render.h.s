@@ -22,6 +22,8 @@ GLOBAL _sr_draw_item_name
 GLOBAL _sr_show_item_desc
 GLOBAL _sr_draw_submenu
 
+GLOBAL sub_text
+
 
 
 Tile_size = 16

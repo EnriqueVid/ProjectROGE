@@ -76,7 +76,7 @@ _main:
     
     ld a, $30
     call _mi_add_item
-    ld a, $10
+    ld a, $0A
     call _mi_add_item
     ld a, $00
     call _mi_add_item

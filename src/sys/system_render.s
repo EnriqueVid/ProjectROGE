@@ -8,9 +8,11 @@ INCLUDE "src/data.h.s"
 SECTION "SYS_RENDER_VARS", WRAM0
 sr_actual_x: ds $01
 sr_actual_y: ds $01
+sub_text:    ds $5     ;;Guarda el texto que se debe mostrar en los submenus
 
 aux_01: ds $01
 aux_02: ds $01
+
 
 
 
@@ -25,9 +27,15 @@ attack_anim: db $FE, $FE, $04, $04, $03, $03, $02, $FC, $FC, $FC, $80
 submenu_top: db $14, $0F, $0F, $0F, $0F, $0F, $0F, $15
 submenu_row: db $10, $00, $00, $00, $00, $00, $00, $11
 submenu_bottom: db $13, $0F, $0F, $0F, $0F, $0F, $0F, $12
-submenu_text_01: db "Use/"
-submenu_text_02: db "Drop/"
-submenu_text_03: db "Exit/"
+
+submenu_text: 
+submenu_text_01 db "Use__/"
+submenu_text_02 db "Equip/"
+submenu_text_03 db "Dele>/"
+submenu_text_04 db "Asign/"
+submenu_text_05 db "Exit_/"
+
+submenu_ttext_size = 6
 
 
 ;;==============================================================================================
@@ -47,11 +55,6 @@ submenu_text_03: db "Exit/"
 ;;
 ;;==============================================================================================
 _sr_draw_submenu:
-
-    ;BORRAR-----
-    ld hl, $98EC
-    ld a, $03
-    ;-----------
 
     ;Guardamos AF y HL para dibujar el texto para mas adelante
         push af
@@ -136,47 +139,78 @@ _sr_draw_submenu:
 
     ld bc, $22
     add hl, bc
+    ld de, sub_text
+    ld bc, $8E70
 
+.loop_draw_text:
+    push af
     push hl
-    ;BC -> Ptr BGmap
+    push de
+    push bc
+
     ld b, h
     ld c, l
-    ;DE -> String
-    ld de, submenu_text_01
-    ;HL -> Ptr VRAM
-    ld hl, $8E70
+    ;BC -> Ptr BGmap
+
+    ld a, [de]
+
+    ld hl, submenu_text
+    ld de, $0006
+    cp $00
+    jr z, .loop_search_string_end
+.loop_search_string:
+        push af
+        add hl, de
+        pop af
+        dec a
+    jr nz, .loop_search_string
+.loop_search_string_end:
+
+    ld d, h
+    ld e, l
+    ;DE -> Ptr String 
+
+    ld a, b
+    ld [aux_01], a
+    ld a, c
+    ld [aux_02], a
+
+    pop bc
+    push bc
+
+    ld h, b
+    ld l, c
+
+    ld a, [aux_01]
+    ld b, a
+    ld a, [aux_02]
+    ld c, a
+
     call _sr_draw_text
+
+    pop bc
+    ld h, b
+    ld l, c
+    ld bc, $50
+    add hl, bc
+    ld b, h
+    ld c, l
+
+    pop de
+    inc de
+
     pop hl
-
-
+    push bc
     ld bc, $40
     add hl, bc
+    pop bc
 
-    push hl
-    ;BC -> Ptr BGmap
-    ld b, h
-    ld c, l
-    ;DE -> String
-    ld de, submenu_text_02
-    ;HL -> Ptr VRAM
-    ld hl, $8EC0
-    call _sr_draw_text
-    pop hl
-
-
-    ld bc, $40
-    add hl, bc
-
-    ;BC -> Ptr BGmap
-    ld b, h
-    ld c, l
-    ;DE -> String
-    ld de, submenu_text_03
-    ;HL -> Ptr VRAM
-    ld hl, $8F10
-    call _sr_draw_text
+    pop af
+    dec a
+    jr nz, .loop_draw_text
 
     ret
+    
 
 
 ;;==============================================================================================

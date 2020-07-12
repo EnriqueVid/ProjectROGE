@@ -35,6 +35,9 @@ aux_menu_selections_data: ds $08    ;;
 aux_first_item: ds $01              ;;
 aux_menu_page: ds $01
 
+aux_01: ds $01
+aux_02: ds $01
+
 
 SECTION "MAN_GAME_FUNCS", ROM0
 
@@ -776,7 +779,7 @@ _mg_item_menu_loop:
         call _sr_draw_item_name
 
         ld a, [aux_menu_selection]
-        jr .show_item_desc
+        jp .show_item_desc
         
 ;---------------------------------------------------
 
@@ -807,7 +810,7 @@ _mg_item_menu_loop:
         inc a
         ld [aux_menu_selection], a
 
-        jr .show_item_desc
+        jp .show_item_desc
 ;---------------------------------------------------
 
 ;Arriba---------------------------------------------
@@ -842,11 +845,67 @@ _mg_item_menu_loop:
 .btn_A:
     cp $05
     jr nz, .btn_B
+        ld a, [aux_first_item]
+        ld c, a
+        ld b, $00
+        ld a, [aux_menu_selection]
+        add c
+        ld c, a
+        ld hl, mi_player_items
+        add bc
 
-        ld hl, $98EC
-        ld a, $03
+        ld a, [hl]
+
+        ;;Comprobamos si es un arma o escudo
+        cp $14 ;;10
+        jr nc, .check_consumable
+
+            ld hl, sub_text
+            ld a, $01
+            ldi [hl], a
+            ld a, $02
+            ldi [hl], a
+            ld a, $04
+            ldi [hl], a
+
+            ld a, $03
+            ld hl, $98EC
+            ld bc, $7050
+            jr .end_check_item
+
+        ;;Comprobamos si es un consumible (magia/pociones)
+.check_consumable:
+        cp $32 ;;50
+        jp nc, .loop
+
+            ld hl, sub_text
+            xor a
+            ldi [hl], a
+            ld a, $02
+            ldi [hl], a
+            ld a, $03
+            ldi [hl], a
+            ld a, $04
+            ldi [hl], a
+
+            ld a, $04
+            ld hl, $98AC
+            ld bc, $7040
+        
+.end_check_item:
+
+        ;db $18, $FE
+        push af
+        push bc
+
         call _sr_draw_submenu
+        
+        pop bc
+        pop af
+        dec a
         call _mg_submenu_loop
+
+        db $18, $FE
 
         jp .loop
 ;---------------------------------------------------
@@ -886,7 +945,8 @@ _mg_item_menu_loop:
 ;; En un menu, redirige a la seleccion del usuario
 ;;
 ;; INPUT:
-;;  NONE
+;;  A -> Number of options
+;;  BC -> Initial Cursor X, Y
 ;;
 ;; OUTPUT:
 ;;  NONE
@@ -897,29 +957,51 @@ _mg_item_menu_loop:
 ;;==============================================================================================
 _mg_submenu_loop:
 
+    ld d, a
+
+    ld a, b
+    ld [aux_01], a
+    ld a, c
+    ld [aux_02], a
+    
+
+    ;Guardamos la seleccion del menu anterior
+    ld a, [aux_menu_selection]
+    push af
+    ld a, [aux_max_menu_selections]
+    push af
+    ;----------------------------------------
+
+    ;Reiniciamos la seleccion del menu
+    
+    xor a
+    ld [aux_menu_selection], a
+    ld a, d
+    ld [aux_max_menu_selections], a
+
+
     ld hl, $C00C
     
-    ld a, $50
+    ld a, [aux_02]
     ldi [hl], a
 
-    ld a, $70
+    ld a, [aux_01]
     ldi [hl], a
 
     ld a, $94
     ld [hl], a
 
-    ;Guardamos la seleccion del menu anterior
-    ld a, [aux_menu_selection]
-    push af
-    ;Reiniciamos la seleccion del menu
-    xor a
-    ld [aux_menu_selection], a
+    
 
     call _su_menu_input_init
 
 .loop:
 
+    ld a, [aux_max_menu_selections]
+    ld c, a
+    push bc
     call _su_menu_input
+    pop bc
 
 ;Abajo ---------------------------------------------
 .mov_down:
@@ -928,10 +1010,13 @@ _mg_submenu_loop:
 
         ld hl, $C00C
         ld a, [aux_menu_selection]
-        cp $02
+        cp c
         jr nz, .no_corregir_down
 
-            ld a, $40
+            ;db $18, $FE
+            ld a, [aux_02]
+            ld b, $10
+            sub b
             ld [hl], a
             ld a, $FF
             ld [aux_menu_selection], a
@@ -951,16 +1036,36 @@ _mg_submenu_loop:
 ;Arriba --------------------------------------------
 .mov_up:
     cp $04
-    jr nz, .btn_B
+    jr nz, .btn_A
 
         ld hl, $C00C
         ld a, [aux_menu_selection]
         cp $00
         jr nz, .no_corregir_up
 
-            ld a, $80
+            ld b, $10
+            ld a, [aux_02]
+            ld d,a 
+            ld a, [aux_max_menu_selections]
+            cp $00
+            jr z, .end_loop_sla_b
+.loop_sla_b:
+            push af
+            ld a, d
+            add b
+            ld d, a
+            pop af
+            dec a
+            jr nz, .loop_sla_b
+
+.end_loop_sla_b:
+
+            ld a, d
+            add b
+
             ld [hl], a
-            ld a, $03
+            ld a, c
+            inc a
             ld [aux_menu_selection], a
 
 .no_corregir_up:
@@ -975,15 +1080,27 @@ _mg_submenu_loop:
 
 ;---------------------------------------------------
 
+
+;Btn A ---------------------------------------------
+.btn_A:
+    cp $05
+    jp nz, .btn_B
+        ld a, [aux_menu_selection]
+        jr .end
+;---------------------------------------------------
+
+
 ;Btn B ---------------------------------------------
 .btn_B:
     cp $06
     jp nz, .loop
+        ld a, [aux_max_menu_selections]
         jr .end
 ;---------------------------------------------------
 
 .end:
     ;cargamos la seleccion del menu anterior
+    push af
 
     ld hl, $C00C
     xor a
@@ -1031,9 +1148,16 @@ _mg_submenu_loop:
         dec a
         jr nz, .clean_loop_2
 
+
+    pop af
+    ld b, a
+
+    pop af
+    ld [aux_max_menu_selections], a
     pop af
     ld [aux_menu_selection], a
-    xor a
+    
+    ld a, b
     ret 
 
 
