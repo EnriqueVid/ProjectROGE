@@ -157,6 +157,24 @@ _decrease_stats:
     ld a, c
     sub b
     ld [de], a
+
+    push hl
+
+    ld hl, mp_player
+    ld bc, ep_cHP
+    add hl, bc
+
+    ld b, a
+    ld a, [hl]
+    cp b
+    jr c, .no_corregir_HP
+    
+        ld a, b
+        ld [hl], a
+    ;db $18, $FE
+
+.no_corregir_HP:
+    pop hl
     
 
     ;;Quitamos MP
@@ -169,6 +187,21 @@ _decrease_stats:
     sub b
     ld [de], a
     push hl
+
+    ld hl, mp_player
+    ld bc, ep_cMP
+    add hl, bc
+
+    ld b, a
+    ld a, [hl]
+    cp b
+    jr c, .no_corregir_MP
+    
+        ld a, b
+        ld [hl], a
+    ;db $18, $FE
+
+.no_corregir_MP:
 
     ;;Quitamos Atk
     ld hl, mp_player
