@@ -3,6 +3,7 @@ INCLUDE "src/man/manager_playable.h.s"
 INCLUDE "src/man/manager_level.h.s"
 INCLUDE "src/ent/entity_playable.h.s"
 INCLUDE "src/ent/entity_enemy.h.s"
+INCLUDE "src/ent/entity_player.h.s"
 INCLUDE "src/ent/entity_hud.h.s"
 INCLUDE "src/data.h.s"
 
@@ -860,6 +861,39 @@ _mg_item_menu_loop:
         cp $14 ;;10
         jr nc, .check_consumable
 
+            ld a, [aux_menu_selection]
+            ld c, a
+            ld a, [aux_first_item]
+            add c
+            ld d, a
+
+            ld hl, mp_player
+            ld bc, ent_player_eq_W 
+            add hl, bc
+            ldi a, [hl]
+            cp d
+            jr z, .sub_text_unequip
+            
+            ld a, [hl]
+            cp d
+
+            jr nz, .sub_text_equip
+
+.sub_text_unequip:
+            ld hl, sub_text
+            ld a, $05
+            ldi [hl], a
+            ld a, $02
+            ldi [hl], a
+            ld a, $04
+            ldi [hl], a
+
+            ld a, $03
+            ld hl, $98EC
+            ld bc, $7050
+            jr .end_check_item
+
+.sub_text_equip:
             ld hl, sub_text
             ld a, $01
             ldi [hl], a
@@ -883,14 +917,14 @@ _mg_item_menu_loop:
             ldi [hl], a
             ld a, $02
             ldi [hl], a
-            ld a, $03
-            ldi [hl], a
+            ;ld a, $03
+            ;ldi [hl], a
             ld a, $04
             ldi [hl], a
 
-            ld a, $04
-            ld hl, $98AC
-            ld bc, $7040
+            ld a, $03
+            ld hl, $98EC
+            ld bc, $7050
         
 .end_check_item:
 

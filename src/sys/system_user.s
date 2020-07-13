@@ -18,6 +18,232 @@ SECTION "SYS_USER_FUNCS", ROM0
 
 
 ;;==============================================================================================
+;;                                     UNEQUIP SHIELD
+;;----------------------------------------------------------------------------------------------
+;; Desequipa el escudo qeuipado
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_su_unequip_shield:
+    
+    ld hl, mp_player
+    ld de, ent_player_eq_S 
+    add hl, de
+
+    ld a, [hl]
+    cp $FF
+    ret z
+
+    push hl
+
+    ld hl, mi_player_items
+    ld b, $00
+    ld c, a
+    add hl, bc
+
+    ld a, [hl]
+    ld b, a 
+
+    pop hl          ;;HL -> Player Eq_S
+
+    ld a, $FF
+    ld [hl], a
+
+    ld a, b         ;; A -> Item_ID
+
+    jp _decrease_stats
+
+
+
+;;==============================================================================================
+;;                                     UNEQUIP WEAPON
+;;----------------------------------------------------------------------------------------------
+;; Desequipa el arma qeuipada
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_su_unequip_weapon:
+    
+    ld hl, mp_player
+    ld de, ent_player_eq_W 
+    add hl, de
+
+    ld a, [hl]
+    cp $FF
+    ret z
+
+    push hl
+
+    ld hl, mi_player_items
+    ld b, $00
+    ld c, a
+    add hl, bc
+
+    ld a, [hl]
+    ld b, a 
+
+    pop hl          ;;HL -> Player Eq_W
+
+    ld a, $FF
+    ld [hl], a
+
+    ld a, b         ;; A -> Item_ID
+
+    jp _decrease_stats
+
+
+
+
+;;DECREMENTA LOS STATS DEL JUGADOR AL DESEQUIPAR UN ITEM
+_decrease_stats:
+    ;;Cargamos los datos del Items
+
+    ;db $18, $FE
+
+    ld hl, ent_item_index
+    ld d, $00
+    ld e, a
+    sla e
+    add hl, de
+    ldi a, [hl]
+    ld e, a
+    ld d, [hl]
+    ld h, d
+    ld l, e
+
+.ignore_text_loop_1:
+    ldi a, [hl]
+    cp "/"
+    jr nz, .ignore_text_loop_1
+
+.ignore_text_loop_2:
+    ldi a, [hl]
+    cp "/"
+    jr nz, .ignore_text_loop_2
+
+    inc hl
+    ;;HL -> Item_ptr
+    push hl
+
+    ld hl, mp_player
+    ld bc, ep_mHP
+    add hl, bc
+
+    ld d, h
+    ld e, l
+    ld a, [de]
+    ld c, a
+
+    ;;Quitamos HP
+    pop hl
+    ldi a, [hl]
+    ld b, a
+    ld a, c
+    sub b
+    ld [de], a
+    
+
+    ;;Quitamos MP
+    inc de
+    ld a, [de]
+    ld c, a
+    ldi a, [hl]
+    ld b, a
+    ld a, c
+    sub b
+    ld [de], a
+    push hl
+
+    ;;Quitamos Atk
+    ld hl, mp_player
+    ld bc, ep_cATK
+    add hl, bc
+    ld d, h
+    ld e, l
+    ld a, [de]
+    ld c, a
+
+    pop hl
+    ldi a, [hl]
+    ld b, a
+    ld a, c
+    sub b
+    ;db $18,$FE
+    ld [de], a
+
+    ;;Quitamos Def
+    inc de
+    ld a, [de]
+    ld c, a
+    ld a, [hl]
+    ld b, a
+    ld a, c
+    sub b
+    ld [de], a
+
+    call _su_update_all_hud_data
+    call _sr_update_draw_player_hud
+
+    ret
+
+
+;;==============================================================================================
+;;                                     UNEQUIP ITEM
+;;----------------------------------------------------------------------------------------------
+;; Desequipa el objeto seleccionado
+;;
+;; INPUT:
+;;  C -> Item position
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_su_unequip_item:
+
+    ld hl, mp_player
+    ld de, ent_player_eq_W 
+    add hl, de
+
+    ldi a, [hl]
+    cp c
+    jr nz, .check_shield
+         
+        call _su_unequip_weapon
+        ret
+
+.check_shield:
+    ld a, [hl]
+    cp c
+    ret nz
+        
+        call _su_unequip_shield
+        ret
+
+
+
+
+
+;;==============================================================================================
 ;;                                     EQUIP ITEM
 ;;----------------------------------------------------------------------------------------------
 ;; Equipa el objeto seleccionado, desequipa el objeto equiado anterior
@@ -74,8 +300,11 @@ _su_equip_item:
         cp $FF
         jr z, .no_unequip_weapon
 
-            ld bc, $AAAA
-            db $18,$FE
+            push bc
+            push hl
+            call _su_unequip_weapon
+            pop hl
+            pop bc
 
 .no_unequip_weapon:
         ld a, c
@@ -95,8 +324,11 @@ _su_equip_item:
         cp $FF
         jr z, .no_unequip_shield
 
-            ld bc, $BBBB
-            db $18,$FE
+            push bc
+            push hl
+            call _su_unequip_shield
+            pop hl
+            pop bc
 
 .no_unequip_shield:
         ld a, c
@@ -338,6 +570,74 @@ _su_use_item:
         ret
 
 
+
+;;==============================================================================================
+;;                                     DELETE ITEM
+;;----------------------------------------------------------------------------------------------
+;; Usa el objeto seleccionado
+;;
+;; INPUT:
+;;   C -> Item position
+;;  HL -> Item_ptr
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_su_delete_item:
+    push hl
+
+    ld hl, mp_player
+    ld de, ent_player_eq_W 
+    add hl, de
+    ldi a, [hl]
+    cp c
+    jr z, .esta_equipado
+    ld a, [hl]
+    cp c
+    jr nz, .no_esta_equipado
+
+.esta_equipado:
+        push bc
+        call _su_unequip_item
+        pop bc
+        ;jr .no_corregir_eq_s
+
+.no_esta_equipado:
+    ld hl, mp_player
+    ld de, ent_player_eq_W 
+    add hl, de
+    ld a, [hl]
+    cp $FF
+    jr z, .no_corregir_eq_w
+    cp c
+    jr c, .no_corregir_eq_w
+        dec a
+        ld [hl], a
+.no_corregir_eq_w:
+    inc hl
+    ld a, [hl]
+    cp $FF
+    jr z, .no_corregir_eq_s
+    cp c
+    jr c, .no_corregir_eq_s
+        dec a
+        ld [hl], a
+.no_corregir_eq_s:
+
+    pop hl
+
+    call _mi_delete_player_item
+
+    call _su_update_all_hud_data
+    call _sr_update_draw_player_hud
+
+    ret
+
+
 ;;==============================================================================================
 ;;                                    ITEM ACTION
 ;;----------------------------------------------------------------------------------------------
@@ -374,17 +674,22 @@ _su_item_action:
         call _su_equip_item
         ret
 
-.check_asign:
+.check_delete:
     cp $02
+    jr nz, .check_unequip
+        call _su_delete_item
+        ret
+
+.check_asign:
+    cp $03
     jr nz, .check_delete
 
-.check_delete:
-    cp $03
-    jr nz, .check_unequip
 
 .check_unequip:
     cp $05
     jr nz, .end
+        call _su_unequip_item
+        ret
 
 .end:
 
