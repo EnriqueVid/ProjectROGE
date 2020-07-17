@@ -24,8 +24,6 @@ ml_room_array:
     m_define_entity_room
     m_define_entity_room
     m_define_entity_room
-    m_define_entity_room
-    m_define_entity_room
 
 ml_item_num: ds $01
 
@@ -51,6 +49,10 @@ ml_map:
 
 
 SECTION "MAN_LEVEL_FUNCS", ROM0
+
+
+
+
 
 
 ;;==============================================================================================
@@ -286,6 +288,15 @@ _ml_new_room:
     dec a
     jr nz, .loop2
     
+    ld a, $05
+.loop3:
+    push af
+    ld a, $AA
+    ldi [hl], a
+    pop af
+    dec a
+    jr nz, .loop3
+
     ret
 
 

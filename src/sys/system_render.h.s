@@ -21,6 +21,7 @@ GLOBAL _sr_draw_text
 GLOBAL _sr_draw_item_name
 GLOBAL _sr_show_item_desc
 GLOBAL _sr_draw_submenu
+GLOBAL _sr_draw_room
 
 GLOBAL sub_text
 
@@ -28,8 +29,8 @@ GLOBAL sub_text
 
 Tile_size = 16
 
-MAPw = 40
-MAPh = 34
+MAPW = 40
+MAPH = 34
 
 GBSw SET 11             ;; Game Boy Screen Width (en tiles de 16x16 px). Es 11 por el offset
 GBSh SET  9             ;; Game Boy Screen Height (en tiles de 16x16 px)

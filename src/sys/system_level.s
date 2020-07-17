@@ -4,12 +4,659 @@ INCLUDE "src/ent/entity_enemy.h.s"
 INCLUDE "src/ent/entity_room.h.s"
 
 
+SECTION "SYS_LEVEL_VARS", WRAM0
+aux_max_rooms: ds $01
+aux_room_counter: ds $01    ;DEBUG
+
+aux_rx: ds $01
+aux_ry: ds $01
+aux_rw: ds $01
+aux_rh: ds $01
+
+aux_close_room:  ds $01
+aux_close_dist:  ds $01
+aux_orientation: ds $01
+
+aux_room_id_01: ds $01
+aux_room_id_02: ds $01
+
+aux_dist: ds $01
+;aux_dist_y: ds $01
+aux_close_dist_x: ds $01
+aux_close_dist_y: ds $01
+aux_orient_x: ds $01
+aux_orient_y: ds $01
+
+
 SECTION "SYS_LEVEL_FUNCS", ROM0
 
 enemy_positions: db $12, $0B, $06, $13, $0E, $16, $0D, $1F, $07, $29, $1F, $1C, $00, $00, $00, $00
 ;enemy_positions: db $06, $13, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
 
 
+
+;;========================================================================================
+;;                                     GENERATE MAP
+;;----------------------------------------------------------------------------------------
+;; Devuelve las coordenadas de una salida dado el ID de una habitacion
+;;
+;; INPUT:
+;;  
+;;
+;; OUTPUT:
+;;  BC -> Coordenadas de la salida
+;;
+;; DELETES: 
+;;  AF, BC, DE, HL
+;;
+;;========================================================================================
+_sl_generate_map:
+    xor a
+    ld [aux_room_counter], a
+
+    ;;Generamos el numero de salas que va a tener el mapa, de 3 a 6 salas
+.generate_room_num:
+    call _generate_random
+    ld b, %00000111             ;Fuerza el valor de la salida al rango de 0 a 7
+    and b
+    cp $07                      ;Asegura que el maximo es 6
+    jr z, .generate_room_num
+    cp $03                      ;Asegura que el minimo es 3
+    jr c, .generate_room_num
+
+
+    ld a, $06                   ;DELETE THIS
+    ld [aux_max_rooms], a       ;Guardamos el valor del numero maximo de habitaciones
+
+
+
+    ;;Generamos las habitaciones en posiciones validas
+.generate_rooms_loop:
+    push af                     ;Guardamos el maximo de habitaciones para mas adelante
+
+        call _sl_generate_room_data
+
+        call _sl_generate_room
+        cp $00
+        jr nz, .generated_room 
+
+            pop af
+            jr .generate_rooms_loop
+
+.generated_room:
+        ld a, [aux_room_counter]    ;DEBUG
+        inc a                       ;DEBUG
+        ld [aux_room_counter], a    ;DEBUG
+
+    pop af
+    dec a
+    jr nz, .generate_rooms_loop
+
+    call _sl_connect_rooms
+
+
+    ret
+
+
+;;========================================================================================
+;;                                     CONNECT ROOMS
+;;----------------------------------------------------------------------------------------
+;; Genera las salidas y conecta todas las habitaciones con pasillos
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DELETES: 
+;;  AF, BC, DE, HL
+;;
+;;========================================================================================
+_sl_connect_rooms:
+
+    xor a
+    ld [aux_room_id_01], a              ;; Guardamos Room_1 id
+    
+
+    ld a, [ml_room_num]
+    cp $00
+    ret z
+    ld hl, ml_room_array
+    
+.loop_room_1:
+        push af        
+        ld a, $FF
+        ld [aux_close_dist], a          ;; Seteamos la distancia mas cercana
+        ld [aux_close_room], a          ;; Seteamos la room mas cercana
+        ld [aux_orientation], a         ;; Seteamos la orienacion de la salida
+        
+        push hl                         ;; Guardamos los datos de la Room_1 en variables
+        ldi a, [hl]
+        ld [aux_rx], a
+        ldi a, [hl]
+        ld [aux_ry], a
+        ldi a, [hl]
+        ld [aux_rw], a
+        ldi a, [hl]
+        ld [aux_rh], a
+
+        xor a
+        ld [aux_room_id_02], a              ;; Guardamos Room_2 id
+        ld a, [ml_room_num]
+        ld hl, ml_room_array
+.loop_room_2:
+            push af
+            push hl
+
+            ld a, [aux_room_id_02]
+            ld b, a
+            ld a, [aux_room_id_01]
+            cp b                        ;;Comprobamos si Room_1 != Room_2
+            jp z, .loop_room_2_end
+
+            xor a
+            ld [aux_dist], a            ;;Seteamos la distancia 
+            ld [aux_close_dist_y], a    ;;Seteamos la distncia mas cercana en Y
+            ;ld [aux_dist_y], a          ;;Seteamos la distancia en Y
+            ld a, $FF   
+            ld [aux_close_dist_x], a    ;;Seteamos la distncia mas cercana en X
+            ld [aux_orient_x], a        ;;Seteamos la orientacion en X
+            ld [aux_orient_y], a        ;;Seteamos la orientacion en Y
+
+
+            ldi a, [hl]
+            ld b, a
+            inc hl
+            ld a, [hl]
+            ld c, a
+            dec hl
+            ;;BC -> Room_2 X, W
+
+            ;;COMROBAMOS LA DISTANCIA EN X
+.check_dist_x_1:
+            ;;Si (Room_2.x + Room_2.w) < Room_1.x
+            ld a, [aux_rx]
+            ld d, a                     ;;D -> Room_1.x
+            ld a, b
+            add c                       ;;A -> Room_2.x + Room_2.w
+            
+            cp d
+            jr nc, .check_dist_x_2
+
+                ld e, a                 ;;E -> Room_2.x + Room_2.w
+                ld a, d                 ;;A -> Room_1.x
+                sub e                   ;;A -> Room_1.x - (Room_2.x + Room_2.w)
+                ld [aux_dist], a
+                ld [aux_close_dist_x], a;;Guardamos la distancia en X
+                ld a, $02
+                ld [aux_orient_x], a    ;;Orientacion de la salida = 2 = Izquierda
+                jr .end_check_dist_x
+
+
+.check_dist_x_2:
+            ;;Si (Room_1.x + Room_1.w) < Room_2.x
+            ld a, b
+            ld d, a                     ;;D -> Room_2.x
+            ld a, [aux_rx]
+            ld e, a
+            ld a, [aux_rw]
+            add e                       ;;A -> Room_1.x + Room_1.w
+
+            cp d
+            jr nc, .check_dist_x_3
+
+                ld e, a                 ;;E -> Room_1.x + Room_1.w
+                ld a, d                 ;;A -> Room_2.x
+                sub e                   ;;A -> Room_2.x - (Room_1.x + Room_1.w)
+                ld [aux_dist], a
+                ld [aux_close_dist_x], a;;Guardamos la distancia en X
+                ld a, $03
+                ld [aux_orient_x], a    ;;Orientacion de la salida = 3 = Derecha
+                jr .end_check_dist_x
+
+.check_dist_x_3:
+            xor a
+            ld [aux_dist], a            ;;Distncia = 0
+            ld [aux_close_dist_x], a    ;;Guardamos la distancia en X
+
+.end_check_dist_x:
+
+
+            ldi a, [hl]
+            ld b, a
+            inc hl
+            ld a, [hl]
+            ld c, a
+            ;;BC -> Room_2 Y, H
+
+            ;;COMROBAMOS LA DISTANCIA EN Y
+.check_dist_y_1:
+            ;;Si (Room_2.y + Room_2.h) < Room_1.y
+            ld a, [aux_ry]
+            ld d, a                     ;;D -> Room_1.y
+            ld a, b
+            add c                       ;;A -> Room_2.y + Room_2.h
+            
+            cp d
+            jr nc, .check_dist_y_2
+                ld e, a                 ;;E -> Room_2.y + Room_2.h
+                ld a, d                 ;;A -> Room_1.y
+                sub e                   ;;A -> Room_1.y - (Room_2.y + Room_2.h)
+                ld [aux_close_dist_y], a
+                ld d, a
+                ld a, [aux_dist]
+                add d                   ;;A -> aux_dist + aux_close_dist_y
+                ld [aux_dist], a
+                xor a
+                ld [aux_orient_y], a    ;;Orientacion de la salida = 0 = Arriba
+                jr .end_check_dist_y    
+
+.check_dist_y_2:
+            ;;Si (Room_1.y + Room_1.h) < Room_2.y
+            ld a, b
+            ld d, a                     ;;D -> Room_2.y
+            ld a, [aux_ry]
+            ld e, a
+            ld a, [aux_rh]
+            add e                       ;;A -> Room_1.y + Room_1.h
+
+            cp d
+            jr nc, .end_check_dist_y
+                ld e, a                 ;;E -> Room_1.y + Room_1.h
+                ld a, d                 ;;A -> Room_2.y
+                sub e                   ;;A -> Room_2.y - (Room_1.y + Room_1.h)
+                ld [aux_close_dist_y], a
+                ld d, a
+                ld a, [aux_dist]
+                add d                   ;;A -> aux_dist + aux_close_dist_y
+                ld [aux_dist], a
+                ld a, $01
+                ld [aux_orient_y], a    ;;Orientacion de la salida = 1 = Abajo
+
+.end_check_dist_y:
+
+            
+            ;;COMPROBAMOS RESULTADOS
+            ld a, [aux_close_dist]
+            ld d, a
+            ld a, [aux_dist]
+            cp d                        ;;Comprobamos si (aux_dist < aux_close_dist)
+            jr nc, .loop_room_2_end
+
+                ;;COMPROBAR SI YA SE HA UNIDO A LA SALA
+                call _sl_check_connection
+                cp $01
+                jr z, .loop_room_2_end
+
+                ;jr .loop_room_2_end
+
+                ld a, [aux_dist]
+                ld [aux_close_dist], a
+                ld a, [aux_room_id_02]
+                ld [aux_close_room], a
+
+                ld a, [aux_close_dist_x]
+                ld d, a
+                ld a, [aux_close_dist_y]
+                cp d
+                jr nc, .orientation_y
+                    ld a, [aux_orient_x]
+                    ld [aux_orientation], a
+                    jr .loop_room_2_end
+.orientation_y:
+                ld a, [aux_orient_y]
+                ld [aux_orientation], a
+
+.loop_room_2_end:
+            ld a, [aux_room_id_02]
+            inc a
+            ld [aux_room_id_02], a
+
+            pop hl
+            ld bc, entity_room_size
+            add hl, bc
+
+            pop af
+            dec a
+            jp nz, .loop_room_2
+;;_________________________________________
+    ;;COMPROBAMOS LA HABITACION MAS CERCANA
+        ld a, [aux_close_room]
+        cp $FF
+        jr z, .loop_room_1_end
+
+        call _sl_set_connection
+
+.loop_room_1_end:       
+        ld a, [aux_room_id_01]
+        inc a
+        ld [aux_room_id_01], a
+
+        pop hl
+        ld bc, entity_room_size
+        add hl, bc
+
+        pop af
+        dec a
+        jp nz, .loop_room_1
+
+    ret
+
+
+;;========================================================================================
+;;                                     SET_CONNECTION
+;;----------------------------------------------------------------------------------------
+;; Comprueba si una habitacion ya se ha unido con otra
+;;
+;; INPUT:
+;;  [aux_room_id_01] -> Id de la habitacion origen 
+;;  [aux_room_id_02] -> Id de la habitacion que se quiere unir
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DELETES: 
+;;  AF, BC, DE, HL
+;;
+;;========================================================================================
+_sl_set_connection:
+
+    ld hl, ml_room_array
+    ld a, [aux_room_id_01]
+    cp $00
+    jr z, .end_search_1
+    ld de, entity_room_size
+.search_room_1:
+        add hl, de
+        dec a
+        jr nz, .search_room_1
+.end_search_1:
+    ;;HL -> Room_1 ptr
+    ld de, ent_room_connections
+    add hl, de
+    ;;HL -> Room_1.connections ptr
+
+    ld a, connection_num
+.loop_01:
+    push af
+
+    ld a, [hl]
+    cp $AA    
+    jr z, .loop_01_end
+    inc hl
+
+    pop af
+    dec a
+    jr nz, .loop_01
+    push af
+
+.loop_01_end:
+
+    pop af
+    ld a, [aux_close_room]
+    ld [hl], a
+
+
+;;AHORA CON LA ROOM 2
+    ld hl, ml_room_array
+    ld a, [aux_close_room]
+    cp $00
+    jr z, .end_search_2
+    ld de, entity_room_size
+.search_room_2:
+        add hl, de
+        dec a
+        jr nz, .search_room_2
+.end_search_2:
+    ;;HL -> Room_2 ptr
+    ld de, ent_room_connections
+    add hl, de
+    ;;HL -> Room_2.connections ptr
+
+    ld a, connection_num
+.loop_02:
+    push af
+
+    ld a, [hl]
+    cp $AA    
+    jr z, .loop_02_end
+    inc hl
+
+    pop af
+    dec a
+    jr nz, .loop_02
+    push af
+
+.loop_02_end:
+
+    pop af
+    ld a, [aux_room_id_01]
+    ld [hl], a
+
+ret
+
+;;========================================================================================
+;;                                     CHECK_CONNECTION
+;;----------------------------------------------------------------------------------------
+;; Comprueba si una habitacion ya se ha unido con otra
+;;
+;; INPUT:
+;;  [aux_room_id_01] -> Id de la habitacion origen 
+;;  [aux_room_id_02] -> Id de la habitacion que se quiere unir
+;;
+;; OUTPUT:
+;;  A  -> Indica si habia una conexion previa (0=no, 1=si)
+;;
+;; DELETES: 
+;;  AF, DE, HL
+;;
+;;========================================================================================
+_sl_check_connection:
+
+    ld hl, ml_room_array
+    ld a, [aux_room_id_01]
+    cp $00
+    jr z, .end_search_1
+    ld de, entity_room_size
+.search_room_1:
+        add hl, de
+        dec a
+        jr nz, .search_room_1
+.end_search_1:
+    ;;HL -> Room_1 ptr
+    
+    ld de, ent_room_connections
+    add hl, de
+    ;;HL -> Room_1.connections ptr
+
+    ld a, connection_num
+.loop
+    push af
+
+    ld a, [aux_room_id_02]
+    ld d, a
+
+    ldi a, [hl]
+    cp $AA
+    jr z, .exit_good
+    cp d
+    jr z, .exit_bad
+
+    pop af
+    dec a
+    jr nz, .loop
+    push af
+
+.exit_bad:
+    pop af
+    ld a, $01
+    ret
+
+.exit_good:
+    pop af
+    xor a
+    ret
+
+
+
+
+;;========================================================================================
+;;                                     GENERATE ROOM
+;;----------------------------------------------------------------------------------------
+;; Genera una habitacion leyendo los valores de aux_(rx,ry,rw,rh)
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  A  -> Indica si ha podido generar la Habitacion (0=no, 1=si)
+;;
+;; DELETES: 
+;;  AF, BC, DE, HL
+;;
+;;========================================================================================
+_sl_generate_room:
+
+    ld a, [aux_rx]
+    ld b, a
+    ld a, [aux_ry]
+    ld c, a
+    ld a, [aux_rw]
+    dec a
+    ld d, a
+    ld a, [aux_rh]
+    dec a
+    ld e, a
+
+    push bc
+    push de
+
+    call _sp_check_room_collision
+
+    ;db $18, $FE
+    pop de
+    pop bc
+
+
+    cp $00  ;Comprueba si se puede generar la habitacion
+    ret z
+
+
+    push bc
+
+    ;BC -> Room X, Y
+    ;DE -> Room W, H 
+    call _ml_new_room
+
+    
+    pop bc
+    ld a, [aux_rw]
+    ld d, a
+    ld a, [aux_rh]
+    ld e, a
+
+    ld a, [aux_room_counter]    ;Debug
+    call _sr_draw_room
+
+    ld a, $01
+    ret
+
+;;========================================================================================
+;;                                 GENERATE ROOM DATA
+;;----------------------------------------------------------------------------------------
+;; Genera una habitacion leyendo los valores de aux_(rx,ry,rw,rh)
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DELETES: 
+;;  AF, DE
+;;
+;;========================================================================================
+_sl_generate_room_data:
+
+    ;;GENERAMOS ANCHO
+.generate_width_num:            ;Min 5, max 8
+    call _generate_random
+    ld d, %00001111             ;Fuerza el valor de la salida al rango de 0 a 15
+    and d
+    cp $09                      ;Asegura que el maximo es 8
+    jr nc, .generate_width_num
+    cp $05                      ;Asegura que el minimo es 5
+    jr c, .generate_width_num
+    ld [aux_rw], a              ;Guardamos el valor del ancho de la habitacion
+
+    ;;GENERAMOS ALTO
+.generate_height_num:           ;Min 5, max 8
+    call _generate_random
+    ld d, %00001111             ;Fuerza el valor de la salida al rango de 0 a 15
+    and d
+    cp $09                      ;Asegura que el maximo es 8
+    jr nc, .generate_height_num
+    cp $05                      ;Asegura que el minimo es 5
+    jr c, .generate_height_num
+    ld [aux_rh], a              ;Guardamos el valor del alto de la habitacion
+
+    
+
+    ;;GENERAMOS COORD X
+.generate_x_num:                ;Min 4, max (MAPW-rw-4) || MAPW = 40 = $28
+    call _generate_random
+    ld d, %00111111             ;Fuerza el valor de la salida al rango de 0 a 63
+    and d
+    cp $04                      ;Asegura que el minimo es 4
+    jr c, .generate_x_num
+
+    push af
+    ld a, [aux_rw]
+    ld d, a
+    ld a, $28 - $04
+    sub d
+    ld d, a 
+    pop af
+
+    cp d                        ;Asegura que el maximo es (MAPW-rw-4)
+    jr nc, .generate_x_num
+
+    ld [aux_rx], a              ;Guardamos el valor de coord_x de la habitacion
+
+
+
+    ;;GENERAMOS COORD Y
+.generate_y_num:                ;Min 3, max (MAPH-rh-3) || MAPH = 34 = $22
+    call _generate_random
+    ld d, %00111111             ;Fuerza el valor de la salida al rango de 0 a 63
+    and d
+    cp $03                      ;Asegura que el minimo es 4
+    jr c, .generate_y_num
+
+    push af
+    ld a, [aux_rh]
+    ld d, a
+    ld a, $22 - $03
+    sub d
+    ld d, a 
+    pop af
+
+    cp d                        ;Asegura que el maximo es (MAPW-rh-3)
+    jr nc, .generate_y_num
+
+    ld [aux_ry], a              ;Guardamos el valor de coord_y de la habitacion
+
+
+    ; ld c, a
+    ; ld a, [aux_rx]
+    ; ld b, a
+    ; ld a, [aux_rw]
+    ; ld d, a
+    ; ld a, [aux_rh]
+    ; ld e, a
+
+    ret
 
 
 

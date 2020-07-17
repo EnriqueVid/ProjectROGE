@@ -15,6 +15,7 @@ m_define_entity_room: MACRO
     ds $02              ;; Exit 3
     ds $02              ;; Exit 4
 
+    ds $05              ;; Connections
 ENDM
 ENDC
 
@@ -30,4 +31,8 @@ ent_room_exit_02  = 08
 ent_room_exit_03  = 10
 ent_room_exit_04  = 12
 
-entity_room_size = 14
+ent_room_connections = 14
+
+entity_room_size = 19
+
+connection_num = 5

@@ -60,13 +60,10 @@ test_text: db "Hello_World.Here_is_Johnny.Muajajajaja/"
 ;;
 ;;==============================================================================================
 _mg_game_loop:
+    
 
-    ;ei
-    ;;PROBAR COSAS
-    ; ld de, test_text
-    ; ld bc, $9821
-    ; ld hl, $8C00
-    ; call _sr_draw_text
+
+
     
     ld hl, ml_camera
     ld bc, 10
@@ -74,6 +71,10 @@ _mg_game_loop:
     ld a, [hl]
 	cp $0 
 	jp nz, .no_input
+
+    ;;DELETE THIS------
+    jp .no_spawn_enemy
+    ;;-----------------
 
     ld a, [mg_win_condition]
     cp $00
@@ -204,6 +205,7 @@ _mg_game_loop:
 
 .no_spawn_enemy:
 
+;;COMIENZO DEL INPUT-------------------------------------------------------------
     call _su_input
 
     ;;Comprobamos el input de los botones de accion
@@ -356,12 +358,14 @@ _mg_game_loop:
         ld [hl], a                      ;; |
         
 
-        ld hl, mp_player
-        ld a, $01
-        call _sp_playable_collisions    ;;Comprobamos las colisiones en la direccion del jugador
-        ld a, b
-        or c
-        jp z, .no_input
+        ;;UNCOMENT THIS-------------
+        ;ld hl, mp_player
+        ;ld a, $01
+        ;call _sp_playable_collisions    ;;Comprobamos las colisiones en la direccion del jugador
+        ;ld a, b
+        ;or c
+        ;jp z, .no_input
+        ;;--------------------------
 
 
 
@@ -1470,100 +1474,102 @@ _mg_level_init:
     call _su_update_all_hud_data
     call _sr_update_draw_player_hud
 
+    call _sl_generate_map
 
-    ld a, [mg_actual_level]
-    cp $01
+    ;ld a, [mg_actual_level]
+    ;cp $01
 
-    jp z, .level_02
+    ;jp z, .level_02
 
-    ld bc, $0A04
-    ld de, $0606
-    call _ml_new_room
-    ld bc, $1403
-    ld de, $0805
-    call _ml_new_room
-    ld bc, $1F03
-    ld de, $0507
-    call _ml_new_room
-    ld bc, $040C
-    ld de, $0506
-    call _ml_new_room
-    ld bc, $0F10
-    ld de, $0605
-    call _ml_new_room
-    ld bc, $1912
-    ld de, $0506
-    call _ml_new_room
-    ld bc, $0A17
-    ld de, $0606
-    call _ml_new_room
 
-    xor a
-    ld bc, $1006
-    call _ml_add_exit
-    xor a
-    ld bc, $0C0A
-    call _ml_add_exit
+    ; ld bc, $0A04
+    ; ld de, $0606
+    ; call _ml_new_room
+    ; ld bc, $1403
+    ; ld de, $0805
+    ; call _ml_new_room
+    ; ld bc, $1F03
+    ; ld de, $0507
+    ; call _ml_new_room
+    ; ld bc, $040C
+    ; ld de, $0506
+    ; call _ml_new_room
+    ; ld bc, $0F10
+    ; ld de, $0605
+    ; call _ml_new_room
+    ; ld bc, $1912
+    ; ld de, $0506
+    ; call _ml_new_room
+    ; ld bc, $0A17
+    ; ld de, $0606
+    ; call _ml_new_room
 
-    ld a, 1
-    ld bc, $1406
-    call _ml_add_exit
-    ld a, 1
-    ld bc, $1808
-    call _ml_add_exit
-    ld a, 1
-    ld bc, $1C06
-    call _ml_add_exit
+    ; xor a
+    ; ld bc, $1006
+    ; call _ml_add_exit
+    ; xor a
+    ; ld bc, $0C0A
+    ; call _ml_add_exit
 
-    ld a, 2
-    ld bc, $1F07
-    call _ml_add_exit
-    ld a, 2
-    ld bc, $220A
-    call _ml_add_exit
+    ; ld a, 1
+    ; ld bc, $1406
+    ; call _ml_add_exit
+    ; ld a, 1
+    ; ld bc, $1808
+    ; call _ml_add_exit
+    ; ld a, 1
+    ; ld bc, $1C06
+    ; call _ml_add_exit
 
-    ld a, 3
-    ld bc, $090F
-    call _ml_add_exit
+    ; ld a, 2
+    ; ld bc, $1F07
+    ; call _ml_add_exit
+    ; ld a, 2
+    ; ld bc, $220A
+    ; call _ml_add_exit
 
-    ld a, 4
-    ld bc, $0F12
-    call _ml_add_exit
-    ld a, 4
-    ld bc, $1310
-    call _ml_add_exit
-    ld a, 4
-    ld bc, $1215
-    call _ml_add_exit
+    ; ld a, 3
+    ; ld bc, $090F
+    ; call _ml_add_exit
 
-    ld a, 5
-    ld bc, $1C12
-    call _ml_add_exit
-    ld a, 5
-    ld bc, $1C18
-    call _ml_add_exit
+    ; ld a, 4
+    ; ld bc, $0F12
+    ; call _ml_add_exit
+    ; ld a, 4
+    ; ld bc, $1310
+    ; call _ml_add_exit
+    ; ld a, 4
+    ; ld bc, $1215
+    ; call _ml_add_exit
 
-    ld a, 6
-    ld bc, $0D17
-    call _ml_add_exit
-    ld a, 6
-    ld bc, $101C
-    call _ml_add_exit
+    ; ld a, 5
+    ; ld bc, $1C12
+    ; call _ml_add_exit
+    ; ld a, 5
+    ; ld bc, $1C18
+    ; call _ml_add_exit
 
-    ld a,  $0A
-    ld bc, $1504
-    ld de, $0001
-    call _ml_new_item
+    ; ld a, 6
+    ; ld bc, $0D17
+    ; call _ml_add_exit
+    ; ld a, 6
+    ; ld bc, $101C
+    ; call _ml_add_exit
 
-    ld a,  $FF
-    ld bc, $1607
-    ld de, $0050
-    call _ml_new_item
+    ; ld a,  $0A
+    ; ld bc, $1504
+    ; ld de, $0001
+    ; call _ml_new_item
 
-    ld a,  $00
-    ld bc, $1C15
-    ld de, $0001
-    call _ml_new_item
+    ; ld a,  $FF
+    ; ld bc, $1607
+    ; ld de, $0050
+    ; call _ml_new_item
+
+    ; ld a,  $00
+    ; ld bc, $1C15
+    ; ld de, $0001
+    ; call _ml_new_item
 
     ;db $18, $FE
     ret

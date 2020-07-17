@@ -11,7 +11,7 @@ SECTION "FUNCTION_FUNCS", ROM0
 
 
 ;;==============================================================================================
-;;                                    GENERATE RANDOM
+;;                                    HEX TO DEC
 ;;----------------------------------------------------------------------------------------------
 ;; Convierte un numero hexadecimal de hasta $FF a decimal y lo devielve en DE
 ;;

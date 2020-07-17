@@ -132,37 +132,43 @@ tile_index::
 
 
 tile_wall_top:
-    db $00          ;; Tile TL
+    ;db $00          ;; Tile TL
+    db $81
     db $02          ;; Tile TR
     db $01          ;; Tile BL
     db $03          ;; Tile BR
 
 tile_wall_right:
-    db $04          ;; Tile TL
+    ;db $04          ;; Tile TL
+    db $82
     db $06          ;; Tile TR
     db $05          ;; Tile BL
     db $07          ;; Tile BR
 
 tile_wall_bottom:
-    db $08          ;; Tile TL
+    ;db $08          ;; Tile TL
+    db $83
     db $0A          ;; Tile TR
     db $09          ;; Tile BL
     db $0B          ;; Tile BR
 
 tile_wall_left:
-    db $0C          ;; Tile TL
+    ;db $0C          ;; Tile TL
+    db $84
     db $0E          ;; Tile TR
     db $0D          ;; Tile BL
     db $0F          ;; Tile BR
 
 tile_wall_topleft_int:
-    db $10          ;; Tile TL
+    ;db $10          ;; Tile TL
+    db $85
     db $12          ;; Tile TR
     db $11          ;; Tile BL
     db $13          ;; Tile BR
 
 tile_wall_topright_int:
-    db $14          ;; Tile TL
+    ;db $14          ;; Tile TL
+    db $86
     db $16          ;; Tile TR
     db $15          ;; Tile BL
     db $17          ;; Tile BR
@@ -284,16 +290,16 @@ tile_item_weapon:
     db $63          ;; Tile BR
 
 tile_item_spell:
-    db $64          ;; Tile TL
-    db $66          ;; Tile TR
-    db $65          ;; Tile BL
-    db $67          ;; Tile BR
-
-tile_item_shield:
     db $68          ;; Tile TL
     db $6A          ;; Tile TR
     db $69          ;; Tile BL
     db $6B          ;; Tile BR
+
+tile_item_shield:
+    db $64          ;; Tile TL
+    db $66          ;; Tile TR
+    db $65          ;; Tile BL
+    db $67          ;; Tile BR
 
 tile_item_02:   
     db $6C          ;; Tile TL

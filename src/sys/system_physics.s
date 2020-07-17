@@ -1,13 +1,147 @@
 INCLUDE "src/sys/system_physics.h.s"
 INCLUDE "src/ent/entity_enemy.h.s"
 INCLUDE "src/ent/entity_camera.h.s"
+INCLUDE "src/ent/entity_room.h.s"
 
 SECTION "SYS_PHYSICS_VARS", WRAM0
 sp_special_tile:    ds $01
 aux_is_player: ds $01
 
+aux_rx: ds $01
+aux_ry: ds $01
+aux_rw: ds $01
+aux_rh: ds $01
+
 
 SECTION "SYS_PHYSICS_FUNCS", ROM0
+
+
+
+;;==============================================================================================
+;;                                  CHECK ROOM COLLISION
+;;----------------------------------------------------------------------------------------------
+;; calcula y devuelve la distancia absoluta de un punto al jugador
+;;
+;; INPUT:
+;;  BC -> X, Y de la room origen
+;;  DE -> W, H de la room origen
+;;
+;; OUTPUT:
+;;   A -> Indica si hau colision (0=si, 1=no)
+;;
+;; DESTROYS:
+;;  AF, BC, DE
+;;
+;;==============================================================================================
+_sp_check_room_collision:
+
+    ld a, b
+    ld [aux_rx], a
+    ld a, c
+    ld [aux_ry], a
+    ld a, d
+    ld [aux_rw], a
+    ld a, e
+    ld [aux_rh], a
+
+    ld hl, ml_room_array
+    ld a, [ml_room_num]
+    cp $00
+    jr nz, .loop
+
+        ld a, $01
+        ret
+
+.loop:
+        push af
+        push hl
+
+        ldi a, [hl]
+        ld b, a
+        inc hl
+        ld a, [hl]
+        ld c, a
+        dec hl
+        ;;BC -> R2 X, W
+
+        ld a, [aux_rx]
+        ld d, a
+        ld a, [aux_rw]
+        add d
+        push af
+        ;;A -> R1 X+W
+
+        ld a, b
+        dec a
+        ld d, a
+        ;;D -> R2 X-1
+
+        pop af
+        cp d                    ;;Si (X1+W1 < X2-1) no hay colision
+        jr c, .no_collision
+
+        ld a, [aux_rx]
+        ld d, a
+        ;;D -> R1 X
+
+        ld a, b
+        add c
+        inc a
+        ;;A -> R2 X+W+1
+        cp d                    ;;Si (X2+W2+1 > X1) no hay colision
+        jr c, .no_collision
+
+
+        ldi a, [hl]
+        ld b, a
+        inc hl
+        ld a, [hl]
+        ld c, a
+        ;;BC -> R2 Y, H
+
+        ld a, b
+        dec a
+        ld d, a
+        ;;D -> R2 Y-1
+
+        ld a, [aux_ry]
+        ld e, a
+        ld a, [aux_rh]
+        add e
+        ;;A -> R1 Y+H
+
+        cp d                    ;;Si (Y1 + H1 < Y2) no hay colision
+        jr c, .no_collision
+
+        ld a, [aux_ry]
+        ld d, a
+        ;;D -> R1 Y
+
+        ld a, b
+        add c
+        inc a
+        ;;A -> R2 Y+H+1
+        cp d                    ;;Si (Y2+H2+1 > Y1) no hay colision
+        jr c, .no_collision
+
+        ;;HAY COLISION
+        pop hl
+        pop af
+        xor a
+        ret
+
+        ;;NO HAY COLISION
+.no_collision:
+        pop hl
+        ld de, entity_room_size
+        add hl, de
+
+        pop af
+        dec a
+        jr nz, .loop
+
+    ld a, $01
+    ret
 
 
 

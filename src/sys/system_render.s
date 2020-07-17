@@ -40,6 +40,111 @@ submenu_text_06: db "Uneq>/"
 submenu_ttext_size = 6
 
 
+
+;;==============================================================================================
+;;                                    DRAW ROOM
+;;----------------------------------------------------------------------------------------------
+;; Dibuja una habitacion
+;;
+;; INPUT:
+;;   A -> Room_num DEBUG
+;;  BC -> Room X, Y
+;;  DE -> Room W, H
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  
+;;
+;;==============================================================================================
+_sr_draw_room:
+    push af     ;Debug
+    
+    
+    push de
+    
+
+    ld e, c
+    ld c, b
+    ld b, $00
+    ld d, $00
+    ;;BC -> room_x
+    ;;DE -> room_y
+    ld hl, ml_map
+    call _sl_get_tilemap_dir
+
+    pop de
+
+;;DELETE THIS-----------------------------
+    push hl
+    push de
+
+    ld a, e
+.loop_delete_01:
+        push af
+
+        ld a, d
+        push hl
+.loop_delete_02:
+            push af
+            ld a, $0E
+            ldi [hl], a
+            pop af
+            dec a
+            jr nz, .loop_delete_02
+
+        pop hl
+        ld bc, MAPW
+        add hl, bc
+        pop af
+        dec a
+        jr nz, .loop_delete_01
+    
+    pop de
+    pop hl
+;;---------------------------------------
+
+    pop af     ;Debug
+    ld [hl], a ;Debug
+
+    inc hl
+    ld bc, MAPW
+    add hl, bc
+
+    ld a, e
+    sub $02
+.loop_draw_y:
+        push af
+
+        ld a, d
+        sub $02
+        push hl
+.loop_draw_x:
+            push af
+
+            ld a, $14
+            ldi [hl], a
+            pop af
+            dec a
+            jr nz, .loop_draw_x
+
+        pop hl
+        push bc
+        ld bc, MAPW
+        add hl, bc
+        pop bc
+        pop af
+        dec a
+        jr nz, .loop_draw_y
+
+
+    ;db $18, $FE
+
+    ret
+
+
+
 ;;==============================================================================================
 ;;                                    DRAW SUBMENU
 ;;----------------------------------------------------------------------------------------------
@@ -1406,7 +1511,7 @@ _sr_update_scroll_map:
     call _ml_save_tilemap
     ld bc, GBSw - 1
     add hl, bc
-    ld bc, MAPw * -1  ;;$FFCE -> -50 | MAPw = 50
+    ld bc, MAPW * -1  ;;$FFCE -> -50 | MAPW = 50
     add hl, bc
 
     ld b, h
@@ -1449,7 +1554,7 @@ _sr_update_scroll_map:
     ld bc, $FFFF
     add hl, bc
     call _ml_save_tilemap
-    ld bc, MAPw * -1  ;;$FFCE -> -50 | MAPw = 50
+    ld bc, MAPW * -1  ;;$FFCE -> -50 | MAPW = 50
     add hl, bc
 
     ld b, h
@@ -1490,7 +1595,7 @@ _sr_update_scroll_map:
     push hl
     call _ml_load_tilemap
 
-    ld bc, MAPw * -1 ;;$FFCE -> -50 | MAPw = 50
+    ld bc, MAPW * -1 ;;$FFCE -> -50 | MAPW = 50
     add hl, bc
     call _ml_save_tilemap
     ld bc, $FFFF
@@ -1530,12 +1635,12 @@ _sr_update_scroll_map:
     push hl
     call _ml_load_tilemap
 
-    ld bc, MAPw
+    ld bc, MAPW
     add hl, bc
     call _ml_save_tilemap
 
     ld a, GBSh - 1
-    ld bc, MAPw
+    ld bc, MAPW
 .md_loop:
     
     add hl, bc
@@ -1604,7 +1709,7 @@ _sr_draw_column:
     ld h, b
     ld l, c
 
-    ld de, MAPw
+    ld de, MAPW
     add hl, de
     
     ld b, h
@@ -1800,7 +1905,7 @@ _sr_draw_screen:
     cp GBSh
     jr z, .end
     ld [sr_actual_y], a
-    ld de, MAPw
+    ld de, MAPW
     add hl, de
     ld b, h
     ld c, l
