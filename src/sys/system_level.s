@@ -2,6 +2,7 @@ INCLUDE "src/sys/system_level.h.s"
 INCLUDE "src/ent/entity_camera.h.s"
 INCLUDE "src/ent/entity_enemy.h.s"
 INCLUDE "src/ent/entity_room.h.s"
+INCLUDE "src/ent/entity_map.h.s"
 
 
 SECTION "SYS_LEVEL_VARS", WRAM0
@@ -12,6 +13,11 @@ aux_rx: ds $01
 aux_ry: ds $01
 aux_rw: ds $01
 aux_rh: ds $01
+
+aux_rx2: ds $01
+aux_ry2: ds $01
+aux_rw2: ds $01
+aux_rh2: ds $01
 
 aux_close_room:  ds $01
 aux_close_dist:  ds $01
@@ -26,6 +32,17 @@ aux_close_dist_x: ds $01
 aux_close_dist_y: ds $01
 aux_orient_x: ds $01
 aux_orient_y: ds $01
+
+aux_generic_1: ds $01
+aux_generic_2: ds $01
+
+aux_debug_01: ds $01
+aux_debug_02: ds $01
+aux_debug_03: ds $01
+
+aux_debug_04: ds $01
+aux_debug_05: ds $01
+aux_debug_06: ds $01
 
 
 SECTION "SYS_LEVEL_FUNCS", ROM0
@@ -328,6 +345,8 @@ _sl_connect_rooms:
 
         call _sl_set_connection
 
+        call _sl_add_exit_pair
+
 .loop_room_1_end:       
         ld a, [aux_room_id_01]
         inc a
@@ -343,6 +362,442 @@ _sl_connect_rooms:
 
     ret
 
+;;========================================================================================
+;;                                     ADD EXIT PAIR
+;;----------------------------------------------------------------------------------------
+;; Comprueba si una habitacion ya se ha unido con otra
+;;
+;; INPUT:
+;;  [aux_room_id_01]  -> Id de la habitacion origen 
+;;  [aux_close_room]  -> Id de la habitacion destino
+;;  [aux_orientation] -> Orientacion de la salida para la habitacion origen
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DELETES: 
+;;  AF, BC, DE, HL
+;;
+;;========================================================================================
+_sl_add_exit_pair:
+
+    ld hl, ml_room_array
+    ld a, [aux_close_room]
+    cp $00
+    jr z, .loop_search_close_room_end
+    ld bc, entity_room_size
+.loop_search_close_room:
+    add hl, bc
+    dec a
+    jr nz, .loop_search_close_room
+.loop_search_close_room_end:
+
+    ;;Guardamos los valores de Close_Room
+    ldi a, [hl]
+    ld [aux_rx2], a
+    ldi a, [hl]
+    ld [aux_ry2], a
+    ldi a, [hl]
+    ld [aux_rw2], a
+    ldi a, [hl]
+    ld [aux_rh2], a
+
+
+    ld a, [aux_orientation]
+;;TOP----------------------------------------------
+.exit_top:
+    cp $00
+    jr nz, .exit_bottom
+
+        ;;ROOM_01 exit
+        xor a
+        ld b, a
+        ld a, [aux_rw]
+        sub $02
+        ld c, a
+        ld a, %00001111
+        call _generate_random_min_max
+        ld [aux_debug_04], a
+        ld b, a
+        ld a, [aux_rx]
+        inc a
+        add b
+        ld [aux_debug_05], a
+        ld b, a
+        ld a, [aux_ry]
+        ld c, a
+        ld [aux_debug_06], a
+        ;;BC -> exit X, Y
+        ld a, [aux_room_id_01]
+        call _ml_add_exit
+
+
+        ld d, $00
+        ld e, c
+        ld c, b
+        ld b, $00
+        ld hl, ml_map
+        call _sl_get_tilemap_dir
+
+        ld a, $16
+        ld [hl], a
+
+        
+        ;;ROOM_02 exit
+        xor a
+        ld b, a
+        ld a, [aux_rw2]
+        sub $02
+        ld c, a
+        ld a, %00001111
+        call _generate_random_min_max
+        ld [aux_debug_01], a
+        ld b, a
+        ld a, [aux_rx2]
+        inc a
+        add b
+        ld b, a
+        ld [aux_debug_02], a
+        ld a, [aux_ry2]
+        ld c, a
+        ld a, [aux_rh2]
+        add c
+        ld c, a
+        ld [aux_debug_03], a
+        
+        ;;BC -> exit X, Y+H
+        ld a, [aux_close_room]
+        call _ml_add_exit
+
+        ld d, $00
+        ld e, c
+        ld c, b
+        ld b, $00
+        ld hl, ml_map
+        call _sl_get_tilemap_dir
+
+        ld a, $16
+        ld [hl], a
+
+        ret
+
+;;BOTTOM--------------------------------------------
+.exit_bottom:
+    cp $01
+    jr nz, .exit_left
+        ;;ROOM_01 exit
+        xor a
+        ld b, a
+        ld a, [aux_rw]
+        sub $02
+        ld c, a
+        ld a, %00001111
+        call _generate_random_min_max
+        ld [aux_debug_04], a
+        ld b, a
+        ld a, [aux_rx]
+        inc a
+        add b
+        ld [aux_debug_05], a
+        ld b, a
+        ld a, [aux_ry]
+        ld c, a
+        ld a, [aux_rh]
+        add c
+        ld c, a 
+        ld [aux_debug_06], a
+        ;;BC -> exit X, Y
+        ld a, [aux_room_id_01]
+        call _ml_add_exit
+
+
+        ld d, $00
+        ld e, c
+        ld c, b
+        ld b, $00
+        ld hl, ml_map
+        call _sl_get_tilemap_dir
+
+        ld a, $16
+        ld [hl], a
+
+        ;;ROOM_02 exit
+        xor a
+        ld b, a
+        ld a, [aux_rw2]
+        sub $02
+        ld c, a
+        ld a, %00001111
+        call _generate_random_min_max
+        ld [aux_debug_01], a
+        ld b, a
+        ld a, [aux_rx2]
+        inc a
+        add b
+        ld [aux_debug_02], a
+        ld b, a
+        ld a, [aux_ry2]
+        ld c, a
+        ld [aux_debug_03], a
+        
+        ;;BC -> exit X, Y+H
+        ld a, [aux_close_room]
+        call _ml_add_exit
+
+        ld d, $00
+        ld e, c
+        ld c, b
+        ld b, $00
+        ld hl, ml_map
+        call _sl_get_tilemap_dir
+
+        ld a, $16
+        ld [hl], a
+
+        ret
+
+
+;;LEFT----------------------------------------------
+.exit_left:
+    cp $02
+    jr nz, .exit_right
+
+        ;;ROOM_01 exit
+        xor a
+        ld b, a
+        ld a, [aux_rh]
+        sub $02
+        ld c, a
+        ld a, %00001111
+        call _generate_random_min_max
+        ld [aux_debug_04], a
+        ld c, a
+        ld a, [aux_ry]
+        inc a
+        add c
+        ld c, a
+        ld a, [aux_rx]
+        ld b, a
+        ;;BC -> exit X, Y
+        ld a, [aux_room_id_01]
+        call _ml_add_exit
+
+
+        ld d, $00
+        ld e, c
+        ld c, b
+        ld b, $00
+        ld hl, ml_map
+        call _sl_get_tilemap_dir
+
+        ld a, $16
+        ld [hl], a
+
+
+        ;;ROOM_02 exit
+        xor a
+        ld b, a
+        ld a, [aux_rh2]
+        sub $02
+        ld c, a
+        ld a, %00001111
+        call _generate_random_min_max
+        ld [aux_debug_04], a
+        ld c, a
+        ld a, [aux_ry2]
+        inc a
+        add c
+        ld c, a
+        ld a, [aux_rx2]
+        ld b, a
+        ld a, [aux_rw2]
+        add b
+        ld b, a
+        ;;BC -> exit X, Y
+        ld a, [aux_close_room]
+        call _ml_add_exit
+
+
+        ld d, $00
+        ld e, c
+        ld c, b
+        ld b, $00
+        ld hl, ml_map
+        call _sl_get_tilemap_dir
+
+        ld a, $16
+        ld [hl], a
+
+        ret
+
+;;RIGHT---------------------------------------------
+.exit_right:
+    cp $03
+    jr nz, .no_exit
+
+        ;;ROOM_01 exit
+        xor a
+        ld b, a
+        ld a, [aux_rh]
+        sub $02
+        ld c, a
+        ld a, %00001111
+        call _generate_random_min_max
+        ld [aux_debug_04], a
+        ld c, a
+        ld a, [aux_ry]
+        inc a
+        add c
+        ld c, a
+        ld a, [aux_rx]
+        ld b, a
+        ld a, [aux_rw]
+        add b
+        ld b, a 
+        ;;BC -> exit X, Y
+        ld a, [aux_room_id_01]
+        call _ml_add_exit
+
+
+        ld d, $00
+        ld e, c
+        ld c, b
+        ld b, $00
+        ld hl, ml_map
+        call _sl_get_tilemap_dir
+
+        ld a, $16
+        ld [hl], a
+
+
+        ;;ROOM_02 exit
+        xor a
+        ld b, a
+        ld a, [aux_rh2]
+        sub $02
+        ld c, a
+        ld a, %00001111
+        call _generate_random_min_max
+        ld [aux_debug_04], a
+        ld c, a
+        ld a, [aux_ry2]
+        inc a
+        add c
+        ld c, a
+        ld a, [aux_rx2]
+        ld b, a
+        ;;BC -> exit X, Y
+        ld a, [aux_close_room]
+        call _ml_add_exit
+
+
+        ld d, $00
+        ld e, c
+        ld c, b
+        ld b, $00
+        ld hl, ml_map
+        call _sl_get_tilemap_dir
+
+        ld a, $16
+        ld [hl], a
+
+        ret
+
+.no_exit:
+
+
+    ret
+
+
+;;========================================================================================
+;;                               CHECK EXIT NEIGHBOURS
+;;----------------------------------------------------------------------------------------
+;; Comprueba si una salida tiene un vecino adyacente, de tenerlo modifica la salida
+;;
+;; INPUT:
+;;  BC -> Exit X,Y
+;;  DE -> Neighbour X, Y
+;;
+;; OUTPUT:
+;;  BC -> Exit X, Y modificado 
+;;
+;; DELETES: 
+;;  AF, BC
+;;
+;;========================================================================================
+_sl_check_exit_neighbours:
+
+    ld a, b
+    ld [aux_generic_1], a
+    ld a, c
+    ld [aux_generic_2], a
+
+    ;;comprobar si D,E = (B-1),C
+    ld a, b
+    dec a
+
+    xor d               ;;Da 0 si B-1 = D
+    ld b, a                 
+    ld a, c
+    xor e               ;;Da 0 si C = E
+    or b                ;;Da 0 si C = E && B-1 = D
+    jr z, .exit_modify
+
+    
+    ;;comprobar si D,E = (B+1),C
+    ld a, [aux_generic_2]
+    ld c, a
+    ld a, [aux_generic_1]
+    inc a
+
+    xor d               ;;Da 0 si B+1 = D
+    ld b, a                 
+    ld a, c
+    xor e               ;;Da 0 si C = E
+    or b                ;;Da 0 si C = E && B+1 = D
+    jr z, .exit_modify
+
+
+    ;;comprobar si D,E = B,(C-1)
+    ld a, [aux_generic_1]
+    ld b, a
+    ld a, [aux_generic_2]
+    dec a
+
+    xor e               ;;Da 0 si C-1 = E
+    ld c, a
+    ld a, b
+    xor d               ;;Da 0 si B = D
+    or c                ;;Da 0 si C-1 = E && B = D
+    jr z, .exit_modify
+
+
+    ;;comprobar si D,E = B,(C+1)
+    ld a, [aux_generic_1]
+    ld b, a
+    ld a, [aux_generic_2]
+    inc a
+
+    xor e               ;;Da 0 si C+1 = E
+    ld c, a
+    ld a, b
+    xor d               ;;Da 0 si B = D
+    or c                ;;Da 0 si C+1 = E && B = D
+    jr z, .exit_modify
+
+
+    ;;NO SE MODIFICA BC
+    ld a, [aux_generic_1]
+    ld b, a
+    ld a, [aux_generic_2]
+    ld c, a
+    ret
+
+.exit_modify:
+    ld b, d
+    ld c, e
+    ret
+
 
 ;;========================================================================================
 ;;                                     SET_CONNECTION
@@ -351,7 +806,7 @@ _sl_connect_rooms:
 ;;
 ;; INPUT:
 ;;  [aux_room_id_01] -> Id de la habitacion origen 
-;;  [aux_room_id_02] -> Id de la habitacion que se quiere unir
+;;  [aux_close_room] -> Id de la habitacion que se quiere conectar
 ;;
 ;; OUTPUT:
 ;;  NONE
@@ -604,22 +1059,22 @@ _sl_generate_room_data:
     
 
     ;;GENERAMOS COORD X
-.generate_x_num:                ;Min 4, max (MAPW-rw-4) || MAPW = 40 = $28
+.generate_x_num:                ;Min 5, max (MAPW-rw-5) || MAPW = 40 = $28
     call _generate_random
     ld d, %00111111             ;Fuerza el valor de la salida al rango de 0 a 63
     and d
-    cp $04                      ;Asegura que el minimo es 4
+    cp $05                      ;Asegura que el minimo es 5
     jr c, .generate_x_num
 
     push af
     ld a, [aux_rw]
     ld d, a
-    ld a, $28 - $04
+    ld a, MAPW - $05
     sub d
     ld d, a 
     pop af
 
-    cp d                        ;Asegura que el maximo es (MAPW-rw-4)
+    cp d                        ;Asegura que el maximo es (MAPW-rw-5)
     jr nc, .generate_x_num
 
     ld [aux_rx], a              ;Guardamos el valor de coord_x de la habitacion
@@ -627,22 +1082,22 @@ _sl_generate_room_data:
 
 
     ;;GENERAMOS COORD Y
-.generate_y_num:                ;Min 3, max (MAPH-rh-3) || MAPH = 34 = $22
+.generate_y_num:                ;Min 4, max (MAPH-rh-4) || MAPH = 34 = $22
     call _generate_random
     ld d, %00111111             ;Fuerza el valor de la salida al rango de 0 a 63
     and d
-    cp $03                      ;Asegura que el minimo es 4
+    cp $04                      ;Asegura que el minimo es 4
     jr c, .generate_y_num
 
     push af
     ld a, [aux_rh]
     ld d, a
-    ld a, $22 - $03
+    ld a, MAPH - $04
     sub d
     ld d, a 
     pop af
 
-    cp d                        ;Asegura que el maximo es (MAPW-rh-3)
+    cp d                        ;Asegura que el maximo es (MAPH-rh-4)
     jr nc, .generate_y_num
 
     ld [aux_ry], a              ;Guardamos el valor de coord_y de la habitacion

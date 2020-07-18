@@ -36,3 +36,4 @@ ent_room_connections = 14
 entity_room_size = 19
 
 connection_num = 5
+max_exits = 4

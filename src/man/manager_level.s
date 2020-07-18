@@ -181,7 +181,7 @@ _ml_new_item:
 ;;  BC -> Exit X, Y
 ;;
 ;; OUTPUT:
-;;  NONE
+;;  BC -> Exit X, Y final
 ;;
 ;; DESTROYS:
 ;;  AF
@@ -193,8 +193,8 @@ _ml_add_exit:
     cp $00
     jr z, .end_loop
 
-.loop:
     ld de, entity_room_size
+.loop:
     add hl, de
     dec a
     jr nz, .loop
@@ -205,18 +205,37 @@ _ml_add_exit:
     ld de, ent_room_exit_num
     add hl, de
     ld a, [hl]
-    cp 4
+    cp max_exits
     ret z
+    ;;HL -> ent_room_exit_num
 
     push af
     inc a
     ldi [hl], a
     pop af
 
-    sla a
-    ld d, $00
-    ld e, a
-    add hl, de
+
+    ;;A  -> numero de salidas
+    ;;HL -> ent_room_exit_01
+    cp $00
+    jr z, .loop_2_end
+.loop_2:
+    push af
+
+        ldi a, [hl]
+        ld d, a
+        ldi a, [hl]
+        ld e, a
+
+        call _sl_check_exit_neighbours
+
+    pop af
+    dec a
+    jr nz, .loop_2
+
+.loop_2_end:
+    
+    ;;HL -> Salida[A].x
     ld a, b
     ldi [hl], a
     ld a, c

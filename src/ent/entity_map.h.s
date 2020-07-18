@@ -14,3 +14,5 @@ entity_map_size = $0550  ;$09c4  ;; In Bytes
 entity_map_w = 40        ;; In tiles
 entity_map_h = 34        ;; In tiles
 
+MAPW = 40
+MAPH = 34

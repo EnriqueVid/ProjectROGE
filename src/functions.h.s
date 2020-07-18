@@ -11,4 +11,5 @@ GLOBAL _define_palette
 GLOBAL _clear_data
 GLOBAL _jri
 GLOBAL _generate_random
+GLOBAL _generate_random_min_max
 GLOBAL _hex2dec

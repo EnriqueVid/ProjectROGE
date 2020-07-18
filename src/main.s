@@ -24,6 +24,11 @@ DMACopyEnd:
 
 
 _main:
+    ;PRUEBAS
+
+    
+
+
     ;INITIAL LOAD
 
 
@@ -182,6 +187,11 @@ _main:
 ;GAME_LOOP
     
 .init_game_loop:
+
+    ;PUEBAS
+    
+
+
     ;call _mg_init
     call _mg_level_init
     

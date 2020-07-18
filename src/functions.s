@@ -95,6 +95,51 @@ _hex2dec:
 
     ret
 
+;;==============================================================================================
+;;                                    GENERATE RANDOM MIN MAX
+;;----------------------------------------------------------------------------------------------
+;; Genera un número aleatorio a entre el minimo y el máxomo especificado
+;; Emplea una máscara para facilitar los calculos
+;;
+;; INPUT:
+;;  A  -> MASK (se emplea en una operacion AND para truncar el resultado a un nimero de bits especifico)
+;;  BC -> MIN, MAX
+;;
+;; OUTPUT:
+;;  A -> Numero aleatorio generado
+;;
+;; DESTROYS:
+;;  AF, BC, DE
+;;
+;;==============================================================================================
+_generate_random_min_max:
+
+    ld d, a                     ;D -> mascara binaria
+    push bc
+.generate_num:
+
+    push de
+    call _generate_random
+    pop de
+    and d                       ;aplicamos la mascara
+
+    pop bc                      ;BC -> Min, Max value
+    cp b                        ;Asegura que el minimo es el establecido por B
+    jr c, .generate_num
+    push bc
+
+    push af                     ;Incrementamos el máximo en 1 para poder hacer la comparacion bien
+    ld a, c
+    inc a
+    ld c, a
+    pop af                      ;C = C + 1 
+
+    cp c                        ;Asegura que el maximo es C - 1
+    jr nc, .generate_num
+    
+    pop bc
+
+    ret
 
 
 ;;==============================================================================================
