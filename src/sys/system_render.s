@@ -40,6 +40,336 @@ submenu_text_06: db "Uneq>/"
 submenu_ttext_size = 6
 
 
+;;==============================================================================================
+;;                                    RETILE MAP
+;;----------------------------------------------------------------------------------------------
+;; Redibuja los tiles del mapa para dejarlo bonito
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, BC, DE, HL
+;;
+;;==============================================================================================
+_sr_retile_map:
+
+    xor a
+    ld [aux_01], a  ;;X al recorrer el tilemap
+    ld [aux_02], a  ;;Y al recorrer el tilemap
+    ld hl, ml_map
+
+    ld a, MAPH
+.loop_filas:
+        push af
+
+;-----------------------------------------------
+        ld a, MAPW
+.loop_columnas:
+            push af
+
+            ld a, [aux_01]
+            ld b, a
+            ld a, [aux_02]
+            ld c, a
+            push hl
+            call _sl_get_tile_neighbours
+            pop hl
+
+            ld b, a         ;;B -> Neighbour data
+            ld a, [hl]      ;;A -> Tile data
+            
+            call _sr_change_tile_data
+
+            inc hl          ;;Incrementamos HL para situarlo en el siguiente tile
+
+            ld a, [aux_01]  ;;Incrementamos en X las coordenadas del tile
+            inc a
+            ld [aux_01], a
+
+            pop af
+            dec a
+            jr nz, .loop_columnas
+;-----------------------------------------------
+
+        xor a
+        ld [aux_01], a
+        ld a, [aux_02]
+        inc a
+        ld [aux_02], a
+
+        pop af
+        dec a
+        jr nz, .loop_filas
+
+    ret
+
+
+;;==============================================================================================
+;;                                    CHANGE TILE DATA
+;;----------------------------------------------------------------------------------------------
+;; Redibuja los tiles del mapa para dejarlo bonito
+;;
+;; INPUT:
+;;  A -> Tile data
+;;  B -> Neighbour data
+;; HL -> Tile_ptr
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DESTROYS:
+;;  AF, BC, DE
+;;
+;;==============================================================================================
+_sr_change_tile_data:
+
+    cp $14
+    jr c, .solids
+
+        cp $16
+        ret nz
+            ld a, $15
+            ld [hl], a
+            ret
+
+    jp .end
+
+.solids:
+
+    ld c, a
+    ld a, b
+    cp $FF
+    jr nz, .solid_bottom
+        ld a, $0C
+        jp .end
+
+.solid_bottom:
+    ld a, b                         ;# # #
+    and %11010111                   ;# T #
+    cp  %11000111                   ;- O -
+    jr nz, .solid_bottom_right
+        ld a, $00
+        jp .end
+
+.solid_bottom_right:                 
+    ld a, b                         ;# # -
+    and %11010101                   ;# T O
+    cp  %11000001                   ;- O -
+    jr nz, .solid_bottom_left
+        ld a, $0A
+        jp .end
+
+.solid_bottom_left:                 
+    ld a, b                         ;- # #
+    and %01010111                   ;O T #
+    cp  %00000111                   ;- O -
+    jr nz, .solid_top
+        ld a, $0B
+        jp .end
+
+.solid_top:                 
+    ld a, b                         ;- O -
+    and %01111101                   ;# T #
+    cp  %01111100                   ;# # #
+    jr nz, .solid_top_right
+        ld a, $02
+        jp .end
+
+.solid_top_right:                 
+    ld a, b                         ;- O -
+    and %01110101                   ;# T O
+    cp  %01110000                   ;# # -
+    jr nz, .solid_top_left
+        ld a, $09
+        jp .end
+
+.solid_top_left:                 
+    ld a, b                         ;- O -
+    and %01011101                   ;O T #
+    cp  %00011100                   ;- # #
+    jr nz, .solid_left
+        ld a, $08
+        jp .end
+
+.solid_left:                 
+    ld a, b                         ;- # #
+    and %01011111                   ;O T #
+    cp  %00011111                   ;- # #
+    jr nz, .solid_right
+        ld a, $01
+        jp .end
+
+.solid_right:                 
+    ld a, b                         ;# # -
+    and %11110101                   ;# T O
+    cp  %11110001                   ;# # -
+    jr nz, .solid_top_left_int
+        ld a, $03
+        jp .end
+
+.solid_top_left_int:                 
+    ld a, b                         ;# # #
+    and %11111111                   ;# T #
+    cp  %11110111                   ;# # O
+    jr nz, .solid_top_right_int
+        ld a, $04
+        jp .end
+
+.solid_top_right_int:                 
+    ld a, b                         ;# # #
+    and %11111111                   ;# T #
+    cp  %11011111                   ;O # #
+    jr nz, .solid_bottom_left_int
+        ld a, $05
+        jp .end
+
+.solid_bottom_left_int:                 
+    ld a, b                         ;# # O
+    and %11111111                   ;# T #
+    cp  %11111101                   ;# # #
+    jr nz, .solid_bottom_right_int
+        ld a, $07
+        jp .end
+
+.solid_bottom_right_int:                 
+    ld a, b                         ;O # #
+    and %11111111                   ;# T #
+    cp  %01111111                   ;# # #
+    jr nz, .solid_special_left
+        ld a, $06
+        jp .end
+
+
+.solid_special_left:                 
+    ld a, b                         ;O # #
+    and %11111111                   ;# T #
+    cp  %01011111                   ;O # #
+    jr nz, .solid_special_right
+        ld a, $01
+        jp .end
+
+
+.solid_special_right:                 
+    ld a, b                         ;# # O
+    and %11111111                   ;# T #
+    cp  %11110101                   ;# # O
+    jr nz, .solid_special_up
+        ld a, $03
+        jp .end
+
+.solid_special_up:                 
+    ld a, b                         ;O # O
+    and %11111111                   ;# T #
+    cp  %01111101                   ;# # #
+    jr nz, .solid_special_down
+        ld a, $02
+        jr .end
+
+.solid_special_down:                 
+    ld a, b                         ;# # #
+    and %11111111                   ;# T #
+    cp  %11010111                   ;O # O
+    jr nz, .solid_special_down_right_1
+        ld a, $00
+        jr .end
+
+.solid_special_down_right_1:                 
+    ld a, b                         ;# # O
+    and %11010111                   ;# T #
+    cp  %11000101                   ;- O -
+    jr nz, .solid_special_down_right_2
+        ld a, $0A
+        jr .end
+
+.solid_special_down_right_2:                 
+    ld a, b                         ;# # -
+    and %11110101                   ;# T O
+    cp  %11010001                   ;O # -
+    jr nz, .solid_special_top_right_1
+        ld a, $0A
+        jr .end
+
+.solid_special_top_right_1:                 
+    ld a, b                         ;- O -
+    and %01111101                   ;# T #
+    cp  %01110100                   ;# # O
+    jr nz, .solid_special_top_right_2
+        ld a, $09
+        jr .end
+
+.solid_special_top_right_2:                 
+    ld a, b                         ;O # -
+    and %11110101                   ;# T O
+    cp  %01110001                   ;# # -
+    jr nz, .solid_special_top_left_1
+        ld a, $09
+        jr .end
+
+.solid_special_top_left_1:                 
+    ld a, b                         ;- # O
+    and %01011111                   ;O T #
+    cp  %00011101                   ;- # #
+    jr nz, .solid_special_top_left_2
+        ld a, $08
+        jr .end
+
+.solid_special_top_left_2:                 
+    ld a, b                         ;- O -
+    and %01111101                   ;# T #
+    cp  %01011100                   ;O # #
+    jr nz, .solid_special_bottom_left_1
+        ld a, $08
+        jr .end
+
+.solid_special_bottom_left_1:                 
+    ld a, b                         ;- # #
+    and %01011111                   ;O T #
+    cp  %00010111                   ;- # O
+    jr nz, .solid_special_bottom_left_2
+        ld a, $0B
+        jr .end
+
+.solid_special_bottom_left_2:                 
+    ld a, b                         ;O # #
+    and %11010111                   ;# T #
+    cp  %01000111                   ;- O -
+    jr nz, .solid_special_diagonal_1
+        ld a, $0B
+        jr .end
+
+
+.solid_special_diagonal_1:                 
+    ld a, b                         ;O # #
+    and %11111111                   ;# T #
+    cp  %01110111                   ;# # O
+    jr nz, .solid_special_diagonal_2
+        ld a, $10
+        jr .end
+
+.solid_special_diagonal_2:                 
+    ld a, b                         ;# # O
+    and %11111111                   ;# T #
+    cp  %11011101                   ;O # #
+    jr nz, .solid_default
+        ld a, $11
+        jr .end
+
+.solid_default:
+    
+    ld a, $0D
+
+
+.end:
+
+    ld [hl], a
+
+    ret
+
+
 
 ;;==============================================================================================
 ;;                                    DRAW ROOM
@@ -61,10 +391,22 @@ submenu_ttext_size = 6
 _sr_draw_room:
     push af     ;Debug
     
-    
+    ; ld a, b
+    ; dec a
+    ; ld b, a
+    ; ld a, c
+    ; dec a
+    ; ld c, a
+
+    ; ld a, d
+    ; add $02
+    ; ld d, a
+    ; ld a, e
+    ; add $02
+    ; ld e, a
+
     push de
     
-
     ld e, c
     ld c, b
     ld b, $00
@@ -108,17 +450,21 @@ _sr_draw_room:
     pop af     ;Debug
     ld [hl], a ;Debug
 
+    ;inc hl
     inc hl
     ld bc, MAPW
     add hl, bc
+    ;add hl, bc
 
     ld a, e
     sub $02
+    ;sub $04
 .loop_draw_y:
         push af
 
         ld a, d
         sub $02
+        ;sub $04
         push hl
 .loop_draw_x:
             push af

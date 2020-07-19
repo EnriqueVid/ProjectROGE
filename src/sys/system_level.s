@@ -71,12 +71,15 @@ _sl_generate_map:
     xor a
     ld [aux_room_counter], a
 
+    ld a, $20
+    ld [aux_generic_1], a
+
     ;;Generamos el numero de salas que va a tener el mapa, de 3 a 6 salas
 .generate_room_num:
     call _generate_random
     ld b, %00000111             ;Fuerza el valor de la salida al rango de 0 a 7
     and b
-    cp $07                      ;Asegura que el maximo es 6
+    cp $06                      ;Asegura que el maximo es 5
     jr z, .generate_room_num
     cp $03                      ;Asegura que el minimo es 3
     jr c, .generate_room_num
@@ -97,8 +100,21 @@ _sl_generate_map:
         cp $00
         jr nz, .generated_room 
 
+            ld a, [aux_generic_1]
+            dec a
+            ld [aux_generic_1], a
+            cp $00
+            jr z, .skip_room
             pop af
             jr .generate_rooms_loop
+
+.skip_room:
+            ld a, $20
+            ld [aux_generic_1], a
+            pop af
+            dec a
+            jr nz, .generate_rooms_loop
+            jr .end_generate_rooms
 
 .generated_room:
         ld a, [aux_room_counter]    ;DEBUG
@@ -109,8 +125,10 @@ _sl_generate_map:
     dec a
     jr nz, .generate_rooms_loop
 
+.end_generate_rooms:
     call _sl_connect_rooms
 
+    call _sr_retile_map
 
     ret
 
@@ -411,7 +429,7 @@ _sl_corridor_vert:
     ld hl, ml_map
     call _sl_get_tilemap_dir
 
-    ;ld a, $14
+    ;ld a, $16
     ;ld [hl], a
 
     ld d, h
@@ -620,7 +638,7 @@ _sl_corridor_hor:
     ld hl, ml_map
     call _sl_get_tilemap_dir
 
-    ;ld a, $14
+    ;ld a, $16
     ;ld [hl], a
 
     ld d, h
@@ -818,29 +836,130 @@ _sl_create_corridor:
 ;;TOP----------------------------------------------
 .top:
     cp $00
-    jr z, .vert
+    jr nz, .bottom
+        ld a, [aux_ry]
+        dec a
+        ld [aux_ry], a
+        ld a, [aux_ry2]
+        inc a
+        ld [aux_ry2], a
+        jr .vert
+.bottom:
     cp $01
     jr nz, .left
-.vert
+        ld a, [aux_ry]
+        inc a
+        ld [aux_ry], a
+        ld a, [aux_ry2]
+        dec a
+        ld [aux_ry2], a
+.vert:
+        ld b, $00
+        ld d, $00
+        ld a, [aux_rx]
+        ld c, a
+        ld a, [aux_ry]
+        ld e, a
+        ld hl, ml_map
+        call _sl_get_tilemap_dir
+
+        ld a, $15
+        ld [hl], a
+
+        ld b, $00
+        ld d, $00
+        ld a, [aux_rx2]
+        ld c, a
+        ld a, [aux_ry2]
+        ld e, a
+        ld hl, ml_map
+        call _sl_get_tilemap_dir
+
+        ld a, $15
+        ld [hl], a
+
+.vert_loop:
         call _sl_reorder_aux_y
         call _sl_corridor_vert
         call _sl_reorder_aux_x
         call _sl_corridor_hor
+
+        ld a, [aux_rx]
+        ld b, a
+        ld a, [aux_rx2]
+        xor b
+        ld b, a
+        ld a, [aux_ry]
+        ld c, a
+        ld a, [aux_ry2]
+        xor c
+        or b
+        jr nz, .vert_loop
 
         ret
 ;;LEFT---------------------------------------------
 .left:
     cp $02
-    jr z, .hor
+    jr nz, .right
+        ld a, [aux_rx]
+        dec a
+        ld [aux_rx], a
+        ld a, [aux_rx2]
+        inc a
+        ld [aux_rx2], a
+        jr .hor
+.right:
     cp $03
     jr nz, .none
-
+        ld a, [aux_rx]
+        inc a
+        ld [aux_rx], a
+        ld a, [aux_rx2]
+        dec a
+        ld [aux_rx2], a
 .hor:
+        ld b, $00
+        ld d, $00
+        ld a, [aux_rx]
+        ld c, a
+        ld a, [aux_ry]
+        ld e, a
+        ld hl, ml_map
+        call _sl_get_tilemap_dir
+
+        ld a, $15
+        ld [hl], a
+
+        ld b, $00
+        ld d, $00
+        ld a, [aux_rx2]
+        ld c, a
+        ld a, [aux_ry2]
+        ld e, a
+        ld hl, ml_map
+        call _sl_get_tilemap_dir
+
+        ld a, $15
+        ld [hl], a
+        
+.hor_loop:
         call _sl_reorder_aux_x
         call _sl_corridor_hor
         call _sl_reorder_aux_y
         call _sl_corridor_vert
         
+        ld a, [aux_rx]
+        ld b, a
+        ld a, [aux_rx2]
+        xor b
+        ld b, a
+        ld a, [aux_ry]
+        ld c, a
+        ld a, [aux_ry2]
+        xor c
+        or b
+        jr nz, .hor_loop
+
         ret
 
 .none:
@@ -1042,6 +1161,7 @@ _sl_add_exit_pair:
 
         ld a, $16
         ld [hl], a
+
 
         
         ;;ROOM_02 exit
@@ -1694,18 +1814,18 @@ _sl_generate_room_data:
     call _generate_random
     ld d, %00111111             ;Fuerza el valor de la salida al rango de 0 a 63
     and d
-    cp $05                      ;Asegura que el minimo es 5
+    cp $06                      ;Asegura que el minimo es 6
     jr c, .generate_x_num
 
     push af
     ld a, [aux_rw]
     ld d, a
-    ld a, MAPW - $05
+    ld a, MAPW - $06
     sub d
     ld d, a 
     pop af
 
-    cp d                        ;Asegura que el maximo es (MAPW-rw-5)
+    cp d                        ;Asegura que el maximo es (MAPW-rw-6)
     jr nc, .generate_x_num
 
     ld [aux_rx], a              ;Guardamos el valor de coord_x de la habitacion
@@ -1717,18 +1837,18 @@ _sl_generate_room_data:
     call _generate_random
     ld d, %00111111             ;Fuerza el valor de la salida al rango de 0 a 63
     and d
-    cp $04                      ;Asegura que el minimo es 4
+    cp $05                      ;Asegura que el minimo es 5
     jr c, .generate_y_num
 
     push af
     ld a, [aux_rh]
     ld d, a
-    ld a, MAPH - $04
+    ld a, MAPH - $05
     sub d
     ld d, a 
     pop af
 
-    cp d                        ;Asegura que el maximo es (MAPH-rh-4)
+    cp d                        ;Asegura que el maximo es (MAPH-rh-5)
     jr nc, .generate_y_num
 
     ld [aux_ry], a              ;Guardamos el valor de coord_y de la habitacion
@@ -2482,3 +2602,172 @@ _sl_get_tilemap_dir:
     dec a
     jr nz, .loop
     ret
+
+;;==============================================================================================
+;;                                        GET TILE NEIGHBOURS
+;;----------------------------------------------------------------------------------------------
+;; A aprtir de unas coordenadas X e Y obtiene los vecinos del tile
+;;
+;; INPUT:
+;;  B -> X del tilemap
+;;  C -> Y del tilemap
+;;
+;; OUTPUT:
+;;  A -> Estado de los vecinos
+;;
+;;  7 0 1
+;;  6 T 2  -> Cada posicion corresponde a un Bit de A ->  76543210 
+;;  5 4 3
+;;                                                           X O O
+;;  Los bits a 1 significa que hay un solido por ejemplo si: O T X -> 10000100 (X = Solido)
+;;                                                           O O O 
+;;
+;; DESTROYS:
+;;  AF, DE, HL
+;;
+;;==============================================================================================
+_sl_get_tile_neighbours:
+    
+    ld a, b
+    ld [aux_rx], a
+    cp $00
+    jp z, .exit_full
+    cp MAPW-1
+    jp z, .exit_full
+
+    ld a, c
+    ld [aux_ry], a
+    cp $00
+    jp z, .exit_full
+    cp MAPH-1
+    jp z, .exit_full
+
+    xor a
+    ld [aux_generic_1], a
+
+;;FILA 1 ----------------------------------------
+    ld b, $00
+    ld d, $00
+
+    ld a, [aux_rx]
+    dec a
+    ld c, a
+    ld a, [aux_ry]
+    dec a
+    ld e, a
+    ld hl, ml_map
+    call _sl_get_tilemap_dir
+    ;;HL -> tile_ptr[rx-1, ry-1]
+
+    ldi a, [hl]
+    cp $14
+    jr nc, .f1_continue_1
+        ld a, [aux_generic_1]
+        set 7, a
+        ld [aux_generic_1], a
+
+.f1_continue_1:
+    ldi a, [hl]
+    cp $14
+    jr nc, .f1_continue_2
+        ld a, [aux_generic_1]
+        set 0, a
+        ld [aux_generic_1], a
+
+.f1_continue_2:
+    ld a, [hl]
+    cp $14
+    jr nc, .f1_end
+        ld a, [aux_generic_1]
+        set 1, a
+        ld [aux_generic_1], a
+
+.f1_end:
+
+;;FILA 2 ----------------------------------------
+    ld b, $00
+    ld d, $00
+
+    ld a, [aux_rx]
+    dec a
+    ld c, a
+    ld a, [aux_ry]
+    ld e, a
+    ld hl, ml_map
+    call _sl_get_tilemap_dir
+    ;;HL -> tile_ptr[rx-1, ry]
+
+    ldi a, [hl]
+    cp $14
+    jr nc, .f2_continue_1
+        ld a, [aux_generic_1]
+        set 6, a
+        ld [aux_generic_1], a
+
+.f2_continue_1:
+    inc hl
+    ld a, [hl]
+    cp $14
+    jr nc, .f2_end
+        ld a, [aux_generic_1]
+        set 2, a
+        ld [aux_generic_1], a
+.f2_end:
+
+;;FILA 3 ----------------------------------------
+    ld b, $00
+    ld d, $00
+
+    ld a, [aux_rx]
+    dec a
+    ld c, a
+    ld a, [aux_ry]
+    inc a
+    ld e, a
+    ld hl, ml_map
+    call _sl_get_tilemap_dir
+    ;;HL -> tile_ptr[rx-1, ry+1]
+
+    ldi a, [hl]
+    cp $14
+    jr nc, .f3_continue_1
+        ld a, [aux_generic_1]
+        set 5, a
+        ld [aux_generic_1], a
+
+.f3_continue_1:
+    ldi a, [hl]
+    cp $14
+    jr nc, .f3_continue_2
+        ld a, [aux_generic_1]
+        set 4, a
+        ld [aux_generic_1], a
+
+.f3_continue_2:
+    ld a, [hl]
+    cp $14
+    jr nc, .f3_end
+        ld a, [aux_generic_1]
+        set 3, a
+        ld [aux_generic_1], a
+
+.f3_end:
+
+    ld a, [aux_generic_1]
+    ret
+
+.exit_full:
+    ld a, $FF
+    ret
+
+; $E7
+; $D7
+; $C7
+
+; %11100111
+; %11010111
+
+; %11000111
+
+
+

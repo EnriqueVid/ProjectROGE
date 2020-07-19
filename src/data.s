@@ -110,8 +110,8 @@ tile_index::
     dw tile_wall_misc_01            ;; 13 -> $0D
     dw tile_wall_misc_02            ;; 14 -> $0E
     dw tile_wall_misc_03            ;; 15 -> $0F
-    dw tile_wall_misc_04            ;; 16 -> $10
-    dw tile_wall_misc_05            ;; 17 -> $11
+    dw tile_wall_special_01         ;; 16 -> $10
+    dw tile_wall_special_02         ;; 17 -> $11
     dw tile_wall_misc_06            ;; 18 -> $12
     dw tile_wall_misc_07            ;; 19 -> $13
 
@@ -132,43 +132,43 @@ tile_index::
 
 
 tile_wall_top:
-    ;db $00          ;; Tile TL
-    db $81
+    db $00          ;; Tile TL
+    ;db $81
     db $02          ;; Tile TR
     db $01          ;; Tile BL
     db $03          ;; Tile BR
 
 tile_wall_right:
-    ;db $04          ;; Tile TL
-    db $82
+    db $04          ;; Tile TL
+    ;db $82
     db $06          ;; Tile TR
     db $05          ;; Tile BL
     db $07          ;; Tile BR
 
 tile_wall_bottom:
-    ;db $08          ;; Tile TL
-    db $83
+    db $08          ;; Tile TL
+    ;db $83
     db $0A          ;; Tile TR
     db $09          ;; Tile BL
     db $0B          ;; Tile BR
 
 tile_wall_left:
-    ;db $0C          ;; Tile TL
-    db $84
+    db $0C          ;; Tile TL
+    ;db $84
     db $0E          ;; Tile TR
     db $0D          ;; Tile BL
     db $0F          ;; Tile BR
 
 tile_wall_topleft_int:
-    ;db $10          ;; Tile TL
-    db $85
+    db $10          ;; Tile TL
+    ;db $85
     db $12          ;; Tile TR
     db $11          ;; Tile BL
     db $13          ;; Tile BR
 
 tile_wall_topright_int:
-    ;db $14          ;; Tile TL
-    db $86
+    db $14          ;; Tile TL
+    ;db $86
     db $16          ;; Tile TR
     db $15          ;; Tile BL
     db $17          ;; Tile BR
@@ -233,13 +233,13 @@ tile_wall_misc_03:
     db $3D          ;; Tile BL
     db $3F          ;; Tile BR
 
-tile_wall_misc_04:
+tile_wall_special_01:
     db $40          ;; Tile TL
     db $42          ;; Tile TR
     db $41          ;; Tile BL
     db $43          ;; Tile BR
 
-tile_wall_misc_05:
+tile_wall_special_02:
     db $44          ;; Tile TL
     db $46          ;; Tile TR
     db $45          ;; Tile BL

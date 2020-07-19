@@ -11,6 +11,7 @@ GLOBAL _sl_check_room
 GLOBAL _sl_get_random_exit
 GLOBAL _sl_generate_map
 GLOBAL _sl_check_exit_neighbours
+GLOBAL _sl_get_tile_neighbours
 
 
 
