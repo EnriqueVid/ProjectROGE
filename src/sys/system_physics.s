@@ -72,9 +72,10 @@ _sp_check_room_collision:
         ;;A -> R1 X+W
 
         ld a, b
-        dec a
+        ;dec a
+        sub $03
         ld d, a
-        ;;D -> R2 X-1
+        ;;D -> R2 X-3   (default: X-1)
 
         pop af
         cp d                    ;;Si (X1+W1 < X2-1) no hay colision
@@ -86,8 +87,9 @@ _sp_check_room_collision:
 
         ld a, b
         add c
-        inc a
-        ;;A -> R2 X+W+1
+        ;inc a
+        add $03
+        ;;A -> R2 X+W+3 (default: X+W+2)
         cp d                    ;;Si (X2+W2+1 > X1) no hay colision
         jr c, .no_collision
 
@@ -100,9 +102,10 @@ _sp_check_room_collision:
         ;;BC -> R2 Y, H
 
         ld a, b
-        dec a
+        ;dec a
+        sub $03
         ld d, a
-        ;;D -> R2 Y-1
+        ;;D -> R2 Y-3   (default: Y-1)
 
         ld a, [aux_ry]
         ld e, a
@@ -119,8 +122,9 @@ _sp_check_room_collision:
 
         ld a, b
         add c
-        inc a
-        ;;A -> R2 Y+H+1
+        ;inc a
+        add $03
+        ;;A -> R2 Y+H+3 (default: Y+H+1)
         cp d                    ;;Si (Y2+H2+1 > Y1) no hay colision
         jr c, .no_collision
 

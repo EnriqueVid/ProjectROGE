@@ -82,7 +82,7 @@ _sl_generate_map:
     jr c, .generate_room_num
 
 
-    ld a, $02                   ;DELETE THIS
+    ld a, $06                   ;DELETE THIS
     ld [aux_max_rooms], a       ;Guardamos el valor del numero maximo de habitaciones
 
 
@@ -382,7 +382,196 @@ _sl_connect_rooms:
 ;;
 ;;========================================================================================
 _sl_corridor_vert:
+    ;;Sacamos el puntero de Exit_1 del mapa
+    ld a, [aux_rx]
+    ld c, a
+    ld a, [aux_ry]
+    ld e, a
+    ld b, $00
+    ld d, $00
+    ld hl, ml_map
+    call _sl_get_tilemap_dir
 
+    ;ld a, $14
+    ;ld [hl], a
+
+    ld b, h
+    ld c, l
+    ;BC -> Exit_1_map_ptr
+
+    push bc
+    ;;Sacamos el puntero de Exit_1 del mapa
+    
+    ld a, [aux_rx2]
+    ld c, a
+    ld a, [aux_ry2]
+    ld e, a
+    ld b, $00
+    ld d, $00
+    ld hl, ml_map
+    call _sl_get_tilemap_dir
+
+    ;ld a, $14
+    ;ld [hl], a
+
+    ld d, h
+    ld e, l
+    ;DE -> Exit_2_map_ptr
+    pop bc
+    
+    push bc
+    push de
+    
+    ;;Generamos el numero que indicará el camino elternativo de movimiento
+    call _generate_random
+
+    ld b, a
+    ld a, %00000001
+    and b
+    ld [aux_generic_1], a
+
+    pop de
+    pop bc
+
+.loop:
+.check_bc: 
+    ;Commprobamos si RY y RY2 coinciden
+    push bc
+        ld a, [aux_ry]
+        ld b, a
+        ld a, [aux_ry2]
+        xor b
+        jr z, .loop_end
+    pop bc
+
+    ;Movemos RY
+    ld h, b
+    ld l, c
+    push bc
+    ld bc, MAPW
+    add hl, bc
+    pop bc
+    ld a, [hl]
+    cp $15
+    jr z, .continue_ry
+    cp $0C
+    jr nz, .alt_ry
+.continue_ry:
+        ld a, [aux_ry]
+        inc a
+        ld [aux_ry], a
+
+        ld a, $15
+        ld [hl], a
+        ld b, h
+        ld c, l
+
+    ;Commprobamos si RY y RY2 coinciden
+    push bc
+        ld a, [aux_ry]
+        ld b, a
+        ld a, [aux_ry2]
+        xor b
+        jr z, .loop_end
+    pop bc
+
+.check_de: 
+    ;Movemos RY2
+    ld h, d
+    ld l, e
+    push de
+    ld de, -MAPW
+    add hl, de
+    pop de
+    ld a, [hl]
+    cp $15
+    jr z, .continue_ry2
+    cp $0C
+    jr nz, .alt_ry2
+
+.continue_ry2:
+        ld a, [aux_ry2]
+        dec a
+        ld [aux_ry2], a
+
+        ld a, $15
+        ld [hl], a
+        ld d, h
+        ld e, l
+
+    ;Vuelta a empezar
+    jr .loop
+
+.loop_end:
+    pop bc
+    ret
+
+;;DIRECCION ALTERNATIVA DE ALT_RY
+.alt_ry:
+    ld h, b
+    ld l, c
+    ld a, [aux_generic_1]
+    cp $00
+    jr z, .alt_ry_left
+        inc hl
+        ld a, [aux_rx]
+        inc a
+        ld [aux_rx], a
+
+        ld a, $15
+        ld [hl], a
+        ld b, h
+        ld c, l
+    
+    jr .check_de
+
+.alt_ry_left:
+        dec hl
+        ld a, [aux_rx]
+        dec a
+        ld [aux_rx], a
+
+        ld a, $15
+        ld [hl], a
+        ld b, h
+        ld c, l
+    
+    jr .check_de
+
+;;DIRECCION ALTERNATIVA DE ALT_RY2
+.alt_ry2:
+    ld h, d
+    ld l, e
+    ld a, [aux_generic_1]
+    cp $00
+    jr z, .alt_ry2_left
+        inc hl
+        ld a, [aux_rx2]
+        inc a
+        ld [aux_rx2], a
+
+        ld a, $15
+        ld [hl], a
+        ld d, h
+        ld e, l
+
+    jp .check_bc
+
+.alt_ry2_left:
+        dec hl
+        ld a, [aux_rx2]
+        dec a
+        ld [aux_rx2], a
+
+        ld a, $15
+        ld [hl], a
+        ld d, h
+        ld e, l
+    
+    jp .check_bc
+
+
+    ret
 
 ;;========================================================================================
 ;;                                     CORRIDOR HOR
@@ -412,8 +601,8 @@ _sl_corridor_hor:
     ld hl, ml_map
     call _sl_get_tilemap_dir
 
-    ld a, $14
-    ld [hl], a
+    ;ld a, $14
+    ;ld [hl], a
 
     ld b, h
     ld c, l
@@ -431,8 +620,8 @@ _sl_corridor_hor:
     ld hl, ml_map
     call _sl_get_tilemap_dir
 
-    ld a, $14
-    ld [hl], a
+    ;ld a, $14
+    ;ld [hl], a
 
     ld d, h
     ld e, l
@@ -470,14 +659,17 @@ _sl_corridor_hor:
     ld l, c
     inc hl
     ld a, [hl]
+    cp $15
+    jr z, .continue_rx
     cp $0C
     jr nz, .alt_rx
 
+.continue_rx:
         ld a, [aux_rx]
         inc a
         ld [aux_rx], a
 
-        ld a, $14
+        ld a, $15
         ld [hl], a
         ld b, h
         ld c, l
@@ -499,14 +691,17 @@ _sl_corridor_hor:
     ld l, e
     dec hl
     ld a, [hl]
+    cp $15
+    jr z, .continue_rx2
     cp $0C
     jr nz, .alt_rx2
 
+.continue_rx2:
         ld a, [aux_rx2]
         dec a
         ld [aux_rx2], a
 
-        ld a, $14
+        ld a, $15
         ld [hl], a
         ld d, h
         ld e, l
@@ -519,15 +714,83 @@ _sl_corridor_hor:
     ret
 
 
+;;DIRECCION ALTERNATIVA DE ALT_RX
 .alt_rx:
+
     ld h, b
     ld l, c
-    ret
+    ld a, [aux_generic_1]
+    cp $00
+    jr z, .alt_rx_up
+        push bc
+            ld bc, MAPW
+            add hl, bc
+        pop bc
+        ld a, [aux_ry]
+        inc a
+        ld [aux_ry], a
+
+        ld a, $15
+        ld [hl], a
+        ld b, h
+        ld c, l
+    
     jr .check_de
 
+.alt_rx_up:
+        push bc
+            ld bc, -MAPW
+            add hl, bc
+        pop bc
+        ld a, [aux_ry]
+        dec a
+        ld [aux_ry], a
+
+        ld a, $15
+        ld [hl], a
+        ld b, h
+        ld c, l
+    
+    jr .check_de
+
+;;DIRECCION ALTERNATIVA DE ALT_RX2
 .alt_rx2:
-    ret
-    jr .check_bc
+
+    ld h, d
+    ld l, e
+    ld a, [aux_generic_1]
+    cp $00
+    jr z, .alt_rx2_up
+        push bc
+            ld bc, MAPW
+            add hl, bc
+        pop bc
+        ld a, [aux_ry2]
+        inc a
+        ld [aux_ry2], a
+
+        ld a, $15
+        ld [hl], a
+        ld d, h
+        ld e, l
+
+    jp .check_bc
+    
+.alt_rx2_up:
+        push bc
+            ld bc, -MAPW
+            add hl, bc
+        pop bc
+        ld a, [aux_ry2]
+        dec a
+        ld [aux_ry2], a
+
+        ld a, $15
+        ld [hl], a
+        ld d, h
+        ld e, l
+    
+    jp .check_bc
 
 ;;========================================================================================
 ;;                                     CREATE CORRIDOR
@@ -555,55 +818,142 @@ _sl_create_corridor:
 ;;TOP----------------------------------------------
 .top:
     cp $00
-    jr nz, .bottom
-        ret
-
-;;BOTTOM-------------------------------------------
-.bottom:
+    jr z, .vert
     cp $01
     jr nz, .left
+.vert
+        call _sl_reorder_aux_y
+        call _sl_corridor_vert
+        call _sl_reorder_aux_x
+        call _sl_corridor_hor
+
         ret
 ;;LEFT---------------------------------------------
 .left:
     cp $02
-    jr nz, .right
-
-        ;;ALMACENAMOS RX, RY, RX2, RY2
-        ld a, [aux_rx2]
-        ld b, a
-        ld a, [aux_ry2]
-        ld c, a
-
-        ld a, [aux_rx]
-        ld d, a
-        ld a, [aux_ry]
-        ld e, a
-        
-
-        ;;REORGANIZAMOS RX, RY, RX2, RY2
-        ld a, b
-        ld [aux_rx], a
-        ld a, c
-        ld [aux_ry], a
-
-        ld a, d
-        ld [aux_rx2], a
-        ld a, e
-        ld [aux_ry2], a
-
-
-        call _sl_corridor_hor
-        ret
-
-;;RIGHT--------------------------------------------
-.right:
+    jr z, .hor
     cp $03
     jr nz, .none
 
+.hor:
+        call _sl_reorder_aux_x
         call _sl_corridor_hor
+        call _sl_reorder_aux_y
+        call _sl_corridor_vert
+        
         ret
 
 .none:
+
+    ret
+
+
+
+;;========================================================================================
+;;                                     REORDER AUX_X
+;;----------------------------------------------------------------------------------------
+;; Ordena los aux_rx, aux_ry, aux_rx2, aux_ry_2 en funcion de la coordenada en la x
+;;
+;; INPUT:
+;;  [aux_rx]            -> Exit_1 X
+;;  [aux_ry]            -> Exit_1 Y
+;;  [aux_rx2]           -> Exit_2 X
+;;  [aux_ry2]           -> Exit_2 Y
+;;  
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DELETES: 
+;;  AF, BC, DE, HL
+;;
+;;========================================================================================
+_sl_reorder_aux_x:
+
+    ;;Comprobamos si X2 >= X1
+    ld a, [aux_rx]
+    ld b, a
+    ld a, [aux_rx2]
+    cp b
+    ret nc
+
+    ;;ALMACENAMOS RX, RY, RX2, RY2
+    ld a, [aux_rx2]
+    ld b, a
+    ld a, [aux_ry2]
+    ld c, a
+
+    ld a, [aux_rx]
+    ld d, a
+    ld a, [aux_ry]
+    ld e, a
+        
+
+    ;;REORGANIZAMOS RX, RY, RX2, RY2
+    ld a, b
+    ld [aux_rx], a
+    ld a, c
+    ld [aux_ry], a
+
+    ld a, d
+    ld [aux_rx2], a
+    ld a, e
+    ld [aux_ry2], a
+
+    ret
+
+
+
+;;========================================================================================
+;;                                     REORDER AUX_Y
+;;----------------------------------------------------------------------------------------
+;; Ordena los aux_rx, aux_ry, aux_rx2, aux_ry_2 en funcion de la coordenada en la y
+;;
+;; INPUT:
+;;  [aux_rx]            -> Exit_1 X
+;;  [aux_ry]            -> Exit_1 Y
+;;  [aux_rx2]           -> Exit_2 X
+;;  [aux_ry2]           -> Exit_2 Y
+;;  
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DELETES: 
+;;  AF, BC, DE, HL
+;;
+;;========================================================================================
+_sl_reorder_aux_y:
+
+    ;;Comprobamos si Y2 >= Y1
+    ld a, [aux_ry]
+    ld b, a
+    ld a, [aux_ry2]
+    cp b
+    ret nc
+
+    ;;ALMACENAMOS RX, RY, RX2, RY2
+    ld a, [aux_rx2]
+    ld b, a
+    ld a, [aux_ry2]
+    ld c, a
+
+    ld a, [aux_rx]
+    ld d, a
+    ld a, [aux_ry]
+    ld e, a
+        
+
+    ;;REORGANIZAMOS RX, RY, RX2, RY2
+    ld a, b
+    ld [aux_rx], a
+    ld a, c
+    ld [aux_ry], a
+
+    ld a, d
+    ld [aux_rx2], a
+    ld a, e
+    ld [aux_ry2], a
 
     ret
 
