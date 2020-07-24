@@ -263,7 +263,7 @@ _main:
 
     inc a
     ld [mg_actual_level], a
-    cp $02
+    cp $0A
     jp nz, .init_game_loop
     ld hl, $9800
     jr .loop_clear

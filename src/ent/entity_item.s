@@ -4,62 +4,62 @@ SECTION "ENT_ITEM_DATA", ROMX
 
     
 ent_item_index::                
-    dw item_copper_sword_data   ;;ID = 0
-    dw item_copper_sword_data   ;;ID = 1
-    dw item_copper_sword_data   ;;ID = 2
-    dw item_copper_sword_data   ;;ID = 3
-    dw item_copper_sword_data   ;;ID = 4
-    dw item_copper_sword_data   ;;ID = 5
-    dw item_copper_sword_data   ;;ID = 6
-    dw item_copper_sword_data   ;;ID = 7
-    dw item_copper_sword_data   ;;ID = 8
-    dw item_copper_sword_data   ;;ID = 9
+    dw item_copper_sword_data   ;;ID = 0 = $00
+    dw item_copper_sword_data   ;;ID = 1 = $01
+    dw item_copper_sword_data   ;;ID = 2 = $02
+    dw item_copper_sword_data   ;;ID = 3 = $03
+    dw item_copper_sword_data   ;;ID = 4 = $04
+    dw item_copper_sword_data   ;;ID = 5 = $05
+    dw item_copper_sword_data   ;;ID = 6 = $06
+    dw item_copper_sword_data   ;;ID = 7 = $07
+    dw item_copper_sword_data   ;;ID = 8 = $08
+    dw item_copper_sword_data   ;;ID = 9 = $09
 
-    dw item_copper_shield_data   ;;ID = 10
-    dw item_copper_shield_data   ;;ID = 11
-    dw item_copper_shield_data   ;;ID = 12
-    dw item_copper_shield_data   ;;ID = 13
-    dw item_copper_shield_data   ;;ID = 14
-    dw item_copper_shield_data   ;;ID = 15
-    dw item_copper_shield_data   ;;ID = 16
-    dw item_copper_shield_data   ;;ID = 17
-    dw item_copper_shield_data   ;;ID = 18
-    dw item_copper_shield_data   ;;ID = 19
+    dw item_copper_shield_data   ;;ID = 10 = $0A
+    dw item_copper_shield_data   ;;ID = 11 = $0B
+    dw item_copper_shield_data   ;;ID = 12 = $0C
+    dw item_copper_shield_data   ;;ID = 13 = $0D
+    dw item_copper_shield_data   ;;ID = 14 = $0E
+    dw item_copper_shield_data   ;;ID = 15 = $0F
+    dw item_copper_shield_data   ;;ID = 16 = $10
+    dw item_copper_shield_data   ;;ID = 17 = $11
+    dw item_copper_shield_data   ;;ID = 18 = $12
+    dw item_copper_shield_data   ;;ID = 19 = $13
 
-    dw item_copper_staff_data   ;;ID = 20
-    dw item_copper_staff_data   ;;ID = 21
-    dw item_copper_staff_data   ;;ID = 22
-    dw item_copper_staff_data   ;;ID = 23
-    dw item_copper_staff_data   ;;ID = 24
-    dw item_copper_staff_data   ;;ID = 25
-    dw item_copper_staff_data   ;;ID = 26
-    dw item_copper_staff_data   ;;ID = 27
-    dw item_copper_staff_data   ;;ID = 28
-    dw item_copper_staff_data   ;;ID = 29
-    dw item_copper_staff_data   ;;ID = 30
-    dw item_copper_staff_data   ;;ID = 31
-    dw item_copper_staff_data   ;;ID = 32
-    dw item_copper_staff_data   ;;ID = 33
-    dw item_copper_staff_data   ;;ID = 34
-    dw item_copper_staff_data   ;;ID = 35
-    dw item_copper_staff_data   ;;ID = 36
-    dw item_copper_staff_data   ;;ID = 37
-    dw item_copper_staff_data   ;;ID = 38
-    dw item_copper_staff_data   ;;ID = 39
+    dw item_copper_staff_data   ;;ID = 20 = $14
+    dw item_copper_staff_data   ;;ID = 21 = $15
+    dw item_copper_staff_data   ;;ID = 22 = $16
+    dw item_copper_staff_data   ;;ID = 23 = $17
+    dw item_copper_staff_data   ;;ID = 24 = $18
+    dw item_copper_staff_data   ;;ID = 25 = $19
+    dw item_copper_staff_data   ;;ID = 26 = $1A
+    dw item_copper_staff_data   ;;ID = 27 = $1B
+    dw item_copper_staff_data   ;;ID = 28 = $1C
+    dw item_copper_staff_data   ;;ID = 29 = $1D
+    dw item_copper_staff_data   ;;ID = 30 = $1E
+    dw item_copper_staff_data   ;;ID = 31 = $1F
+    dw item_copper_staff_data   ;;ID = 32 = $20
+    dw item_copper_staff_data   ;;ID = 33 = $21
+    dw item_copper_staff_data   ;;ID = 34 = $22
+    dw item_copper_staff_data   ;;ID = 35 = $23
+    dw item_copper_staff_data   ;;ID = 36 = $24
+    dw item_copper_staff_data   ;;ID = 37 = $25
+    dw item_copper_staff_data   ;;ID = 38 = $26
+    dw item_copper_staff_data   ;;ID = 39 = $27
 
 
-    dw item_lesser_potion_data  ;;ID = 40
-    dw item_lesser_potion_data  ;;ID = 41
-    dw item_lesser_potion_data  ;;ID = 42
-    dw item_lesser_potion_data  ;;ID = 43
-    dw item_lesser_potion_data  ;;ID = 44
-    dw item_lesser_potion_data  ;;ID = 45
-    dw item_lesser_potion_data  ;;ID = 46
-    dw item_lesser_potion_data  ;;ID = 47
-    dw item_lesser_potion_data  ;;ID = 48
-    dw item_lesser_potion_data  ;;ID = 49
+    dw item_lesser_potion_data  ;;ID = 40 = $28
+    dw item_lesser_potion_data  ;;ID = 41 = $29
+    dw item_lesser_potion_data  ;;ID = 42 = $2A
+    dw item_lesser_potion_data  ;;ID = 43 = $2B
+    dw item_lesser_potion_data  ;;ID = 44 = $2C
+    dw item_lesser_potion_data  ;;ID = 45 = $2D
+    dw item_lesser_potion_data  ;;ID = 46 = $2E
+    dw item_lesser_potion_data  ;;ID = 47 = $2F
+    dw item_lesser_potion_data  ;;ID = 48 = $30
+    dw item_lesser_potion_data  ;;ID = 49 = $31
 
-    dw item_default ;;ID = 50
+    dw item_default ;;ID = 50 = $32
 
 
 item_default:     

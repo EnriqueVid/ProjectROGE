@@ -85,7 +85,7 @@ _sl_generate_map:
     jr c, .generate_room_num
 
 
-    ld a, $06                   ;DELETE THIS
+    ;ld a, $06                   ;DELETE THIS
     ld [aux_max_rooms], a       ;Guardamos el valor del numero maximo de habitaciones
 
 
@@ -129,6 +129,410 @@ _sl_generate_map:
     call _sl_connect_rooms
 
     call _sr_retile_map
+
+    call _sl_generate_stairs
+    call _sl_generate_objets
+    call _sl_position_player
+
+    ret
+
+
+;;========================================================================================
+;;                                     POSITION PLAYER
+;;----------------------------------------------------------------------------------------
+;; Genera las coordenadas donde situer el jugador al inicio del nivel
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DELETES: 
+;;  AF, BC, DE, HL
+;;
+;;========================================================================================
+_sl_position_player:
+    ld a, [ml_room_num]
+    dec a
+    ld c, a
+    ld b, $00
+    ld a, %00000111
+    call _generate_random_min_max       ;;Seleccionamos una de las habitaciones del nivel
+
+    ld hl, ml_room_array
+    ld bc, entity_room_size
+    cp $00
+    jr z, .loop_find_room_end
+.loop_find_room:
+        add hl, bc
+        dec a
+        jr nz, .loop_find_room
+.loop_find_room_end:
+
+    ldi a, [hl]
+    ld  [aux_rx], a
+    ldi a, [hl]
+    ld  [aux_ry], a
+    ldi a, [hl]
+    sub $02
+    ld  [aux_rw], a
+    ld  a, [hl]
+    sub $02
+    ld  [aux_rh], a
+
+    ;;Generamos unas coordenadas dentro de lahabitación y comprobamos si son validas 
+.try_position:
+    
+    ld a, [aux_rw]
+    ld c, a
+    ld b, $00
+
+    ld a, %00001111
+    call _generate_random_min_max   ;;Generamos la coordenada X del Item
+    ld c, a
+    ld a, [aux_rx]
+    inc a
+    add c
+    ld c, a
+    ld b, $00
+    ;BC -> Coord X del Item
+
+    push bc
+
+    ld a, [aux_rh]
+    ld c, a
+    ld b, $00
+
+    ld a, %00001111
+    call _generate_random_min_max   ;;Generamos la coordenada X del Item
+    ld e, a
+    ld a, [aux_ry]
+    inc a
+    add e
+    ld e, a
+    ld d, $00
+    ;DE -> Coord Y del Item
+
+    pop bc
+    push bc
+    push de
+
+    ld hl, ml_map
+    call _sl_get_tilemap_dir
+
+    pop de
+    pop bc
+
+    ld a, [hl]
+    cp $14
+    jr nz, .try_position    ;;Si la posicion no es valida, se vuelve a intentar
+
+    ld hl, mp_player
+    ld a, c
+    ldi [hl], a
+    ld a, e
+    ld [hl], a
+
+    ret
+
+;;========================================================================================
+;;                                     GENERATE STAIRS
+;;----------------------------------------------------------------------------------------
+;; Genera y posiciona las escaleras para acceder al siguiente nivel
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DELETES: 
+;;  AF, BC, DE, HL
+;;
+;;========================================================================================
+_sl_generate_stairs:
+    
+    ld a, [ml_room_num]
+    dec a
+    ld c, a
+    ld b, $00
+    ld a, %00000111
+    call _generate_random_min_max       ;;Seleccionamos una de las habitaciones del nivel
+
+    ld hl, ml_room_array
+    ld bc, entity_room_size
+    cp $00
+    jr z, .loop_find_room_end
+.loop_find_room:
+        add hl, bc
+        dec a
+        jr nz, .loop_find_room
+.loop_find_room_end:
+
+    ldi a, [hl]
+    ld  [aux_rx], a
+    ldi a, [hl]
+    ld  [aux_ry], a
+    ldi a, [hl]
+    sub $02
+    ld  [aux_rw], a
+    ld  a, [hl]
+    sub $02
+    ld  [aux_rh], a
+
+    ;;Generamos unas coordenadas dentro de lahabitación y comprobamos si son validas 
+.try_position:
+    
+    ld a, [aux_rw]
+    ld c, a
+    ld b, $00
+
+    ld a, %00001111
+    call _generate_random_min_max   ;;Generamos la coordenada X del Item
+    ld c, a
+    ld a, [aux_rx]
+    inc a
+    add c
+    ld c, a
+    ld b, $00
+    ;BC -> Coord X del Item
+
+    push bc
+
+    ld a, [aux_rh]
+    ld c, a
+    ld b, $00
+
+    ld a, %00001111
+    call _generate_random_min_max   ;;Generamos la coordenada X del Item
+    ld e, a
+    ld a, [aux_ry]
+    inc a
+    add e
+    ld e, a
+    ld d, $00
+    ;DE -> Coord Y del Item
+
+    pop bc
+
+    ld hl, ml_map
+    call _sl_get_tilemap_dir
+
+    ld a, [hl]
+    cp $14
+    jr nz, .try_position    ;;Si la posicion no es valida, se vuelve a intentar
+
+    ld a, $16
+    ld [hl], a
+
+    ret
+
+;;========================================================================================
+;;                                     GENERATE OBJETS
+;;----------------------------------------------------------------------------------------
+;; Genera y posiciona objetos por el mapa
+;;
+;; INPUT:
+;;  NONE
+;;
+;; OUTPUT:
+;;  NONE
+;;
+;; DELETES: 
+;;  AF, BC, DE, HL
+;;
+;;========================================================================================
+_sl_generate_objets:
+
+    ld a, [ml_room_num]
+    add $02
+    ld c, a
+    ld b, $00
+
+    ld a, %00001111
+
+    call _generate_random_min_max       ;;Decidimos el número máximo de objetos a generar entre 1 y (room_num+2)
+
+    cp $00
+    jr nz, .loop
+        inc a
+.loop
+    push af
+
+    ld a, [ml_room_num]
+    dec a
+    ld c, a
+    ld b, $00
+    ld a, %00000111
+    call _generate_random_min_max       ;;Seleccionamos una de las habitaciones del nivel
+
+    ld hl, ml_room_array
+    ld bc, entity_room_size
+    cp $00
+    jr z, .loop_find_room_end
+.loop_find_room:
+        add hl, bc
+        dec a
+        jr nz, .loop_find_room
+.loop_find_room_end:
+
+    ldi a, [hl]
+    ld  [aux_rx], a
+    ldi a, [hl]
+    ld  [aux_ry], a
+    ldi a, [hl]
+    sub $02
+    ld  [aux_rw], a
+    ld  a, [hl]
+    sub $02
+    ld  [aux_rh], a
+
+    ;;Generamos unas coordenadas dentro de lahabitación y comprobamos si son validas 
+.try_position:
+    
+    ld a, [aux_rw]
+    ld c, a
+    ld b, $00
+
+    ld a, %00001111
+    call _generate_random_min_max   ;;Generamos la coordenada X del Item
+    ld c, a
+    ld a, [aux_rx]
+    inc a
+    add c
+    ld c, a
+    ld b, $00
+    ;BC -> Coord X del Item
+
+    push bc
+
+    ld a, [aux_rh]
+    ld c, a
+    ld b, $00
+
+    ld a, %00001111
+    call _generate_random_min_max   ;;Generamos la coordenada X del Item
+    ld e, a
+    ld a, [aux_ry]
+    inc a
+    add e
+    ld e, a
+    ld d, $00
+    ;DE -> Coord Y del Item
+
+    pop bc
+    push bc
+    push de
+
+    ld hl, ml_map
+    call _sl_get_tilemap_dir
+
+    pop de
+    pop bc
+
+    ld a, [hl]
+    cp $14
+    jr nz, .try_position    ;;Si la posicion no es valida, se vuelve a intentar
+
+    ;; Generamos el Item que va a situarse en la posicion
+    ld b, c
+    ld c, e
+    ;;BC -> Item X, Y
+    push bc
+    
+    ld c, $07
+    ld b, $00
+    ld a, %00001111
+    call _generate_random_min_max
+
+    
+
+.es_arma:
+    cp $00
+    jr nz, .es_escudo
+        ld a, $18
+        ld [hl], a
+
+        ld c, $09
+        ld b, $00
+        ld a, %00001111
+        call _generate_random_min_max
+
+        ld de, $01
+        jr .end_item
+    
+
+.es_escudo:
+    cp $01
+    jr nz, .es_magia
+        ld a, $19
+        ld [hl], a
+
+        ld c, $09
+        ld b, $00
+        ld a, %00001111
+        call _generate_random_min_max
+
+        ld c, a
+        ld a, $0A
+        add c
+
+        ld de, $01
+        jr .end_item
+
+.es_magia:
+    cp $02
+    jr nz, .es_consumible
+        ld a, $1A
+        ld [hl], a
+
+        ld c, $13
+        ld b, $00
+        ld a, %00011111
+        call _generate_random_min_max
+
+        ld c, a
+        ld a, $14
+        add c
+
+        ld de, $01
+        jr .end_item
+
+.es_consumible:
+    cp $03
+    jr nz, .es_dinero
+        ld a, $1B
+        ld [hl], a
+
+        ld c, $09
+        ld b, $00
+        ld a, %00001111
+        call _generate_random_min_max
+
+        ld c, a
+        ld a, $28
+        add c
+
+        ld de, $01
+        jr .end_item
+
+.es_dinero:
+        ld a, $17
+        ld [hl], a
+        call _generate_random
+        daa
+        ld e, a
+        ld d, $00
+        ld a, $FF
+
+.end_item:
+    pop bc
+    call _ml_new_item
+
+    pop af
+    dec a
+    jp nz, .loop
 
     ret
 
@@ -2760,14 +3164,6 @@ _sl_get_tile_neighbours:
     ld a, $FF
     ret
 
-; $E7
-; $D7
-; $C7
-
-; %11100111
-; %11010111
-
-; %11000111
 
 
 

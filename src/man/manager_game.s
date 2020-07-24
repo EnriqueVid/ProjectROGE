@@ -73,7 +73,7 @@ _mg_game_loop:
 	jp nz, .no_input
 
     ;;DELETE THIS------
-    jp .no_spawn_enemy
+    ;jp .no_spawn_enemy
     ;;-----------------
 
     ld a, [mg_win_condition]
@@ -359,12 +359,12 @@ _mg_game_loop:
         
 
         ;;UNCOMENT THIS-------------
-        ;ld hl, mp_player
-        ;ld a, $01
-        ;call _sp_playable_collisions    ;;Comprobamos las colisiones en la direccion del jugador
-        ;ld a, b
-        ;or c
-        ;jp z, .no_input
+        ld hl, mp_player
+        ld a, $01
+        call _sp_playable_collisions    ;;Comprobamos las colisiones en la direccion del jugador
+        ld a, b
+        or c
+        jp z, .no_input
         ;;--------------------------
 
 
@@ -1475,6 +1475,7 @@ _mg_level_init:
     call _sr_update_draw_player_hud
 
     call _sl_generate_map
+    ret
 
     ;ld a, [mg_actual_level]
     ;cp $01
@@ -1572,7 +1573,7 @@ _mg_level_init:
     ; call _ml_new_item
 
     ;db $18, $FE
-    ret
+    
 
 .level_02:
 

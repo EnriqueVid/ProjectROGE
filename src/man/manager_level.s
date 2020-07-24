@@ -451,19 +451,19 @@ _ml_init:
     call _ldir
 
     
-    ld hl, level_index
-    ld a, [mg_actual_level]
-    sla a
-    ld de, $0000
-    ld e, a
-    add hl, de
+    ;ld hl, level_index
+    ;ld a, [mg_actual_level]
+    ;sla a
+    ;ld de, $0000
+    ;ld e, a
+    ;add hl, de
 
-    ldi a, [hl]
-    ld e, a
-    ld a, [hl]
-    ld d, a
+    ;ldi a, [hl]
+    ;ld e, a
+    ;ld a, [hl]
+    ;ld d, a
 
-    ;ld de, ent_map_01            ;; Origen
+    ld de, ent_map_01            ;; Origen
     ;db $18, $FE
 
     ld hl, ml_map                ;; Destino

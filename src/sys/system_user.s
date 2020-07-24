@@ -787,7 +787,7 @@ _su_grab_item:
     call _mi_add_item
     ret
 
-    db $18, $FE
+    ;db $18, $FE
 
 .add_money:
 
