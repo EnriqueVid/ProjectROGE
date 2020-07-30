@@ -74,7 +74,7 @@ _sl_generate_map:
     ld a, $20
     ld [aux_generic_1], a
 
-    ;;Generamos el numero de salas que va a tener el mapa, de 3 a 6 salas
+    ;;Generamos el numero de salas que va a tener el mapa, de 3 a 5 salas
 .generate_room_num:
     call _generate_random
     ld b, %00000111             ;Fuerza el valor de la salida al rango de 0 a 7

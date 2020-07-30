@@ -124,13 +124,13 @@ _mg_game_loop:
 
 ;;--------------------------------------
 
-;;__________DELETE_THIS__________________
+;;__________ENEMY UPDATE__________________
     ld hl, mp_enemy_array
     ld a, [mp_enemy_num]
     cp $00
-    jr z, .deletethis_loop_end
+    jr z, .enemy_update_loop_end
 
-.deletethis_loop:
+.enemy_update_loop:
     push af
     push hl
     call _sr_enemies_initial_draw
@@ -141,7 +141,7 @@ _mg_game_loop:
     add hl, bc
     ld a, [hl]
     cp IA_STATE_ATTACK
-    jr nz, .continue_deletethis_loop
+    jr nz, .continue_enemy_update_loop
 
     pop hl
     push hl
@@ -160,6 +160,16 @@ _mg_game_loop:
     push hl
     call _sc_attack_melee
 
+    call _su_update_player_hud_data
+    call _sr_update_draw_player_hud
+
+    ld hl, mp_player
+    ld bc, ep_cHP
+    add hl, bc
+    ld a, [hl]
+    cp $00
+    jr z, .player_dead
+
     pop hl
     push hl
     ld bc, ent_enemy_ia_state 
@@ -168,21 +178,29 @@ _mg_game_loop:
     ld [hl], a
 
 
-.continue_deletethis_loop:
+.continue_enemy_update_loop:
     pop hl
     pop af
     ld bc, entity_enemy_size
     add hl, bc
     dec a
-    jr nz, .deletethis_loop
+    jr nz, .enemy_update_loop
 
     call _su_update_player_hud_data
     call _sr_update_draw_player_hud
 
-.deletethis_loop_end:
+.enemy_update_loop_end:
+    jr .spawn_enemy
 ;;_______________________________________
+.player_dead:
+    pop hl
+    pop af
+    ld a, RESET
+    ld [mg_game_state], a
+    ret
 
-
+;;_______________________________________
+.spawn_enemy:
     ;;Control de reaparición de los enemigos
     
     ld a, [mp_respawn_steps]

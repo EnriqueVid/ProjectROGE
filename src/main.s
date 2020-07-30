@@ -163,7 +163,8 @@ _main:
 ;;--------------- LOGICA DEL JUEGO ---------------------
 
     call _mg_init
-
+    ld a, $FF
+    call _sr_fade_out
 
 
 
@@ -175,6 +176,9 @@ _main:
     jr nz, .return_game_loop
     
     call _mg_init_main_menu
+
+    ld a, $FF
+    call _sr_fade_in
     call _mg_main_menu_loop
     ld a, GAME_LOOP
     ld [mg_game_state], a
@@ -258,6 +262,10 @@ _main:
     cp PAUSE_MENU
     jr z, .init_pause_menu
 
+    ld hl, $9800
+    cp RESET
+    jp z, .loop_clear
+
 
     ld a, [mg_actual_level]
 
@@ -311,23 +319,24 @@ _main:
 
 .loop_clear:
 
-    db $18, $FE
+    jp _main
+    ; db $18, $FE
     
-    ld a, $90
-    call _VRAM_wait
-    ldi [hl], a
+    ; ld a, $90
+    ; call _VRAM_wait
+    ; ldi [hl], a
 
-    ld a, h
-    cp $9B
-    jr nz, .loop_clear
+    ; ld a, h
+    ; cp $9B
+    ; jr nz, .loop_clear
 
-    ld a, l
-    cp $FF
-    jr nz, .loop_clear
+    ; ld a, l
+    ; cp $FF
+    ; jr nz, .loop_clear
 
-    ld hl, $9800
+    ; ld hl, $9800
 
-jr .loop_clear
+    
 
 
 

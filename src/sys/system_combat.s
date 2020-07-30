@@ -165,6 +165,7 @@ _sc_attack_melee:
 
 
     ;db $18, $FE
+    ld a, $01
     ret
 
 .continue:
@@ -180,6 +181,7 @@ _sc_attack_melee:
 
 .survives:
     pop hl
+    ld a, $01
     ret
 
 
